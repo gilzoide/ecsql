@@ -1,5 +1,3 @@
-# Designing ECSQL
-
 ## Primer on ECS
 Entity Component System, or ECS for short, is a design pattern that provides code reusability by separating data from behaviour logic, often used by video games.
 ECS models are composed of:
@@ -31,7 +29,7 @@ The pros:
 - Since world data is queried using SQL, we can implement systems in different progamming languages and all of them can operate on the same data, all it takes is an open connection to the database.
 
 The cons:
-- Even if we avoid disk I/O using an in-memory database, querying with SQLite will be slower than the specialized data structures used by other ECS frameworks, possibly an order of magnitude slower.
+- Even if we avoid disk I/O using an in-memory database, querying with SQLite will be slower than the specialized data structures used by other ECS frameworks, possibly orders of magnitude slower.
   One of the benefits of ECS is that it's possible to layout data in a cache-friendly manner, so that iterating on components is very very fast.
 - Some types of data, like pointers to native structures, don't have a nice representation in SQLite and might need an additional indirection when stored as component data.
 
@@ -54,7 +52,7 @@ Components are data blocks that can be attached to entities.
 All components must have an associated entity.
 Also when the entity is deleted, its components should be deleted along with it.
 
-To me, the best representation for ECS components in SQL is creating a table for each.
+To me, the best representation for ECS components in SQL is creating a table for each one of them.
 All components have their own ids, and their owner entity's id.
 When querying component sets for a system, all we need to do is `JOIN` all these tables together using the entity id.
 
@@ -120,3 +118,10 @@ FROM position INNER JOIN velocity USING(entity_id);
 
 We could also easily support systems that require some components, but only optionally requires others.
 This can be done by simply changing the `INNER JOIN` by an `OUTER LEFT|RIGHT JOIN`, making SQLite return `NULL` for data from components that are not present in the entity.
+
+
+## Conclusion
+We've seen briefly what ECS is and how ECS worlds can be modeled as SQL databases.
+
+In the next article, we'll start implementing our experimental **ECSQL** framework.
+See you there!
