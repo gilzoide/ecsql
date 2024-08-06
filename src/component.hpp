@@ -1,8 +1,6 @@
 #pragma once
 
-#include <initializer_list>
 #include <string>
-#include <type_traits>
 #include <vector>
 #include "reflect.hpp"
 
@@ -27,6 +25,9 @@ public:
 		});
 		return Component(component_name, fields);
 	}
+
+	std::string schema_sql() const;
+	std::string insert_sql() const;
 
 	std::string name;
 	std::vector<std::string> fields;

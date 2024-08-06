@@ -29,16 +29,17 @@ double process_row(entity_id id, double x, double y, double z) {
 int main(int argc, const char **argv) {
 	Ecsql world(getenv("ECSQL_DB"));
 	Component position("position", {
-		"x FLOAT",
-		"y FLOAT",
-		"z FLOAT",
+		"x",
+		"y",
+		"z",
 	});
 	world.register_component(position);
 	world.register_component<TesteForeach>();
-	auto pos_system = world.register_system("SELECT entity_id, x, y, z FROM position", [](const SQLRow &row) {
+	world.register_system("teste1", "SELECT entity_id, x, y, z FROM position", [](const SQLRow &row) {
 		// process_row(row.column_int64(0), row.column_double(1), row.column_double(2), row.column_double(3));
 		// TesteForeach t = row.get<TesteForeach>(0);
-		auto [id, x, y] = row.get<int, double, double>(0);
+		auto [id, x, y, z] = row.get<int, double, double, double>(0);
+		process_row(id, x, y, z);
 		// cout << y << endl;
 		// t.printa();
 	});
@@ -49,7 +50,7 @@ int main(int argc, const char **argv) {
 	cout << "Usando " << ENTITIES << " entidades" << endl;
 	{
 		Benchmark b("Insert entities");
-		world.inside_transaction([&world] {
+		world.inside_transaction([&] {
 			for (int i = 0; i < ENTITIES; i++) {
 				world.create_entity();
 			}
@@ -57,14 +58,11 @@ int main(int argc, const char **argv) {
 	}
 	{
 		Benchmark b("Insert positions");
-		world.inside_transaction([](sqlite3 *db) {
-			PreparedSQL insert_position(db, "INSERT INTO position(entity_id, x, y, z) VALUES(?, ?, ?, ?)");
+		world.inside_transaction([&](sqlite3 *db) {
+			PreparedSQL insert_position(db, position.insert_sql());
 			for (int i = 0; i < ENTITIES; i++) {
 				insert_position.reset()
-					.bind(1, i)
-					.bind(2, 0)
-					.bind(3, rand() % 3)
-					.bind(4, 10);
+					.bind_all(1, i, 0, rand() % 3, 10);
 				int res = insert_position.step();
 				if (res != SQLITE_DONE) {
 					cout << sqlite3_errmsg(db) << endl;
@@ -75,13 +73,11 @@ int main(int argc, const char **argv) {
 	}
 	
 	{
-		Benchmark b("Query positions");
-		pos_system();
+		for (int i = 0; i < 10; i++) {
+			Benchmark b("Query positions");
+			world.update();
+		}
 	}
-	// {
-	//     Benchmark b("Query positions (transaction)");
-	//     world.inside_transaction(pos_system);
-	// }
 
 	{
 		TesteForeach lista[ENTITIES];

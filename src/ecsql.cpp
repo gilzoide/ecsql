@@ -46,7 +46,7 @@ Ecsql::Ecsql(sqlite3 *db)
 	, begin_stmt(db, "BEGIN", true)
 	, commit_stmt(db, "COMMIT", true)
 	, rollback_stmt(db, "ROLLBACK", true)
-	, create_entity_stmt(db, "INSERT INTO entity(id) VALUES(NULL)", true)
+	, create_entity_stmt(db, "INSERT INTO entity DEFAULT VALUES", true)
 	, delete_entity_stmt(db, "DELETE FROM entity WHERE id = ?", true)
 {
 }
@@ -57,28 +57,15 @@ Ecsql::~Ecsql() {
 }
 
 void Ecsql::register_component(const Component& component) {
-	std::string query;
-	query = "CREATE TABLE ";
-	query += component.name;
-	query += "(\n  id INTEGER PRIMARY KEY,\n  entity_id INTEGER NOT NULL REFERENCES entity(id) ON DELETE CASCADE";
-	for (auto& it : component.fields) {
-		query += ",\n  ";
-		query += it;
-	}
-	query += "\n);\nCREATE INDEX ";
-	query += component.name;
-	query += "_entity_id ON ";
-	query += component.name;
-	query += "(entity_id);";
-	int res = sqlite3_exec(db, query.c_str(), nullptr, nullptr, nullptr);
+	int res = sqlite3_exec(db, component.schema_sql().c_str(), nullptr, nullptr, nullptr);
 	if (res != SQLITE_OK) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
 }
 
-std::function<void()> Ecsql::register_system(const std::string& query, std::function<void(const SQLRow&)> f) {
+void Ecsql::register_system(const std::string& name, const std::string& query, std::function<void(const SQLRow&)> f) {
 	sqlite3 *db = this->db;
-	return [=]() {
+	systems.push_back([=]() {
 		PreparedSQL sql(db, query, true);
 		while (true) {
 			int res = sql.step();
@@ -97,7 +84,7 @@ std::function<void()> Ecsql::register_system(const std::string& query, std::func
 					return;
 			}
 		}
-	};
+	});
 }
 
 entity_id Ecsql::create_entity() {
@@ -147,6 +134,14 @@ void Ecsql::inside_transaction(std::function<void(sqlite3 *)> f) {
 	catch (...) {
 		rollback_stmt.reset().step();
 	}
+}
+
+void Ecsql::update() {
+	inside_transaction([&] {
+		for (auto it : systems) {
+			it();
+		}
+	});
 }
 
 }

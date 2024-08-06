@@ -9,7 +9,9 @@ PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str)
     : PreparedSQL(db, str, false)
 {
 }
-PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent) : SQLRow(nullptr) {
+PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent)
+    : SQLRow(nullptr)
+{
     int res = sqlite3_prepare_v3(db, str.data(), str.size(), is_persistent ? SQLITE_PREPARE_PERSISTENT : 0, &stmt, NULL);
     if (res != SQLITE_OK) {
         throw runtime_error(sqlite3_errmsg(db));

@@ -8,6 +8,7 @@
 #include <string>
 
 #include <sqlite3.h>
+#include <vector>
 
 #include "component.hpp"
 #include "PreparedSQL.hpp"
@@ -34,18 +35,16 @@ public:
         register_component(Component::from_type<T>(name));
     }
     void register_component(const Component& component);
-    std::function<void()> register_system(const std::string& query, std::function<void(const SQLRow&)> f);
-    
+    void register_system(const std::string& name, const std::string& query, std::function<void(const SQLRow&)> f);
+
     entity_id create_entity();
     bool delete_entity(entity_id id);
-    template<typename T> T get_component(entity_id id) {
-        
-    }
 
     void inside_transaction(std::function<void()> f);
     void inside_transaction(std::function<void(Ecsql&)> f);
     void inside_transaction(std::function<void(sqlite3 *)> f);
 
+    void update();
 
 private:
     sqlite3 *db;
@@ -54,6 +53,8 @@ private:
     PreparedSQL rollback_stmt;
     PreparedSQL create_entity_stmt;
     PreparedSQL delete_entity_stmt;
+
+    std::vector<std::function<void()>> systems;
 };
-    
+
 }

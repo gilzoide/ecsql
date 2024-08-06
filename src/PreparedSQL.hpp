@@ -23,6 +23,14 @@ public:
     PreparedSQL& bind(int index, const char *value, int length = -1, void(*dtor)(void*) = SQLITE_STATIC);
     PreparedSQL& bind(int index, const string_view& value, void(*dtor)(void*) = SQLITE_STATIC);
 
+    template<typename... Types>
+    PreparedSQL& bind_all(int index, Types... values) {
+        [&]<std::size_t... I> (std::index_sequence<I...>) {
+            (bind(index + I, values), ...);
+        } (std::index_sequence_for<Types...>());
+        return *this;
+    }
+
     PreparedSQL& reset();
     int step();
 };
