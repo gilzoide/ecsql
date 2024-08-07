@@ -22,31 +22,31 @@ PreparedSQL::~PreparedSQL() {
     sqlite3_finalize(stmt);
 }
 
-PreparedSQL& PreparedSQL::bind(int index, nullptr_t value) {
+PreparedSQL& PreparedSQL::bind_null(int index) {
     sqlite3_bind_null(stmt, index);
     return *this;
 }
-PreparedSQL& PreparedSQL::bind(int index, int value) {
+PreparedSQL& PreparedSQL::bind_bool(int index, bool value) {
     sqlite3_bind_int(stmt, index, value);
     return *this;
 }
-PreparedSQL& PreparedSQL::bind(int index, sqlite3_int64 value) {
+PreparedSQL& PreparedSQL::bind_int(int index, int value) {
+    sqlite3_bind_int(stmt, index, value);
+    return *this;
+}
+PreparedSQL& PreparedSQL::bind_int64(int index, sqlite3_int64 value) {
     sqlite3_bind_int64(stmt, index, value);
     return *this;
 }
-PreparedSQL& PreparedSQL::bind(int index, bool value) {
-    sqlite3_bind_int(stmt, index, value);
-    return *this;
-}
-PreparedSQL& PreparedSQL::bind(int index, double value) {
+PreparedSQL& PreparedSQL::bind_double(int index, double value) {
     sqlite3_bind_double(stmt, index, value);
     return *this;
 }
-PreparedSQL& PreparedSQL::bind(int index, const char *value, int length, void(*dtor)(void*)) {
+PreparedSQL& PreparedSQL::bind_text(int index, const char *value, int length, void(*dtor)(void*)) {
     sqlite3_bind_text(stmt, index, value, length, dtor);
     return *this;
 }
-PreparedSQL& PreparedSQL::bind(int index, const string_view& value, void(*dtor)(void*)) {
+PreparedSQL& PreparedSQL::bind_text(int index, const string_view& value, void(*dtor)(void*)) {
     sqlite3_bind_text(stmt, index, value.data(), value.length(), dtor);
     return *this;
 }

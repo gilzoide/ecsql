@@ -138,7 +138,7 @@ void Ecsql::inside_transaction(std::function<void(sqlite3 *)> f) {
 
 void Ecsql::update() {
 	inside_transaction([&] {
-		for (auto it : systems) {
+		for (auto& it : systems) {
 			it();
 		}
 	});
