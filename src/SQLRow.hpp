@@ -1,11 +1,13 @@
 #pragma once
 
-#include <sqlite3.h>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <utility>
+
 #include "reflect.hpp"
+#include <sqlite3.h>
 
 namespace ecsql {
 
@@ -74,6 +76,13 @@ protected:
         return column_int64(index++);
     }
     template<> uint64_t get_advance(int& index) const {
+        return column_int64(index++);
+    }
+
+    template<> long long get_advance(int& index) const {
+        return column_int64(index++);
+    }
+    template<> unsigned long long get_advance(int& index) const {
         return column_int64(index++);
     }
     

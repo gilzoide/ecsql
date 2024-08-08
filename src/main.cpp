@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 
 #include <sqlite3.h>
 #include "benchmark.hpp"

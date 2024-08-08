@@ -1,9 +1,11 @@
 #pragma once
 
-#include "SQLRow.hpp"
+#include <cstdint>
 #include <string_view>
 
 #include <sqlite3.h>
+
+#include "SQLRow.hpp"
 
 using namespace std;
 
@@ -79,6 +81,13 @@ private:
         return bind_int64(index++, value);
     }
     template<> PreparedSQL& bind_advance(int& index, uint64_t value) {
+        return bind_int64(index++, value);
+    }
+
+    template<> PreparedSQL& bind_advance(int& index, long long value) {
+        return bind_int64(index++, value);
+    }
+    template<> PreparedSQL& bind_advance(int& index, unsigned long long value) {
         return bind_int64(index++, value);
     }
 
