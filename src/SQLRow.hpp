@@ -22,6 +22,8 @@ struct SQLRow {
     double column_double(int index) const;
     const unsigned char *column_text(int index) const;
 
+    bool column_is_null(int index) const;
+
     template<typename... Types> auto get(int index) const {
         if constexpr (sizeof...(Types) == 1) {
             return get_advance<Types...>(index);

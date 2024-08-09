@@ -27,4 +27,8 @@ const unsigned char *SQLRow::column_text(int index) const {
     return sqlite3_column_text(stmt, index);
 }
 
+bool SQLRow::column_is_null(int index) const {
+    return sqlite3_column_type(stmt, index) == SQLITE_NULL;
+}
+
 }
