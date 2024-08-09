@@ -37,20 +37,20 @@ void game_loop(Ecsql& world, const std::vector<ColoredRectangle>& arrayzao) {
 	}
 
 	{
-		Benchmark ecs_benchmark("World Update", false);
-		world.update();
-		if (update_metrics) {
-			ecs_ms = ecs_benchmark.get_duration_ms();
-		}
-	}
-
-	{
 		Benchmark ecs_benchmark("Array Update", false);
 		for (auto& it : arrayzao) {
 			it.Draw();
 		}
 		if (update_metrics) {
 			arrayzao_ms = ecs_benchmark.get_duration_ms();
+		}
+	}
+
+	{
+		Benchmark ecs_benchmark("World Update", false);
+		world.update();
+		if (update_metrics) {
+			ecs_ms = ecs_benchmark.get_duration_ms();
 		}
 	}
 	
@@ -72,9 +72,14 @@ int main(int argc, const char **argv) {
 	ecsql_world.register_component(color);
 
 	// Systems
-	ecsql_world.register_system("draw_rects", "SELECT x, y, width, height, r, g, b, a FROM rectangle NATURAL JOIN color", [](const SQLRow &row) {
-		ColoredRectangle rect = row.get<ColoredRectangle>(0);
-		rect.Draw();
+	ecsql_world.register_system({
+		"draw_rects",
+		"SELECT x, y, width, height, r, g, b, a FROM rectangle NATURAL JOIN color",
+		[](auto& sql) {
+			for (SQLRow row : sql) {
+				row.get<ColoredRectangle>(0).Draw();
+			}
+		}
 	});
 
 	const int ENTITIES = 10'000;
@@ -104,14 +109,15 @@ int main(int argc, const char **argv) {
 					static_cast<unsigned char>(rand() % 256),
 					static_cast<unsigned char>(rand() % 256),
 					static_cast<unsigned char>(rand() % 256),
-					static_cast<unsigned char>(rand() % 256),
+					255,
 				},
 			});
 		}
 	}
 	{
 		Benchmark b("Insert Rects+Color");
-		ecsql_world.inside_transaction([&](sqlite3 *db) {
+		ecsql_world.inside_transaction([&] {
+			auto db = ecsql_world.get_db();
 			PreparedSQL insert_rectangle(db, rectangle.insert_sql());
 			PreparedSQL insert_color(db, color.insert_sql());
 			for (int i = 0; i < ENTITIES; i++) {

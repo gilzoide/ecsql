@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SQLRow.hpp"
 #include <functional>
 #include <string>
 
@@ -9,18 +10,15 @@ class SQLRow;
 
 class System {
 public:
-	System(const std::string& name, std::function<void(SQLRow&)> implementation);
+	System(const std::string& name, const std::string& sql, std::function<void(PreparedSQL&)> implementation);
+	System(const std::string& name, const std::vector<std::string>& sql, std::function<void(std::vector<PreparedSQL>&)> implementation);
 
-	template<typename Fn, typename... Args>
-	static System from_function(const std::string& name, Fn implementation) {
-		return System(name, [implementation](SQLRow& row) {
-			std::tuple<Args...> args;
-			implementation(args);
-		});
-	}
+	void operator()(sqlite3 *db);
 
 	std::string name;
-	std::function<void(SQLRow&)> implementation;
+	std::vector<std::string> sql;
+	std::vector<PreparedSQL> prepared_sql;
+	std::function<void(std::vector<PreparedSQL>&)> implementation;
 };
 
 }

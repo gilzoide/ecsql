@@ -12,6 +12,7 @@
 
 #include "component.hpp"
 #include "PreparedSQL.hpp"
+#include "system.hpp"
 
 typedef struct sqlite3 sqlite3;
 typedef sqlite3_int64 entity_id;
@@ -35,16 +36,17 @@ public:
         register_component(Component::from_type<T>(name));
     }
     void register_component(const Component& component);
-    void register_system(const std::string& name, const std::string& query, std::function<void(const SQLRow&)> f);
+    void register_system(const System& system);
 
     entity_id create_entity();
     bool delete_entity(entity_id id);
 
     void inside_transaction(std::function<void()> f);
     void inside_transaction(std::function<void(Ecsql&)> f);
-    void inside_transaction(std::function<void(sqlite3 *)> f);
 
     void update();
+
+    sqlite3 *get_db() const;
 
 private:
     sqlite3 *db;
@@ -54,7 +56,7 @@ private:
     PreparedSQL create_entity_stmt;
     PreparedSQL delete_entity_stmt;
 
-    std::vector<std::function<void()>> systems;
+    std::vector<System> systems;
 };
 
 }

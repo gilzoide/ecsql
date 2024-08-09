@@ -63,28 +63,8 @@ void Ecsql::register_component(const Component& component) {
 	}
 }
 
-void Ecsql::register_system(const std::string& name, const std::string& query, std::function<void(const SQLRow&)> f) {
-	sqlite3 *db = this->db;
-	systems.push_back([=]() {
-		PreparedSQL sql(db, query, true);
-		while (true) {
-			int res = sql.step();
-			switch (res) {
-				case SQLITE_ROW: {
-					SQLRow row(sql);
-					f(row);
-					break;
-				}
-				
-				case SQLITE_DONE:
-					return;
-				
-				default:
-					std::cout << sqlite3_errmsg(db) << std::endl;
-					return;
-			}
-		}
-	});
+void Ecsql::register_system(const System& system) {
+	systems.push_back(system);
 }
 
 entity_id Ecsql::create_entity() {
@@ -109,7 +89,8 @@ void Ecsql::inside_transaction(std::function<void()> f) {
 		f();
 		commit_stmt.reset().step();
 	}
-	catch (...) {
+	catch (std::runtime_error& err) {
+		std::cerr << "Runtime error: " << err.what() << std::endl;
 		rollback_stmt.reset().step();
 	}
 }
@@ -120,28 +101,22 @@ void Ecsql::inside_transaction(std::function<void(Ecsql&)> f) {
 		f(*this);
 		commit_stmt.reset().step();
 	}
-	catch (...) {
-		rollback_stmt.reset().step();
-	}
-}
-
-void Ecsql::inside_transaction(std::function<void(sqlite3 *)> f) {
-	begin_stmt.reset().step();
-	try {
-		f(db);
-		commit_stmt.reset().step();
-	}
-	catch (...) {
+	catch (std::runtime_error& err) {
+		std::cerr << "Runtime error: " << err.what() << std::endl;
 		rollback_stmt.reset().step();
 	}
 }
 
 void Ecsql::update() {
-	inside_transaction([&] {
-		for (auto& it : systems) {
-			it();
+	inside_transaction([](Ecsql& self) {
+		for (auto& it : self.systems) {
+			it(self.db);
 		}
 	});
+}
+
+sqlite3 *Ecsql::get_db() const {
+	return db;
 }
 
 }
