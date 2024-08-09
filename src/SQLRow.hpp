@@ -51,31 +51,31 @@ protected:
         return column_bool(index++);
     }
 
-    template<> int8_t get_advance(int& index) const {
+    template<> char get_advance(int& index) const {
         return column_int(index++);
     }
-    template<> uint8_t get_advance(int& index) const {
-        return column_int(index++);
-    }
-
-    template<> int16_t get_advance(int& index) const {
-        return column_int(index++);
-    }
-    template<> uint16_t get_advance(int& index) const {
+    template<> unsigned char get_advance(int& index) const {
         return column_int(index++);
     }
 
-    template<> int32_t get_advance(int& index) const {
+    template<> short get_advance(int& index) const {
         return column_int(index++);
     }
-    template<> uint32_t get_advance(int& index) const {
+    template<> unsigned short get_advance(int& index) const {
         return column_int(index++);
     }
 
-    template<> int64_t get_advance(int& index) const {
+    template<> int get_advance(int& index) const {
+        return column_int(index++);
+    }
+    template<> unsigned int get_advance(int& index) const {
+        return column_int(index++);
+    }
+
+    template<> long get_advance(int& index) const {
         return column_int64(index++);
     }
-    template<> uint64_t get_advance(int& index) const {
+    template<> unsigned long get_advance(int& index) const {
         return column_int64(index++);
     }
 

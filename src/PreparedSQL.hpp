@@ -56,31 +56,31 @@ private:
         return bind_bool(index++, value);
     }
 
-    template<> PreparedSQL& bind_advance(int& index, int8_t value) {
+    template<> PreparedSQL& bind_advance(int& index, char value) {
         return bind_int(index++, value);
     }
-    template<> PreparedSQL& bind_advance(int& index, uint8_t value) {
+    template<> PreparedSQL& bind_advance(int& index, unsigned char value) {
         return bind_int(index++, value);
     }
     
-    template<> PreparedSQL& bind_advance(int& index, int16_t value) {
+    template<> PreparedSQL& bind_advance(int& index, short value) {
         return bind_int(index++, value);
     }
-    template<> PreparedSQL& bind_advance(int& index, uint16_t value) {
-        return bind_int(index++, value);
-    }
-
-    template<> PreparedSQL& bind_advance(int& index, int32_t value) {
-        return bind_int(index++, value);
-    }
-    template<> PreparedSQL& bind_advance(int& index, uint32_t value) {
+    template<> PreparedSQL& bind_advance(int& index, unsigned short value) {
         return bind_int(index++, value);
     }
 
-    template<> PreparedSQL& bind_advance(int& index, int64_t value) {
+    template<> PreparedSQL& bind_advance(int& index, int value) {
+        return bind_int(index++, value);
+    }
+    template<> PreparedSQL& bind_advance(int& index, unsigned int value) {
+        return bind_int(index++, value);
+    }
+
+    template<> PreparedSQL& bind_advance(int& index, long value) {
         return bind_int64(index++, value);
     }
-    template<> PreparedSQL& bind_advance(int& index, uint64_t value) {
+    template<> PreparedSQL& bind_advance(int& index, unsigned long value) {
         return bind_int64(index++, value);
     }
 
