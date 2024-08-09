@@ -28,6 +28,7 @@ public:
 
 	std::string schema_sql() const;
 	std::string insert_sql() const;
+	std::string update_sql() const;
 
 	std::string name;
 	std::vector<std::string> fields;

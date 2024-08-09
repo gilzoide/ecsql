@@ -47,4 +47,24 @@ std::string Component::insert_sql() const {
 	return query;
 }
 
+std::string Component::update_sql() const {
+	std::string query;
+	query = "UPDATE ";
+	query += name;
+	query += "SET ";
+	bool first_it = true;
+	for (auto& it : fields) {
+		if (first_it) {
+			first_it = false;
+		}
+		else {
+			query += ", ";
+		}
+		query += it;
+		query += " = ?";
+	}
+	query += "WHERE entity_id = ?";
+	return query;
+}
+
 }
