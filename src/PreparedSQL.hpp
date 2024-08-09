@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <string_view>
 
 #include <sqlite3.h>
@@ -39,10 +38,28 @@ public:
     PreparedSQL& reset();
     int step();
 
+    struct RowIterator {
+        using value_type = SQLRow;
+
+        RowIterator& operator++();
+        RowIterator operator++(int _);
+        
+        SQLRow operator*() const;
+        SQLRow operator->() const;
+
+        bool operator==(RowIterator other) const;
+        bool operator!=(RowIterator other) const;
+
+        sqlite3_stmt *stmt;
+    };
+
+    RowIterator begin();
+    RowIterator end();
+
 private:
     template<typename T> PreparedSQL& bind_advance(int& index, T value) {
         reflect::for_each<T>([&](auto I) {
-            auto& field = reflect::get<I>(value);
+            auto&& field = reflect::get<I>(value);
             bind_advance<std::remove_cvref_t<decltype(field)>>(index, field);
         });
         return *this;
@@ -99,7 +116,7 @@ private:
         return bind_double(index++, value);
     }
 
-    template<> PreparedSQL& bind_advance(int& index, const char * value) {
+    template<> PreparedSQL& bind_advance(int& index, const char *value) {
         return bind_text(index++, value);
     }
 

@@ -1,7 +1,9 @@
-#include "PreparedSQL.hpp"
+#include <iostream>
+#include <stdexcept>
 
 #include <sqlite3.h>
-#include <stdexcept>
+
+#include "PreparedSQL.hpp"
 
 namespace ecsql {
 
@@ -57,6 +59,52 @@ PreparedSQL& PreparedSQL::reset() {
 }
 int PreparedSQL::step() {
     return sqlite3_step(stmt);
+}
+
+PreparedSQL::RowIterator PreparedSQL::begin() {
+    return PreparedSQL::RowIterator { stmt };
+}
+
+PreparedSQL::RowIterator PreparedSQL::end() {
+    return PreparedSQL::RowIterator { nullptr };
+}
+
+// RowIterator
+PreparedSQL::RowIterator& PreparedSQL::RowIterator::operator++() {
+    switch (sqlite3_step(stmt)) {
+        case SQLITE_ROW:
+            break;
+
+        default:
+            std::cerr << sqlite3_errmsg(sqlite3_db_handle(stmt)) << std::endl;
+            // fallthrough
+        case SQLITE_DONE:
+            stmt = nullptr;
+            break;
+    }
+    return *this;
+}
+
+PreparedSQL::RowIterator PreparedSQL::RowIterator::operator++(int _) {
+    auto retval = *this;
+    ++(*this);
+    return retval;
+}
+
+SQLRow PreparedSQL::RowIterator::operator*() const {
+    return stmt;
+}
+
+SQLRow PreparedSQL::RowIterator::operator->() const {
+    return stmt;
+}
+
+bool PreparedSQL::RowIterator::operator==(RowIterator other) const {
+    return stmt == other.stmt;
+}
+
+bool PreparedSQL::RowIterator::operator!=(RowIterator other) const {
+    return stmt != other.stmt;
 }
 
 }
