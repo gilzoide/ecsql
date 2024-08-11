@@ -1,19 +1,15 @@
 #pragma once
 
-#include <string_view>
-
 #include "entity.hpp"
 #include "sql_row.hpp"
-
-using namespace std;
 
 namespace ecsql {
 
 class PreparedSQL : public SQLRow {
 public:
     PreparedSQL() = default;
-    PreparedSQL(sqlite3 *db, const string_view& str);
-    PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent);
+    PreparedSQL(sqlite3 *db, std::string_view str);
+    PreparedSQL(sqlite3 *db, std::string_view str, bool is_persistent);
 
     PreparedSQL& bind_null(int index);
     PreparedSQL& bind_bool(int index, bool value);
@@ -21,7 +17,7 @@ public:
     PreparedSQL& bind_int64(int index, sqlite3_int64 value);
     PreparedSQL& bind_double(int index, double value);
     PreparedSQL& bind_text(int index, const char *value, int length = -1, void(*dtor)(void*) = SQLITE_STATIC);
-    PreparedSQL& bind_text(int index, const string_view& value, void(*dtor)(void*) = SQLITE_STATIC);
+    PreparedSQL& bind_text(int index, std::string_view value, void(*dtor)(void*) = SQLITE_STATIC);
 
     template<typename... Types>
     PreparedSQL& bind(int index, Types... values) {
@@ -120,7 +116,7 @@ private:
         return bind_text(index++, value);
     }
 
-    template<> PreparedSQL& bind_advance(int& index, const std::string_view& value) {
+    template<> PreparedSQL& bind_advance(int& index, std::string_view value) {
         return bind_text(index++, value);
     }
     

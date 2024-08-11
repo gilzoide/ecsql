@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include <reflect>
@@ -15,8 +16,8 @@ namespace ecsql {
 
 class Component {
 public:
-	Component(const std::string& name, const std::vector<std::string>& fields);
-	Component(const std::string& name, std::vector<std::string>&& fields);
+	Component(std::string_view name, const std::vector<std::string>& fields);
+	Component(std::string_view name, std::vector<std::string>&& fields);
 
 	template<typename T>
 	static Component from_type() {
@@ -30,7 +31,7 @@ public:
 		reflect::for_each<T>([&](auto I) {
 			fields.push_back(std::string(reflect::member_name<I, T>()));
 		});
-		return Component(component_name, fields);
+		return Component(component_name, std::move(fields));
 	}
 
 	void prepare(sqlite3 *db);

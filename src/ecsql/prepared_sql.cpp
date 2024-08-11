@@ -7,21 +7,21 @@
 
 namespace ecsql {
 
-static sqlite3_stmt *prepare_statement(sqlite3 *db, const string_view& str, bool is_persistent) {
+static sqlite3_stmt *prepare_statement(sqlite3 *db, std::string_view str, bool is_persistent) {
     sqlite3_stmt *stmt;
     int res = sqlite3_prepare_v3(db, str.data(), str.size(), is_persistent ? SQLITE_PREPARE_PERSISTENT : 0, &stmt, NULL);
     if (res != SQLITE_OK) {
-        throw runtime_error(sqlite3_errmsg(db));
+        throw std::runtime_error(sqlite3_errmsg(db));
     }
     return stmt;
 }
 
-PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str)
+PreparedSQL::PreparedSQL(sqlite3 *db, std::string_view str)
     : PreparedSQL(db, str, false)
 {
 }
 
-PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent)
+PreparedSQL::PreparedSQL(sqlite3 *db, std::string_view str, bool is_persistent)
     : SQLRow(std::shared_ptr<sqlite3_stmt>(prepare_statement(db, str, is_persistent), sqlite3_finalize))
 {
 }
@@ -50,7 +50,7 @@ PreparedSQL& PreparedSQL::bind_text(int index, const char *value, int length, vo
     sqlite3_bind_text(stmt.get(), index, value, length, dtor);
     return *this;
 }
-PreparedSQL& PreparedSQL::bind_text(int index, const string_view& value, void(*dtor)(void*)) {
+PreparedSQL& PreparedSQL::bind_text(int index, std::string_view value, void(*dtor)(void*)) {
     sqlite3_bind_text(stmt.get(), index, value.data(), value.length(), dtor);
     return *this;
 }
