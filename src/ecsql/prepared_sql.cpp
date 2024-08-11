@@ -65,20 +65,11 @@ int PreparedSQL::step() {
 }
 
 SQLRow PreparedSQL::step_single() {
-    switch (sqlite3_step(stmt.get())) {
-        case SQLITE_ROW:
-            return SQLRow(stmt);
-
-        case SQLITE_DONE:
-            return SQLRow();
-
-        default:
-            throw std::runtime_error(sqlite3_errmsg(sqlite3_db_handle(stmt.get())));
-    }
+    return *begin();
 }
 
 PreparedSQL::RowIterator PreparedSQL::begin() {
-    return PreparedSQL::RowIterator { stmt };
+    return ++PreparedSQL::RowIterator { stmt };
 }
 
 PreparedSQL::RowIterator PreparedSQL::end() {
