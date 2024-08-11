@@ -20,7 +20,7 @@ sqlite3 *create_db(const char *db_name) {
 	if (res != SQLITE_OK) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
-	res = sqlite3_exec(db, "CREATE TABLE entity(id INTEGER PRIMARY KEY, name TEXT)", nullptr, nullptr, nullptr);
+	res = sqlite3_exec(db, Entity::schema_sql(), nullptr, nullptr, nullptr);
 	if (res != SQLITE_OK) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
