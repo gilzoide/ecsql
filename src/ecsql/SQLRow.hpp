@@ -14,7 +14,7 @@ namespace ecsql {
 class PreparedSQL;
 
 struct SQLRow {
-    SQLRow(sqlite3_stmt *stmt);
+    SQLRow(std::shared_ptr<sqlite3_stmt> stmt);
 
     bool column_bool(int index) const;
     int column_int(int index) const;
@@ -38,7 +38,7 @@ struct SQLRow {
     }
 
 protected:
-    sqlite3_stmt *stmt;
+    std::shared_ptr<sqlite3_stmt> stmt;
 
     template<typename T> T get_advance(int& index) const {
         T value;
@@ -109,7 +109,7 @@ protected:
     }
     
     template<> std::string_view get_advance(int& index) const {
-        int size = sqlite3_column_bytes(stmt, index);
+        int size = sqlite3_column_bytes(stmt.get(), index);
         const char *text = get_advance<const char *>(index);
         return std::string_view(text, size);
     }

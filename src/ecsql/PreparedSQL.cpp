@@ -7,58 +7,59 @@
 
 namespace ecsql {
 
+static sqlite3_stmt *prepare_statement(sqlite3 *db, const string_view& str, bool is_persistent) {
+    sqlite3_stmt *stmt;
+    int res = sqlite3_prepare_v3(db, str.data(), str.size(), is_persistent ? SQLITE_PREPARE_PERSISTENT : 0, &stmt, NULL);
+    if (res != SQLITE_OK) {
+        throw runtime_error(sqlite3_errmsg(db));
+    }
+    return stmt;
+}
+
 PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str)
     : PreparedSQL(db, str, false)
 {
 }
 PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent)
-    : SQLRow(nullptr)
+    : SQLRow(std::shared_ptr<sqlite3_stmt>(prepare_statement(db, str, is_persistent), sqlite3_finalize))
 {
-    int res = sqlite3_prepare_v3(db, str.data(), str.size(), is_persistent ? SQLITE_PREPARE_PERSISTENT : 0, &stmt, NULL);
-    if (res != SQLITE_OK) {
-        throw runtime_error(sqlite3_errmsg(db));
-    }
-}
-
-PreparedSQL::~PreparedSQL() {
-    sqlite3_finalize(stmt);
 }
 
 PreparedSQL& PreparedSQL::bind_null(int index) {
-    sqlite3_bind_null(stmt, index);
+    sqlite3_bind_null(stmt.get(), index);
     return *this;
 }
 PreparedSQL& PreparedSQL::bind_bool(int index, bool value) {
-    sqlite3_bind_int(stmt, index, value);
+    sqlite3_bind_int(stmt.get(), index, value);
     return *this;
 }
 PreparedSQL& PreparedSQL::bind_int(int index, int value) {
-    sqlite3_bind_int(stmt, index, value);
+    sqlite3_bind_int(stmt.get(), index, value);
     return *this;
 }
 PreparedSQL& PreparedSQL::bind_int64(int index, sqlite3_int64 value) {
-    sqlite3_bind_int64(stmt, index, value);
+    sqlite3_bind_int64(stmt.get(), index, value);
     return *this;
 }
 PreparedSQL& PreparedSQL::bind_double(int index, double value) {
-    sqlite3_bind_double(stmt, index, value);
+    sqlite3_bind_double(stmt.get(), index, value);
     return *this;
 }
 PreparedSQL& PreparedSQL::bind_text(int index, const char *value, int length, void(*dtor)(void*)) {
-    sqlite3_bind_text(stmt, index, value, length, dtor);
+    sqlite3_bind_text(stmt.get(), index, value, length, dtor);
     return *this;
 }
 PreparedSQL& PreparedSQL::bind_text(int index, const string_view& value, void(*dtor)(void*)) {
-    sqlite3_bind_text(stmt, index, value.data(), value.length(), dtor);
+    sqlite3_bind_text(stmt.get(), index, value.data(), value.length(), dtor);
     return *this;
 }
 
 PreparedSQL& PreparedSQL::reset() {
-    sqlite3_reset(stmt);
+    sqlite3_reset(stmt.get());
     return *this;
 }
 int PreparedSQL::step() {
-    return sqlite3_step(stmt);
+    return sqlite3_step(stmt.get());
 }
 
 PreparedSQL::RowIterator PreparedSQL::begin() {
@@ -71,12 +72,12 @@ PreparedSQL::RowIterator PreparedSQL::end() {
 
 // RowIterator
 PreparedSQL::RowIterator& PreparedSQL::RowIterator::operator++() {
-    switch (sqlite3_step(stmt)) {
+    switch (sqlite3_step(stmt.get())) {
         case SQLITE_ROW:
             break;
 
         default:
-            std::cerr << sqlite3_errmsg(sqlite3_db_handle(stmt)) << std::endl;
+            std::cerr << sqlite3_errmsg(sqlite3_db_handle(stmt.get())) << std::endl;
             // fallthrough
         case SQLITE_DONE:
             stmt = nullptr;

@@ -14,7 +14,6 @@ class PreparedSQL : public SQLRow {
 public:
     PreparedSQL(sqlite3 *db, const string_view& str);
     PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent);
-    ~PreparedSQL();
 
     PreparedSQL& bind_null(int index);
     PreparedSQL& bind_bool(int index, bool value);
@@ -50,7 +49,7 @@ public:
         bool operator==(RowIterator other) const;
         bool operator!=(RowIterator other) const;
 
-        sqlite3_stmt *stmt;
+        std::shared_ptr<sqlite3_stmt> stmt;
     };
 
     RowIterator begin();
