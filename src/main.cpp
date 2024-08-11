@@ -2,10 +2,8 @@
 #include <cmath>
 
 #include <sqlite3.h>
-#include "benchmark.hpp"
-#include "component.hpp"
-#include "ecsql.hpp"
-#include "SQLRow.hpp"
+#include "ecsql/benchmark.hpp"
+#include "ecsql/ecsql.hpp"
 #include "raylib.h"
 
 using namespace std;

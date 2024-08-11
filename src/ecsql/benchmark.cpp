@@ -13,6 +13,10 @@ Benchmark::~Benchmark() {
     }
 }
 
+void Benchmark::restart() {
+    start = std::chrono::high_resolution_clock::now();
+}
+
 double Benchmark::get_duration_ms() const {
     auto now = std::chrono::high_resolution_clock::now();
     return (now - start).count() / (std::chrono::high_resolution_clock::duration::period::den / 1000.0);

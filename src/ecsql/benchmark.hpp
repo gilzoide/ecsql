@@ -9,6 +9,7 @@ public:
     Benchmark(const std::string& name, bool print_on_destroy = true);
     ~Benchmark();
 
+    void restart();
     double get_duration_ms() const;
 
     void print() const;
