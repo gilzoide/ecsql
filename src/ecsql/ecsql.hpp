@@ -10,11 +10,10 @@
 #include <sqlite3.h>
 #include <vector>
 
+#include "entity.hpp"
 #include "component.hpp"
 #include "PreparedSQL.hpp"
 #include "system.hpp"
-
-typedef sqlite3_int64 entity_id;
 
 namespace ecsql {
 
@@ -28,18 +27,13 @@ public:
     Ecsql(sqlite3 *db);
     ~Ecsql();
 
-    template<typename T> void register_component() {
-        register_component(Component::from_type<T>());
-    }
-    template<typename T> void register_component(const std::string& name) {
-        register_component(Component::from_type<T>(name));
-    }
-    void register_component(const Component& component);
-    void register_system(const System& system);
+    void register_component(Component& component);
+    void register_component(Component&& component);
+    void register_system(System& system);
     void register_system(System&& system);
 
-    entity_id create_entity();
-    bool delete_entity(entity_id id);
+    Entity create_entity();
+    bool delete_entity(Entity id);
 
     void inside_transaction(std::function<void()> f);
     void inside_transaction(std::function<void(Ecsql&)> f);

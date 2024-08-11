@@ -1,3 +1,6 @@
+#include <sqlite3.h>
+
+#include "SQLRow.hpp"
 #include "component.hpp"
 
 namespace ecsql {
@@ -7,10 +10,21 @@ Component::Component(const std::string& name, const std::vector<std::string>& fi
 	, fields(fields)
 {
 }
+
 Component::Component(const std::string& name, std::vector<std::string>&& fields)
 	: name(name)
 	, fields(fields)
 {
+}
+
+void Component::prepare(sqlite3 *db) {
+	int res = sqlite3_exec(db, schema_sql().c_str(), nullptr, nullptr, nullptr);
+	if (res != SQLITE_OK) {
+		throw std::runtime_error(sqlite3_errmsg(db));
+	}
+
+	insert_stmt = PreparedSQL(db, insert_sql(), true);
+	update_stmt = PreparedSQL(db, update_sql(), true);
 }
 
 std::string Component::schema_sql() const {
@@ -51,7 +65,7 @@ std::string Component::update_sql() const {
 	std::string query;
 	query = "UPDATE ";
 	query += name;
-	query += "SET ";
+	query += " SET ";
 	bool first_it = true;
 	for (auto& it : fields) {
 		if (first_it) {

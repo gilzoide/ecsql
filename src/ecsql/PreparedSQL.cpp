@@ -20,6 +20,7 @@ PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str)
     : PreparedSQL(db, str, false)
 {
 }
+
 PreparedSQL::PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent)
     : SQLRow(std::shared_ptr<sqlite3_stmt>(prepare_statement(db, str, is_persistent), sqlite3_finalize))
 {
@@ -58,8 +59,22 @@ PreparedSQL& PreparedSQL::reset() {
     sqlite3_reset(stmt.get());
     return *this;
 }
+
 int PreparedSQL::step() {
     return sqlite3_step(stmt.get());
+}
+
+SQLRow PreparedSQL::step_single() {
+    switch (sqlite3_step(stmt.get())) {
+        case SQLITE_ROW:
+            return SQLRow(stmt);
+
+        case SQLITE_DONE:
+            return SQLRow();
+
+        default:
+            throw std::runtime_error(sqlite3_errmsg(sqlite3_db_handle(stmt.get())));
+    }
 }
 
 PreparedSQL::RowIterator PreparedSQL::begin() {

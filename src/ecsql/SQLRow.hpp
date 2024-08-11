@@ -6,14 +6,14 @@
 #include <tuple>
 #include <utility>
 
+#include "entity.hpp"
 #include "reflect.hpp"
 #include <sqlite3.h>
 
 namespace ecsql {
 
-class PreparedSQL;
-
 struct SQLRow {
+    SQLRow() = default;
     SQLRow(std::shared_ptr<sqlite3_stmt> stmt);
 
     bool column_bool(int index) const;
@@ -105,13 +105,19 @@ protected:
     }
     
     template<> std::string get_advance(int& index) const {
-        return (const char *) column_text(index++);
+        int size = sqlite3_column_bytes(stmt.get(), index);
+        const char *text = get_advance<const char *>(index);
+        return std::string(text, size);
     }
     
     template<> std::string_view get_advance(int& index) const {
         int size = sqlite3_column_bytes(stmt.get(), index);
         const char *text = get_advance<const char *>(index);
         return std::string_view(text, size);
+    }
+    
+    template<> Entity get_advance(int& index) const {
+        return column_int64(index++);
     }
 };
 

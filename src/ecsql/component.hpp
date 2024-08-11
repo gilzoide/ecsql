@@ -2,7 +2,13 @@
 
 #include <string>
 #include <vector>
+
+#include "PreparedSQL.hpp"
+#include "ecsql.hpp"
+#include "entity.hpp"
 #include "reflect.hpp"
+
+typedef struct sqlite3 sqlite3;
 
 namespace ecsql {
 
@@ -26,12 +32,28 @@ public:
 		return Component(component_name, fields);
 	}
 
+	void prepare(sqlite3 *db);
+
 	std::string schema_sql() const;
 	std::string insert_sql() const;
 	std::string update_sql() const;
 
+	template<typename... Types>
+	void insert(Entity entity, Types... values) {
+		insert_stmt.reset().bind(1, entity, values...).step_single();
+	}
+	
+	template<typename... Types>
+	void update(Entity entity, Types... values) {
+		update_stmt.reset().bind(1, entity, values...).step_single();
+	}
+
+protected:
 	std::string name;
 	std::vector<std::string> fields;
+
+	PreparedSQL insert_stmt;
+	PreparedSQL update_stmt;
 };
 
 }

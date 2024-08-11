@@ -72,7 +72,7 @@ int main(int argc, const char **argv) {
 	// Systems
 	ecsql_world.register_system({
 		"draw_rects",
-		"SELECT x, y, width, height, r, g, b, a FROM rectangle NATURAL JOIN color",
+		"SELECT x, y, width, height, r, g, b, a FROM rectangle INNER JOIN color USING(entity_id)",
 		[](auto& sql) {
 			for (SQLRow row : sql) {
 				row.get<ColoredRectangle>(0).Draw();
@@ -115,21 +115,9 @@ int main(int argc, const char **argv) {
 	{
 		Benchmark b("Insert Rects+Color");
 		ecsql_world.inside_transaction([&] {
-			auto db = ecsql_world.get_db();
-			PreparedSQL insert_rectangle(db, rectangle.insert_sql());
-			PreparedSQL insert_color(db, color.insert_sql());
 			for (int i = 0; i < ENTITIES; i++) {
-				int res = insert_rectangle.reset().bind(1, i, entity_vector[i].rect).step();
-				if (res != SQLITE_DONE) {
-					cout << sqlite3_errmsg(db) << endl;
-					break;
-				}
-
-				res = insert_color.reset().bind(1, i, entity_vector[i].color).step();
-				if (res != SQLITE_DONE) {
-					cout << sqlite3_errmsg(db) << endl;
-					break;
-				}
+				rectangle.insert(i, entity_vector[i].rect);
+				color.insert(i, entity_vector[i].color);
 			}
 		});
 	}

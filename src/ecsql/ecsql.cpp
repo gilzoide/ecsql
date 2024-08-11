@@ -56,16 +56,16 @@ Ecsql::~Ecsql() {
 	db = nullptr;
 }
 
-void Ecsql::register_component(const Component& component) {
-	int res = sqlite3_exec(db, component.schema_sql().c_str(), nullptr, nullptr, nullptr);
-	if (res != SQLITE_OK) {
-		throw std::runtime_error(sqlite3_errmsg(db));
-	}
+void Ecsql::register_component(Component& component) {
+	component.prepare(db);
+}
+void Ecsql::register_component(Component&& component) {
+	component.prepare(db);
 }
 
-void Ecsql::register_system(const System& system) {
-	System copy = system;
-	register_system(std::move(copy));
+void Ecsql::register_system(System& system) {
+	system.prepare(db);
+	systems.push_back(system);
 }
 
 void Ecsql::register_system(System&& system) {
@@ -73,20 +73,12 @@ void Ecsql::register_system(System&& system) {
 	systems.push_back(system);
 }
 
-entity_id Ecsql::create_entity() {
-	int res = create_entity_stmt.reset().step();
-	if (res != SQLITE_OK && res != SQLITE_ROW && res != SQLITE_DONE) {
-		throw std::runtime_error(sqlite3_errmsg(db));
-	}
-	return create_entity_stmt.column_int64(0);
+Entity Ecsql::create_entity() {
+	return create_entity_stmt.reset().step_single().get<Entity>(0);
 }
 
-bool Ecsql::delete_entity(entity_id id) {
-	int res = delete_entity_stmt.reset().bind(1, id).step();
-	if (res != SQLITE_OK && res != SQLITE_ROW && res != SQLITE_DONE) {
-		throw std::runtime_error(sqlite3_errmsg(db));
-	}
-	return delete_entity_stmt.column_bool(0);
+bool Ecsql::delete_entity(Entity id) {
+	return delete_entity_stmt.reset().bind(1, id).step_single().get<bool>(0);
 }
 
 void Ecsql::inside_transaction(std::function<void()> f) {

@@ -2,6 +2,7 @@
 
 #include <string_view>
 
+#include "entity.hpp"
 #include "SQLRow.hpp"
 
 using namespace std;
@@ -10,6 +11,7 @@ namespace ecsql {
 
 class PreparedSQL : public SQLRow {
 public:
+    PreparedSQL() = default;
     PreparedSQL(sqlite3 *db, const string_view& str);
     PreparedSQL(sqlite3 *db, const string_view& str, bool is_persistent);
 
@@ -34,6 +36,7 @@ public:
 
     PreparedSQL& reset();
     int step();
+    SQLRow step_single();
 
     struct RowIterator {
         using value_type = SQLRow;
@@ -119,6 +122,10 @@ private:
 
     template<> PreparedSQL& bind_advance(int& index, const std::string_view& value) {
         return bind_text(index++, value);
+    }
+    
+    template<> PreparedSQL& bind_advance(int& index, Entity value) {
+        return bind_int64(index++, value.id);
     }
 };
 
