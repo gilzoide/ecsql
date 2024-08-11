@@ -26,6 +26,8 @@ struct SQLRow {
 
     bool column_is_null(int index) const;
 
+    operator bool() const;
+
     template<typename... Types> auto get(int index) const {
         if constexpr (sizeof...(Types) == 1) {
             return get_advance<Types...>(index);

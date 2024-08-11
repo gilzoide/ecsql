@@ -31,4 +31,8 @@ bool SQLRow::column_is_null(int index) const {
     return sqlite3_column_type(stmt.get(), index) == SQLITE_NULL;
 }
 
+SQLRow::operator bool() const {
+    return stmt != nullptr;
+}
+
 }
