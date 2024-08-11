@@ -3,6 +3,8 @@
 
 #include <sqlite3.h>
 #include "ecsql/benchmark.hpp"
+#include "ecsql/component.hpp"
+#include "ecsql/system.hpp"
 #include "ecsql/ecsql.hpp"
 #include "raylib.h"
 

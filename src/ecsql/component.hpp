@@ -5,9 +5,9 @@
 
 #include <reflect>
 
-#include "PreparedSQL.hpp"
 #include "ecsql.hpp"
 #include "entity.hpp"
+#include "prepared_sql.hpp"
 
 typedef struct sqlite3 sqlite3;
 

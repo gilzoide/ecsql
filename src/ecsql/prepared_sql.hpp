@@ -3,7 +3,7 @@
 #include <string_view>
 
 #include "entity.hpp"
-#include "SQLRow.hpp"
+#include "sql_row.hpp"
 
 using namespace std;
 

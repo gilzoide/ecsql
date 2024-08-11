@@ -1,7 +1,7 @@
 #include <sqlite3.h>
 
-#include "SQLRow.hpp"
 #include "component.hpp"
+#include "sql_row.hpp"
 
 namespace ecsql {
 

@@ -3,7 +3,7 @@
 
 #include <sqlite3.h>
 
-#include "PreparedSQL.hpp"
+#include "prepared_sql.hpp"
 
 namespace ecsql {
 

@@ -1,4 +1,4 @@
-#include "SQLRow.hpp"
+#include "sql_row.hpp"
 
 namespace ecsql {
 

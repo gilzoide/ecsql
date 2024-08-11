@@ -11,13 +11,12 @@
 #include <vector>
 
 #include "entity.hpp"
-#include "component.hpp"
-#include "PreparedSQL.hpp"
-#include "system.hpp"
+#include "prepared_sql.hpp"
 
 namespace ecsql {
 
 class Component;
+class System;
 class SQLRow;
 
 class Ecsql {
