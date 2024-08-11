@@ -1,3 +1,6 @@
 [submodule "libs/raylib"]
 	path = libs/raylib
 	url = https://github.com/raysan5/raylib.git
+[submodule "libs/reflect"]
+	path = libs/reflect
+	url = https://github.com/qlibs/reflect.git

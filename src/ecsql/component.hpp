@@ -3,10 +3,11 @@
 #include <string>
 #include <vector>
 
+#include <reflect>
+
 #include "PreparedSQL.hpp"
 #include "ecsql.hpp"
 #include "entity.hpp"
-#include "reflect.hpp"
 
 typedef struct sqlite3 sqlite3;
 

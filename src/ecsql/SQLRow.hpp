@@ -6,9 +6,10 @@
 #include <tuple>
 #include <utility>
 
-#include "entity.hpp"
-#include "reflect.hpp"
+#include <reflect>
 #include <sqlite3.h>
+
+#include "entity.hpp"
 
 namespace ecsql {
 

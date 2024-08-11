@@ -8,5 +8,5 @@ add_subdirectory(sqlite-amalgamation)
 file(GLOB_RECURSE src "src/*.cpp")
 add_executable(ecsql ${src})
 
-target_link_libraries(ecsql raylib sqlite3)
+target_link_libraries(ecsql sqlite3 libs)
 set_target_properties(ecsql PROPERTIES CXX_STANDARD 20)
