@@ -117,9 +117,9 @@ int main(int argc, const char **argv) {
 	{
 		Benchmark b("Insert Rects+Color");
 		ecsql_world.inside_transaction([&] {
-			for (int i = 0; i < ENTITIES; i++) {
-				rectangle.insert(i, entity_vector[i].rect);
-				color.insert(i, entity_vector[i].color);
+			for (int entity_id = 0; entity_id < ENTITIES; entity_id++) {
+				rectangle.insert(entity_id, entity_vector[entity_id].rect);
+				color.insert(entity_id, entity_vector[entity_id].color);
 			}
 		});
 	}

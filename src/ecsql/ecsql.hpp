@@ -32,6 +32,7 @@ public:
     void register_system(System&& system);
 
     Entity create_entity();
+    Entity create_entity(std::string_view name);
     bool delete_entity(Entity id);
 
     void inside_transaction(std::function<void()> f);

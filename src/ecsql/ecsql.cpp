@@ -46,7 +46,7 @@ Ecsql::Ecsql(sqlite3 *db)
 	, begin_stmt(db, "BEGIN", true)
 	, commit_stmt(db, "COMMIT", true)
 	, rollback_stmt(db, "ROLLBACK", true)
-	, create_entity_stmt(db, "INSERT INTO entity DEFAULT VALUES", true)
+	, create_entity_stmt(db, "INSERT INTO entity(name) VALUES(?)", true)
 	, delete_entity_stmt(db, "DELETE FROM entity WHERE id = ?", true)
 {
 }
@@ -74,7 +74,17 @@ void Ecsql::register_system(System&& system) {
 }
 
 Entity Ecsql::create_entity() {
-	return create_entity_stmt.reset().step_single().get<Entity>(0);
+	return create_entity_stmt.reset()
+		.bind(1, nullptr)
+		.step_single()
+		.get<Entity>(0);
+}
+
+Entity Ecsql::create_entity(std::string_view name) {
+	return create_entity_stmt.reset()
+		.bind(1, name)
+		.step_single()
+		.get<Entity>(0);
 }
 
 bool Ecsql::delete_entity(Entity id) {
@@ -82,15 +92,9 @@ bool Ecsql::delete_entity(Entity id) {
 }
 
 void Ecsql::inside_transaction(std::function<void()> f) {
-	begin_stmt.reset().step();
-	try {
+	inside_transaction([f](Ecsql& world) {
 		f();
-		commit_stmt.reset().step();
-	}
-	catch (std::runtime_error& err) {
-		std::cerr << "Runtime error: " << err.what() << std::endl;
-		rollback_stmt.reset().step();
-	}
+	});
 }
 
 void Ecsql::inside_transaction(std::function<void(Ecsql&)> f) {
