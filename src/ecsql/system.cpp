@@ -4,7 +4,7 @@
 namespace ecsql {
 
 System::System(const std::string& name, const std::string& sql, std::function<void(PreparedSQL&)> implementation)
-	: System(name, std::vector<std::string> { sql }, [=](std::vector<PreparedSQL>& sqls) { implementation(sqls[0]); })
+	: System(name, { sql }, [implementation](std::vector<PreparedSQL>& sqls) { implementation(sqls[0]); })
 {
 }
 
@@ -16,11 +16,14 @@ System::System(const std::string& name, const std::vector<std::string>& sql, std
 {
 }
 
-void System::operator()(sqlite3 *db) {
+void System::operator()() {
+	implementation(prepared_sql);
+}
+
+void System::prepare(sqlite3 *db) {
 	while (prepared_sql.size() < sql.size()) {
 		prepared_sql.emplace_back(db, sql[prepared_sql.size()], true);
 	}
-	implementation(prepared_sql);
 }
 
 }

@@ -64,6 +64,12 @@ void Ecsql::register_component(const Component& component) {
 }
 
 void Ecsql::register_system(const System& system) {
+	System copy = system;
+	register_system(std::move(copy));
+}
+
+void Ecsql::register_system(System&& system) {
+	system.prepare(db);
 	systems.push_back(system);
 }
 
@@ -110,7 +116,7 @@ void Ecsql::inside_transaction(std::function<void(Ecsql&)> f) {
 void Ecsql::update() {
 	inside_transaction([](Ecsql& self) {
 		for (auto& it : self.systems) {
-			it(self.db);
+			it();
 		}
 	});
 }

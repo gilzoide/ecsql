@@ -2,8 +2,6 @@
 
 #include <string_view>
 
-#include <sqlite3.h>
-
 #include "SQLRow.hpp"
 
 using namespace std;

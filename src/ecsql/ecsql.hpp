@@ -14,7 +14,6 @@
 #include "PreparedSQL.hpp"
 #include "system.hpp"
 
-typedef struct sqlite3 sqlite3;
 typedef sqlite3_int64 entity_id;
 
 namespace ecsql {
@@ -37,6 +36,7 @@ public:
     }
     void register_component(const Component& component);
     void register_system(const System& system);
+    void register_system(System&& system);
 
     entity_id create_entity();
     bool delete_entity(entity_id id);
