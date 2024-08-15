@@ -4,3 +4,6 @@
 [submodule "libs/reflect"]
 	path = libs/reflect
 	url = https://github.com/qlibs/reflect.git
+[submodule "libs/flyweight"]
+	path = libs/flyweight
+	url = https://github.com/gilzoide/flyweight.hpp.git

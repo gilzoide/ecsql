@@ -1,5 +1,9 @@
 add_library(libs INTERFACE)
 
+# Flyweight.hpp
+add_subdirectory(flyweight)
+target_link_libraries(libs INTERFACE flyweight)
+
 # Raylib
 add_subdirectory(raylib)
 target_compile_options(raylib PRIVATE "-w")  # disable warnings
