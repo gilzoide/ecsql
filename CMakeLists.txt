@@ -7,5 +7,10 @@ add_subdirectory(libs)
 file(GLOB_RECURSE src "src/*.cpp")
 add_executable(ecsql ${src})
 
+file(GLOB_RECURSE textures "src/textures/*.png")
+file(COPY ${textures}
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/textures
+)
+
 target_link_libraries(ecsql libs)
 set_target_properties(ecsql PROPERTIES CXX_STANDARD 20)

@@ -1,14 +1,17 @@
+#include <cstdlib>
 #include <iostream>
 #include <cmath>
 
 #include <sqlite3.h>
+#include <string>
+#include "components/texture_reference.hpp"
 #include "ecsql/benchmark.hpp"
 #include "ecsql/component.hpp"
 #include "ecsql/system.hpp"
 #include "ecsql/ecsql.hpp"
+#include "flyweights/texture_flyweight.hpp"
 #include "raylib.h"
 
-using namespace std;
 using namespace ecsql;
 
 struct ColoredRectangle {
@@ -63,6 +66,13 @@ void game_loop(Ecsql& world, const std::vector<ColoredRectangle>& arrayzao) {
 }
 
 int main(int argc, const char **argv) {
+	const char *exe_dir_path = GetDirectoryPath(argv[0]);
+	if (exe_dir_path && exe_dir_path[0]) {
+		ChangeDirectory(exe_dir_path);
+	}
+
+	InitWindow(800, 600, "ECSQL");
+
 	Ecsql ecsql_world(getenv("ECSQL_DB"));
 
 	// Components
@@ -70,6 +80,8 @@ int main(int argc, const char **argv) {
 	Component color = Component::from_type<Color>("color");
 	ecsql_world.register_component(rectangle);
 	ecsql_world.register_component(color);
+	
+	TextureReference::register_component(ecsql_world);
 
 	// Systems
 	ecsql_world.register_system({
@@ -82,11 +94,27 @@ int main(int argc, const char **argv) {
 		}
 	});
 
+	ecsql_world.register_system({
+		"draw_image",
+		"SELECT path FROM TextureReference",
+		[](auto& sql) {
+			for (SQLRow row : sql) {
+				auto texref = row.get<TextureReference>(0).get();
+				DrawTexture(texref, 200, 200, WHITE);
+			}
+		}
+	});
+
+	ecsql_world.inside_transaction([&] {
+		auto img_id = ecsql_world.create_entity("texture_test");
+		TextureReferenceComponent.insert(img_id, "textures/chick.png");
+	});
+
 	const int ENTITIES = 10'000;
 	// const int ENTITIES = 1'000;
 	// const int ENTITIES = 100;
 	std::vector<ColoredRectangle> entity_vector;
-	cout << "Usando " << ENTITIES << " entidades" << endl;
+	std::cout << "Usando " << ENTITIES << " entidades" << std::endl;
 	{
 		Benchmark b("Insert entities");
 		ecsql_world.inside_transaction([&] {
@@ -124,7 +152,6 @@ int main(int argc, const char **argv) {
 		});
 	}
 	
-	InitWindow(800, 600, "ECSQL");
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
 		game_loop(ecsql_world, entity_vector);
