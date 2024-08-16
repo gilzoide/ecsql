@@ -47,9 +47,13 @@ static void ecsql_preupdate_hook(
 		case SQLITE_INSERT:
 			world->on_insert(zName);
 			break;
-		
+
 		case SQLITE_DELETE:
 			world->on_delete(zName);
+			break;
+
+		case SQLITE_UPDATE:
+			world->on_update(zName);
 			break;
 	}
 }
@@ -98,33 +102,24 @@ void Ecsql::register_system(System&& system) {
 }
 
 void Ecsql::register_on_insert_system(const HookSystem& system) {
-	auto it = on_insert_systems.find(system.component_name);
-	if (it == on_insert_systems.end()) {
-		it = on_insert_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
-	}
-	it->second.push_back(system);
+	register_prehook(on_insert_systems, system);
 }
 void Ecsql::register_on_insert_system(HookSystem&& system) {
-	auto it = on_insert_systems.find(system.component_name);
-	if (it == on_insert_systems.end()) {
-		it = on_insert_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
-	}
-	it->second.push_back(system);
+	register_prehook(on_insert_systems, system);
 }
 
 void Ecsql::register_on_delete_system(const HookSystem& system) {
-	auto it = on_delete_systems.find(system.component_name);
-	if (it == on_delete_systems.end()) {
-		it = on_delete_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
-	}
-	it->second.push_back(system);
+	register_prehook(on_delete_systems, system);
 }
 void Ecsql::register_on_delete_system(HookSystem&& system) {
-	auto it = on_delete_systems.find(system.component_name);
-	if (it == on_delete_systems.end()) {
-		it = on_delete_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
-	}
-	it->second.push_back(system);
+	register_prehook(on_delete_systems, system);
+}
+
+void Ecsql::register_on_update_system(const HookSystem& system) {
+	register_prehook(on_update_systems, system);
+}
+void Ecsql::register_on_update_system(HookSystem&& system) {
+	register_prehook(on_update_systems, system);
 }
 
 Entity Ecsql::create_entity() {
@@ -172,21 +167,39 @@ void Ecsql::update() {
 }
 
 void Ecsql::on_insert(const char *table) {
-	auto it = on_insert_systems.find(table);
-	if (it != on_insert_systems.end()) {
-		SQLHookRow row { db, true };
-		for (auto& system : it->second) {
-			system(row);
-		}
-	}
+	execute_prehook(table, on_insert_systems);
 }
 
 void Ecsql::on_delete(const char *table) {
-	auto it = on_delete_systems.find(table);
-	if (it != on_delete_systems.end()) {
-		SQLHookRow row { db, false };
+	execute_prehook(table, on_delete_systems);
+}
+
+void Ecsql::on_update(const char *table) {
+	execute_prehook(table, on_update_systems);
+}
+
+void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system) {
+	auto it = map.find(system.component_name);
+	if (it == map.end()) {
+		it = map.emplace(system.component_name, std::vector<HookSystem>{}).first;
+	}
+	it->second.push_back(system);
+}
+void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, HookSystem&& system) {
+	auto it = map.find(system.component_name);
+	if (it == map.end()) {
+		it = map.emplace(system.component_name, std::vector<HookSystem>{}).first;
+	}
+	it->second.push_back(system);
+}
+
+void Ecsql::execute_prehook(const char *table, const std::unordered_map<std::string, std::vector<HookSystem>>& map) {
+	auto it = map.find(table);
+	if (it != map.end()) {
+		SQLHookRow old_row { db, false };
+		SQLHookRow new_row { db, true };
 		for (auto& system : it->second) {
-			system(row);
+			system(old_row, new_row);
 		}
 	}
 }

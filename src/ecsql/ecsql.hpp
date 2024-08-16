@@ -37,6 +37,9 @@ public:
     
     void register_on_delete_system(const HookSystem& system);
     void register_on_delete_system(HookSystem&& system);
+    
+    void register_on_update_system(const HookSystem& system);
+    void register_on_update_system(HookSystem&& system);
 
     Entity create_entity();
     Entity create_entity(std::string_view name);
@@ -48,6 +51,7 @@ public:
     void update();
     void on_insert(const char *table);
     void on_delete(const char *table);
+    void on_update(const char *table);
 
     sqlite3 *get_db() const;
 
@@ -62,6 +66,11 @@ private:
     std::vector<System> systems;
     std::unordered_map<std::string, std::vector<HookSystem>> on_insert_systems;
     std::unordered_map<std::string, std::vector<HookSystem>> on_delete_systems;
+    std::unordered_map<std::string, std::vector<HookSystem>> on_update_systems;
+
+    void register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system);
+    void register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, HookSystem&& system);
+    void execute_prehook(const char *table, const std::unordered_map<std::string, std::vector<HookSystem>>& map);
 };
 
 }

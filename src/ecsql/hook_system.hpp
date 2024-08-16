@@ -17,14 +17,14 @@ public:
     template<typename Fn>
 	HookSystem(std::string_view component_name, Fn&& implementation)
         : component_name(component_name)
-        , implementation([=](SQLHookRow& row) { implementation(row); })
+        , implementation([=](SQLHookRow& old_row, SQLHookRow& new_row) { implementation(old_row, new_row); })
     {
     }
 
-	void operator()(SQLHookRow& row);
+	void operator()(SQLHookRow& old_row, SQLHookRow& new_row) const;
 
 	std::string component_name;
-	std::function<void(SQLHookRow&)> implementation;
+	std::function<void(SQLHookRow&, SQLHookRow&)> implementation;
 };
 
 }
