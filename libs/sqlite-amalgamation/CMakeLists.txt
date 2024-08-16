@@ -19,3 +19,5 @@ set_source_files_properties("sqlite3.c"
         -DSQLITE_ENABLE_GEOPOLY \
     "
 )
+target_include_directories(sqlite3 PUBLIC .)
+target_compile_definitions(sqlite3 PUBLIC "SQLITE_ENABLE_PREUPDATE_HOOK")

@@ -1,14 +1,13 @@
 #pragma once
 
 #include <functional>
-#include <initializer_list>
-#include <sstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #include <sqlite3.h>
-#include <vector>
 
 #include "entity.hpp"
 #include "prepared_sql.hpp"
@@ -16,6 +15,7 @@
 namespace ecsql {
 
 class Component;
+class HookSystem;
 class System;
 class SQLRow;
 
@@ -28,8 +28,15 @@ public:
 
     void register_component(Component& component);
     void register_component(Component&& component);
+    
     void register_system(System& system);
     void register_system(System&& system);
+    
+    void register_on_insert_system(const HookSystem& system);
+    void register_on_insert_system(HookSystem&& system);
+    
+    void register_on_delete_system(const HookSystem& system);
+    void register_on_delete_system(HookSystem&& system);
 
     Entity create_entity();
     Entity create_entity(std::string_view name);
@@ -39,6 +46,8 @@ public:
     void inside_transaction(std::function<void(Ecsql&)> f);
 
     void update();
+    void on_insert(const char *table);
+    void on_delete(const char *table);
 
     sqlite3 *get_db() const;
 
@@ -51,6 +60,8 @@ private:
     PreparedSQL delete_entity_stmt;
 
     std::vector<System> systems;
+    std::unordered_map<std::string, std::vector<HookSystem>> on_insert_systems;
+    std::unordered_map<std::string, std::vector<HookSystem>> on_delete_systems;
 };
 
 }

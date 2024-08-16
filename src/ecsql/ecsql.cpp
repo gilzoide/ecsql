@@ -5,6 +5,8 @@
 
 #include "ecsql.hpp"
 #include "component.hpp"
+#include "hook_system.hpp"
+#include "sql_hook_row.hpp"
 #include "sql_row.hpp"
 #include "system.hpp"
 
@@ -12,7 +14,7 @@ namespace ecsql {
 
 static const char MEMORY_DB_NAME[] = ":memory:";
 
-sqlite3 *create_db(const char *db_name) {
+static sqlite3 *ecsql_create_db(const char *db_name) {
 	std::remove(db_name);
 
 	sqlite3 *db;
@@ -31,24 +33,46 @@ sqlite3 *create_db(const char *db_name) {
 	return db;
 }
 
+static void ecsql_preupdate_hook(
+    void *pCtx,                   /* Copy of third arg to preupdate_hook() */
+    sqlite3 *db,                  /* Database handle */
+    int op,                       /* SQLITE_UPDATE, DELETE or INSERT */
+    char const *zDb,              /* Database name */
+    char const *zName,            /* Table name */
+    sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
+    sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
+) {
+	Ecsql *world = (Ecsql *) pCtx;
+	switch (op) {
+		case SQLITE_INSERT:
+			world->on_insert(zName);
+			break;
+		
+		case SQLITE_DELETE:
+			world->on_delete(zName);
+			break;
+	}
+}
+
 Ecsql::Ecsql()
 	: Ecsql(MEMORY_DB_NAME)
 {
 }
 
 Ecsql::Ecsql(const char *db_name)
-	: Ecsql(create_db(db_name ?: MEMORY_DB_NAME))
+	: Ecsql(ecsql_create_db(db_name ?: MEMORY_DB_NAME))
 {
 }
 
 Ecsql::Ecsql(sqlite3 *db)
-	: db(db ?: create_db(MEMORY_DB_NAME))
+	: db(db ?: ecsql_create_db(MEMORY_DB_NAME))
 	, begin_stmt(db, "BEGIN", true)
 	, commit_stmt(db, "COMMIT", true)
 	, rollback_stmt(db, "ROLLBACK", true)
 	, create_entity_stmt(db, "INSERT INTO entity(name) VALUES(?)", true)
 	, delete_entity_stmt(db, "DELETE FROM entity WHERE id = ?", true)
 {
+	sqlite3_preupdate_hook(db, ecsql_preupdate_hook, this);
 }
 
 Ecsql::~Ecsql() {
@@ -71,6 +95,36 @@ void Ecsql::register_system(System& system) {
 void Ecsql::register_system(System&& system) {
 	system.prepare(db);
 	systems.push_back(system);
+}
+
+void Ecsql::register_on_insert_system(const HookSystem& system) {
+	auto it = on_insert_systems.find(system.component_name);
+	if (it == on_insert_systems.end()) {
+		it = on_insert_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
+	}
+	it->second.push_back(system);
+}
+void Ecsql::register_on_insert_system(HookSystem&& system) {
+	auto it = on_insert_systems.find(system.component_name);
+	if (it == on_insert_systems.end()) {
+		it = on_insert_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
+	}
+	it->second.push_back(system);
+}
+
+void Ecsql::register_on_delete_system(const HookSystem& system) {
+	auto it = on_delete_systems.find(system.component_name);
+	if (it == on_delete_systems.end()) {
+		it = on_delete_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
+	}
+	it->second.push_back(system);
+}
+void Ecsql::register_on_delete_system(HookSystem&& system) {
+	auto it = on_delete_systems.find(system.component_name);
+	if (it == on_delete_systems.end()) {
+		it = on_delete_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
+	}
+	it->second.push_back(system);
 }
 
 Entity Ecsql::create_entity() {
@@ -115,6 +169,26 @@ void Ecsql::update() {
 			it();
 		}
 	});
+}
+
+void Ecsql::on_insert(const char *table) {
+	auto it = on_insert_systems.find(table);
+	if (it != on_insert_systems.end()) {
+		SQLHookRow row { db, true };
+		for (auto& system : it->second) {
+			system(row);
+		}
+	}
+}
+
+void Ecsql::on_delete(const char *table) {
+	auto it = on_delete_systems.find(table);
+	if (it != on_delete_systems.end()) {
+		SQLHookRow row { db, false };
+		for (auto& system : it->second) {
+			system(row);
+		}
+	}
 }
 
 sqlite3 *Ecsql::get_db() const {

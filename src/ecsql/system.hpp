@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <string_view>
 
 struct sqlite3;
 

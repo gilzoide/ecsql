@@ -13,10 +13,10 @@
 
 namespace ecsql {
 
-struct SQLRow {
-    SQLRow() = default;
-    SQLRow(std::shared_ptr<sqlite3_stmt> stmt);
+struct SQLHookRow {
+    SQLHookRow(sqlite3 *db, bool use_new_row);
 
+    sqlite3_value *column_value(int index) const;
     bool column_bool(int index) const;
     int column_int(int index) const;
     sqlite3_int64 column_int64(int index) const;
@@ -24,8 +24,6 @@ struct SQLRow {
     const unsigned char *column_text(int index) const;
 
     bool column_is_null(int index) const;
-
-    operator bool() const;
 
     template<typename... Types> auto get(int index) const {
         if constexpr (sizeof...(Types) == 1) {
@@ -41,7 +39,8 @@ struct SQLRow {
     }
 
 protected:
-    std::shared_ptr<sqlite3_stmt> stmt;
+    sqlite3 *db;
+    bool use_new_row;
 
     template<typename T> T get_advance(int& index) const {
         T value;
@@ -108,13 +107,13 @@ protected:
     }
     
     template<> std::string get_advance(int& index) const {
-        int size = sqlite3_column_bytes(stmt.get(), index);
+        int size = sqlite3_value_bytes(column_value(index));
         const char *text = get_advance<const char *>(index);
         return std::string(text, size);
     }
     
     template<> std::string_view get_advance(int& index) const {
-        int size = sqlite3_column_bytes(stmt.get(), index);
+        int size = sqlite3_value_bytes(column_value(index));
         const char *text = get_advance<const char *>(index);
         return std::string_view(text, size);
     }
