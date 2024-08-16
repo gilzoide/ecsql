@@ -7,7 +7,7 @@
 #include "../flyweights/texture_flyweight.hpp"
 
 struct TextureReference {
-    const char *path;
+    std::string_view path;
 
     TextureFlyweight::autorelease_value get();
 

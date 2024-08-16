@@ -5,7 +5,7 @@
 using namespace ecsql;
 
 TextureFlyweight::autorelease_value TextureReference::get() {
-    return texture_flyweight.get_autorelease(path);
+    return texture_flyweight.get_autorelease(std::string(path));
 }
 
 void TextureReference::register_component(ecsql::Ecsql& world) {

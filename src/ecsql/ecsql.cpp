@@ -81,7 +81,6 @@ Ecsql::Ecsql(sqlite3 *db)
 
 Ecsql::~Ecsql() {
 	sqlite3_close(db);
-	db = nullptr;
 }
 
 void Ecsql::register_component(Component& component) {

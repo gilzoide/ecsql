@@ -7,6 +7,7 @@
 #include "components/texture_reference.hpp"
 #include "ecsql/benchmark.hpp"
 #include "ecsql/component.hpp"
+#include "ecsql/prepared_sql.hpp"
 #include "ecsql/system.hpp"
 #include "ecsql/ecsql.hpp"
 #include "flyweights/texture_flyweight.hpp"
@@ -101,6 +102,25 @@ int main(int argc, const char **argv) {
 			for (SQLRow row : sql) {
 				auto texref = row.get<TextureReference>(0).get();
 				DrawTexture(texref, 200, 200, WHITE);
+			}
+		}
+	});
+
+	ecsql_world.register_system({
+		"exchange_image",
+		{
+			"SELECT id, path FROM TextureReference",
+			"UPDATE TextureReference SET path = ? WHERE id = ?",
+		},
+		[](std::vector<PreparedSQL>& sqls) {
+			if (IsKeyPressed(KEY_X)) {
+				for (SQLRow row : sqls[0]) {
+					auto [id, texref] = row.get<Entity, TextureReference>(0);
+					const char *new_texture = texref.path == "textures/chick.png"
+						? "textures/chicken.png"
+						: "textures/chick.png";
+					sqls[1].reset().bind(1, new_texture, id).step_single();
+				}
 			}
 		}
 	});
