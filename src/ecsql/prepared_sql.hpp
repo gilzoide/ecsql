@@ -20,14 +20,9 @@ public:
     PreparedSQL& bind_text(int index, std::string_view value, void(*dtor)(void*) = SQLITE_STATIC);
 
     template<typename... Types>
-    PreparedSQL& bind(int index, Types... values) {
-        if constexpr (sizeof...(Types) == 1) {
-            return bind_advance<Types...>(index, values...);
-        }
-        else {
-            (bind_advance(index, values), ...);
-            return *this;
-        }
+    PreparedSQL& bind(int index, const Types&... values) {
+        (bind_advance(index, values), ...);
+        return *this;
     }
 
     PreparedSQL& reset();
