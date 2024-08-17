@@ -159,8 +159,8 @@ void Ecsql::inside_transaction(std::function<void(Ecsql&)> f) {
 
 void Ecsql::update() {
 	inside_transaction([](Ecsql& self) {
-		for (auto& it : self.systems) {
-			it();
+		for (auto& system : self.systems) {
+			system();
 		}
 	});
 }

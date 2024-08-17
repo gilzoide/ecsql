@@ -7,3 +7,6 @@
 [submodule "libs/flyweight"]
 	path = libs/flyweight.hpp
 	url = https://github.com/gilzoide/flyweight.hpp.git
+[submodule "libs/tracy"]
+	path = libs/tracy
+	url = https://github.com/wolfpld/tracy.git

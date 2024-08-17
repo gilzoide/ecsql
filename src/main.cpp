@@ -1,9 +1,11 @@
 #include <cstdlib>
 #include <iostream>
-#include <cmath>
-
-#include <sqlite3.h>
 #include <string>
+
+#include <raylib.h>
+#include <sqlite3.h>
+#include <tracy/Tracy.hpp>
+
 #include "components/texture_reference.hpp"
 #include "ecsql/benchmark.hpp"
 #include "ecsql/component.hpp"
@@ -11,7 +13,6 @@
 #include "ecsql/system.hpp"
 #include "ecsql/ecsql.hpp"
 #include "flyweights/texture_flyweight.hpp"
-#include "raylib.h"
 
 using namespace ecsql;
 
@@ -28,45 +29,19 @@ void game_loop(Ecsql& world, const std::vector<ColoredRectangle>& arrayzao) {
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
 
-	static int last_second = -1;
-	static double ecs_ms;
-	static double arrayzao_ms;
-	static bool paused = false;
-	int current_second = floor(GetTime());
-	bool update_metrics = !paused && current_second > last_second;
-	last_second = current_second;
+	world.update();
 
-	if (IsKeyPressed(KEY_SPACE)) {
-		paused = !paused;
-	}
-
-	{
-		Benchmark ecs_benchmark("Array Update", false);
-		for (auto& it : arrayzao) {
-			it.Draw();
-		}
-		if (update_metrics) {
-			arrayzao_ms = ecs_benchmark.get_duration_ms();
-		}
-	}
-
-	{
-		Benchmark ecs_benchmark("World Update", false);
-		world.update();
-		if (update_metrics) {
-			ecs_ms = ecs_benchmark.get_duration_ms();
-		}
-	}
-	
-	DrawRectangle(0, 0, 300, 35 * 3, Color { 0, 0, 0, static_cast<unsigned char>(0.8f * 255) });
-	DrawText(TextFormat("ECS: %lf ms", ecs_ms), 5, 0, 30, WHITE);
-	DrawText(TextFormat("Array: %lf ms", arrayzao_ms), 5, 35, 30, WHITE);
-	DrawText(TextFormat("Ratio: %lf", ecs_ms / arrayzao_ms), 5, 75, 30, WHITE);
+#if DEBUG
+	DrawFPS(0, 0);
+#endif
 
 	EndDrawing();
+	FrameMark;
 }
 
 int main(int argc, const char **argv) {
+	TracySetProgramName(argv[0]);
+
 	const char *exe_dir_path = GetDirectoryPath(argv[0]);
 	if (exe_dir_path && exe_dir_path[0]) {
 		ChangeDirectory(exe_dir_path);
@@ -87,42 +62,40 @@ int main(int argc, const char **argv) {
 	// Systems
 	ecsql_world.register_system({
 		"draw_rects",
-		"SELECT x, y, width, height, r, g, b, a FROM rectangle INNER JOIN color USING(entity_id)",
 		[](auto& sql) {
 			for (SQLRow row : sql) {
 				row.get<ColoredRectangle>(0).Draw();
 			}
-		}
+		},
+		"SELECT x, y, width, height, r, g, b, a FROM rectangle INNER JOIN color USING(entity_id)",
 	});
 
-	ecsql_world.register_system({
+	ecsql_world.register_system(System {
 		"draw_image",
-		"SELECT path FROM TextureReference",
 		[](auto& sql) {
 			for (SQLRow row : sql) {
 				auto texref = row.get<TextureReference>(0).get();
 				DrawTexture(texref, 200, 200, WHITE);
 			}
-		}
+		},
+		"SELECT path FROM TextureReference",
 	});
 
 	ecsql_world.register_system({
 		"exchange_image",
-		{
-			"SELECT id, path FROM TextureReference",
-			"UPDATE TextureReference SET path = ? WHERE id = ?",
-		},
-		[](std::vector<PreparedSQL>& sqls) {
+		[](auto& select, auto& update) {
 			if (IsKeyPressed(KEY_X)) {
-				for (SQLRow row : sqls[0]) {
+				for (SQLRow row : select) {
 					auto [id, texref] = row.get<Entity, TextureReference>(0);
 					const char *new_texture = texref.path == "textures/chick.png"
 						? "textures/chicken.png"
 						: "textures/chick.png";
-					sqls[1].reset().bind(1, new_texture, id).step_single();
+					update.reset().bind(1, new_texture, id).step_single();
 				}
 			}
-		}
+		},
+		"SELECT id, path FROM TextureReference",
+		"UPDATE TextureReference SET path = ? WHERE id = ?",
 	});
 
 	ecsql_world.inside_transaction([&] {

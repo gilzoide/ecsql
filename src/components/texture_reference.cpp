@@ -12,7 +12,7 @@ void TextureReference::register_component(ecsql::Ecsql& world) {
     world.register_component(TextureReferenceComponent);
     world.register_on_insert_system({
         "TextureReference",
-        [](SQLHookRow& old_row, SQLHookRow& new_row) {
+        [](SQLHookRow&, SQLHookRow& new_row) {
             texture_flyweight.get(new_row.get<const char *>(2));
         }
     });
@@ -25,7 +25,7 @@ void TextureReference::register_component(ecsql::Ecsql& world) {
     });
     world.register_on_delete_system({
         "TextureReference",
-        [](SQLHookRow& old_row, SQLHookRow& new_row) {
+        [](SQLHookRow& old_row, SQLHookRow&) {
             texture_flyweight.release(old_row.get<const char *>(2));
         }
     });
