@@ -62,9 +62,14 @@ int main(int argc, const char **argv) {
 
 	// Scene
 	ecsql_world.inside_transaction([&] {
-		Entity img_id = ecsql_world.create_entity("texture_test");
-		TextureReferenceComponent.insert(img_id, "textures/chick.png");
-		RectangleComponent.insert(img_id, Rectangle { 100, 100, 200, 100 });
+		Entity img1 = ecsql_world.create_entity();
+		TextureReferenceComponent.insert(img1, "textures/chick.png");
+		RectangleComponent.insert(img1, Rectangle { 100, 100, 200, 200 });
+		
+		Entity img2 = ecsql_world.create_entity();
+		TextureReferenceComponent.insert(img2, "textures/chick.png");
+		RectangleComponent.insert(img2, Rectangle { 400, 100, 200, 200 });
+		ColorComponent.insert(img2, LIME);
 	});
 
 	SetTargetFPS(60);
