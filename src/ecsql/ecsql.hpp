@@ -1,9 +1,9 @@
 #pragma once
 
-#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -45,8 +45,18 @@ public:
     Entity create_entity(std::string_view name);
     bool delete_entity(Entity id);
 
-    void inside_transaction(std::function<void()> f);
-    void inside_transaction(std::function<void(Ecsql&)> f);
+    template<typename Fn>
+    void inside_transaction(Fn&& f) {
+        begin_stmt.reset().step();
+        try {
+            f(*this);
+            commit_stmt.reset().step();
+        }
+        catch (std::runtime_error& err) {
+            std::cerr << "Runtime error: " << err.what() << std::endl;
+            rollback_stmt.reset().step();
+        }
+    }
 
     void update();
     void on_insert(const char *table);

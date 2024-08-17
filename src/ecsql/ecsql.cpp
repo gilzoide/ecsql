@@ -1,13 +1,9 @@
 #include <cstdio>
-#include <iostream>
-#include <functional>
-#include <stdexcept>
 
-#include "ecsql.hpp"
 #include "component.hpp"
+#include "ecsql.hpp"
 #include "hook_system.hpp"
 #include "sql_hook_row.hpp"
-#include "sql_row.hpp"
 #include "system.hpp"
 
 namespace ecsql {
@@ -137,24 +133,6 @@ Entity Ecsql::create_entity(std::string_view name) {
 
 bool Ecsql::delete_entity(Entity id) {
 	return delete_entity_stmt.reset().bind(1, id).step_single().get<bool>(0);
-}
-
-void Ecsql::inside_transaction(std::function<void()> f) {
-	inside_transaction([f](Ecsql& world) {
-		f();
-	});
-}
-
-void Ecsql::inside_transaction(std::function<void(Ecsql&)> f) {
-	begin_stmt.reset().step();
-	try {
-		f(*this);
-		commit_stmt.reset().step();
-	}
-	catch (std::runtime_error& err) {
-		std::cerr << "Runtime error: " << err.what() << std::endl;
-		rollback_stmt.reset().step();
-	}
 }
 
 void Ecsql::update() {
