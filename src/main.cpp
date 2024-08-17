@@ -1,33 +1,16 @@
 #include <cstdlib>
-#include <iostream>
 #include <string>
 
 #include <raylib.h>
-#include <sqlite3.h>
 #include <tracy/Tracy.hpp>
 
 #include "components/raylib_components.hpp"
 #include "components/texture_reference.hpp"
-#include "ecsql/benchmark.hpp"
-#include "ecsql/component.hpp"
-#include "ecsql/prepared_sql.hpp"
-#include "ecsql/system.hpp"
 #include "ecsql/ecsql.hpp"
 #include "flyweights/texture_flyweight.hpp"
 #include "systems/draw_systems.hpp"
 
-using namespace ecsql;
-
-struct ColoredRectangle {
-	Rectangle rect;
-	Color color;
-
-	void Draw() const {
-		DrawRectangleRec(rect, color);
-	}
-};
-
-void game_loop(Ecsql& world) {
+void game_loop(ecsql::Ecsql& world) {
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
 
@@ -51,7 +34,7 @@ int main(int argc, const char **argv) {
 
 	InitWindow(800, 600, "ECSQL");
 
-	Ecsql ecsql_world(getenv("ECSQL_DB"));
+	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
 	
 	// Components
 	register_raylib_components(ecsql_world);
