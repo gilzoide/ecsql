@@ -6,7 +6,6 @@
 
 #include <reflect>
 
-#include "ecsql.hpp"
 #include "entity.hpp"
 #include "prepared_sql.hpp"
 
@@ -14,25 +13,10 @@ typedef struct sqlite3 sqlite3;
 
 namespace ecsql {
 
-class Component {
+class RawComponent {
 public:
-	Component(std::string_view name, const std::vector<std::string>& fields);
-	Component(std::string_view name, std::vector<std::string>&& fields);
-
-	template<typename T>
-	static Component from_type() {
-		std::string component_name = std::string(reflect::type_name<T>());
-		return from_type<T>(component_name);
-	}
-	
-	template<typename T>
-	static Component from_type(const std::string& component_name) {
-		std::vector<std::string> fields;
-		reflect::for_each<T>([&](auto I) {
-			fields.push_back(std::string(reflect::member_name<I, T>()));
-		});
-		return Component(component_name, std::move(fields));
-	}
+	RawComponent(std::string_view name, const std::vector<std::string>& fields);
+	RawComponent(std::string_view name, std::vector<std::string>&& fields);
 
 	void prepare(sqlite3 *db);
 
@@ -56,6 +40,21 @@ protected:
 
 	PreparedSQL insert_stmt;
 	PreparedSQL update_stmt;
+};
+
+template<typename T>
+class Component : public RawComponent {
+	constexpr static std::vector<std::string> get_fields() {
+		std::vector<std::string> fields;
+		reflect::for_each<T>([&](auto I) {
+			fields.push_back(std::string(reflect::member_name<I, T>()));
+		});
+		return fields;
+	}
+	
+public:
+	Component() : Component(reflect::type_name<T>()) {}
+	Component(std::string_view name) : RawComponent(name, get_fields()) {}
 };
 
 }

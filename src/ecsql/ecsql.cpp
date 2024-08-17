@@ -83,10 +83,10 @@ Ecsql::~Ecsql() {
 	sqlite3_close(db);
 }
 
-void Ecsql::register_component(Component& component) {
+void Ecsql::register_component(RawComponent& component) {
 	component.prepare(db);
 }
-void Ecsql::register_component(Component&& component) {
+void Ecsql::register_component(RawComponent&& component) {
 	component.prepare(db);
 }
 

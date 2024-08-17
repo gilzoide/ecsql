@@ -14,4 +14,4 @@ struct TextureReference {
     static void register_component(ecsql::Ecsql& world);
 };
 
-extern ecsql::Component TextureReferenceComponent;
+inline ecsql::Component<TextureReference> TextureReferenceComponent;

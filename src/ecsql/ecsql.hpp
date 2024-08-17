@@ -14,7 +14,7 @@
 
 namespace ecsql {
 
-class Component;
+class RawComponent;
 class HookSystem;
 class System;
 class SQLRow;
@@ -26,8 +26,8 @@ public:
     Ecsql(sqlite3 *db);
     ~Ecsql();
 
-    void register_component(Component& component);
-    void register_component(Component&& component);
+    void register_component(RawComponent& component);
+    void register_component(RawComponent&& component);
     
     void register_system(System& system);
     void register_system(System&& system);

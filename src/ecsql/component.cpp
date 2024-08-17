@@ -1,23 +1,22 @@
 #include <sqlite3.h>
 
 #include "component.hpp"
-#include "sql_row.hpp"
 
 namespace ecsql {
 
-Component::Component(std::string_view name, const std::vector<std::string>& fields)
+RawComponent::RawComponent(std::string_view name, const std::vector<std::string>& fields)
 	: name(name)
 	, fields(fields)
 {
 }
 
-Component::Component(std::string_view name, std::vector<std::string>&& fields)
+RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fields)
 	: name(name)
 	, fields(fields)
 {
 }
 
-void Component::prepare(sqlite3 *db) {
+void RawComponent::prepare(sqlite3 *db) {
 	int res = sqlite3_exec(db, schema_sql().c_str(), nullptr, nullptr, nullptr);
 	if (res != SQLITE_OK) {
 		throw std::runtime_error(sqlite3_errmsg(db));
@@ -27,7 +26,7 @@ void Component::prepare(sqlite3 *db) {
 	update_stmt = PreparedSQL(db, update_sql(), true);
 }
 
-std::string Component::schema_sql() const {
+std::string RawComponent::schema_sql() const {
 	std::string query;
 	query = "CREATE TABLE ";
 	query += name;
@@ -44,7 +43,7 @@ std::string Component::schema_sql() const {
 	return query;
 }
 
-std::string Component::insert_sql() const {
+std::string RawComponent::insert_sql() const {
 	std::string query;
 	query = "INSERT INTO ";
 	query += name;
@@ -61,7 +60,7 @@ std::string Component::insert_sql() const {
 	return query;
 }
 
-std::string Component::update_sql() const {
+std::string RawComponent::update_sql() const {
 	std::string query;
 	query = "UPDATE ";
 	query += name;

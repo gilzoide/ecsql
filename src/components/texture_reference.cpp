@@ -30,5 +30,3 @@ void TextureReference::register_component(ecsql::Ecsql& world) {
         }
     });
 }
-
-Component TextureReferenceComponent = Component::from_type<TextureReference>();
