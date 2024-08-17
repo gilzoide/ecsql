@@ -5,5 +5,5 @@
 	path = libs/reflect
 	url = https://github.com/qlibs/reflect.git
 [submodule "libs/flyweight"]
-	path = libs/flyweight
+	path = libs/flyweight.hpp
 	url = https://github.com/gilzoide/flyweight.hpp.git

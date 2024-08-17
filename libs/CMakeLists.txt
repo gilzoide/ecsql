@@ -1,8 +1,8 @@
 add_library(libs INTERFACE)
 
 # Flyweight.hpp
-add_subdirectory(flyweight)
-target_link_libraries(libs INTERFACE flyweight)
+add_subdirectory(flyweight.hpp)
+target_link_libraries(libs INTERFACE flyweight.hpp)
 
 # Raylib
 add_subdirectory(raylib)
