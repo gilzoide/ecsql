@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 #include <reflect>
@@ -46,9 +47,14 @@ template<typename T>
 class Component : public RawComponent {
 	constexpr static std::vector<std::string> get_fields() {
 		std::vector<std::string> fields;
-		reflect::for_each<T>([&](auto I) {
-			fields.push_back(std::string(reflect::member_name<I, T>()));
-		});
+		if constexpr (std::is_class_v<T>) {
+			reflect::for_each<T>([&](auto I) {
+				fields.push_back(std::string(reflect::member_name<I, T>()));
+			});
+		}
+		else {
+			fields.push_back("value");
+		}
 		return fields;
 	}
 	
