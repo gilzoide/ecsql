@@ -73,7 +73,7 @@ Ecsql::Ecsql(sqlite3 *db)
 	, begin_stmt(db, "BEGIN", true)
 	, commit_stmt(db, "COMMIT", true)
 	, rollback_stmt(db, "ROLLBACK", true)
-	, create_entity_stmt(db, "INSERT INTO entity(name) VALUES(?)", true)
+	, create_entity_stmt(db, "INSERT INTO entity(name) VALUES(?) RETURNING id", true)
 	, delete_entity_stmt(db, "DELETE FROM entity WHERE id = ?", true)
 {
 	sqlite3_preupdate_hook(db, ecsql_preupdate_hook, this);
