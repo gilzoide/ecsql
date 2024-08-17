@@ -5,6 +5,9 @@ add_subdirectory(flyweight.hpp)
 target_link_libraries(libs INTERFACE flyweight.hpp)
 
 # Raylib
+if (EMSCRIPTEN)
+    set(PLATFORM Web)
+endif ()
 add_subdirectory(raylib)
 target_compile_options(raylib PRIVATE "-w")  # disable warnings
 target_link_libraries(libs INTERFACE raylib)

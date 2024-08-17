@@ -15,3 +15,12 @@ file(COPY ${textures}
 
 target_link_libraries(ecsql libs)
 set_target_properties(ecsql PROPERTIES CXX_STANDARD 20)
+
+# Emscripten / Web build support
+if (EMSCRIPTEN)
+    target_link_options(ecsql PRIVATE
+        -sALLOW_MEMORY_GROWTH
+        --embed-file textures
+    )
+    set_target_properties(ecsql PROPERTIES SUFFIX ".html")
+endif ()

@@ -1,6 +1,9 @@
 #include <cstdlib>
 #include <string>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include <raylib.h>
 #include <tracy/Tracy.hpp>
 
@@ -22,6 +25,10 @@ void game_loop(ecsql::Ecsql& world) {
 
 	EndDrawing();
 	FrameMark;
+}
+
+void game_loop(void *world) {
+	game_loop(*(ecsql::Ecsql *) world);
 }
 
 int main(int argc, const char **argv) {
@@ -56,9 +63,13 @@ int main(int argc, const char **argv) {
 	});
 
 	SetTargetFPS(60);
-	while (!WindowShouldClose()) {
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop_arg(&game_loop, &ecsql_world, 0, 1);
+#else
+    while (!WindowShouldClose()) {
 		game_loop(ecsql_world);
-	}
+    }
+#endif
 	CloseWindow();
 
 	return 0;
