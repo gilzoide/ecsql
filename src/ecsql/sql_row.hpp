@@ -10,6 +10,7 @@
 #include <sqlite3.h>
 
 #include "entity.hpp"
+#include "is_optional.hpp"
 
 namespace ecsql {
 
@@ -43,7 +44,20 @@ struct SQLRow {
 protected:
     std::shared_ptr<sqlite3_stmt> stmt;
 
-    template<typename T> T get_advance(int& index) const {
+    template<typename T> T get_advance(int& index) const
+    requires is_optional<T>
+    {
+        if (column_is_null(index)) {
+            return std::nullopt;
+        }
+        else {
+            return get_advance<typename T::value_type>(index);
+        }
+    }
+    
+    template<typename T> T get_advance(int& index) const
+    requires (not is_optional<T>)
+    {
         T value;
         reflect::for_each<T>([&](auto I) {
             auto&& field = reflect::get<I>(value);
