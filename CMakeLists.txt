@@ -6,6 +6,7 @@ add_subdirectory(libs)
 
 file(GLOB_RECURSE src "src/*.cpp")
 add_executable(ecsql ${src})
+target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
 file(GLOB_RECURSE textures "src/textures/*.png")
 file(COPY ${textures}
