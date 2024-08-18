@@ -25,7 +25,9 @@ void RawComponent::prepare(sqlite3 *db) {
 	}
 
 	insert_stmt = PreparedSQL(db, insert_sql(), true);
-	update_stmt = PreparedSQL(db, update_sql(), true);
+	if (!fields.empty()) {
+		update_stmt = PreparedSQL(db, update_sql(), true);
+	}
 }
 
 int RawComponent::entity_id_index() const {

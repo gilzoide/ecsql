@@ -70,4 +70,9 @@ public:
 	Component(std::string_view name) : RawComponent(name, get_fields()) {}
 };
 
+class Tag : public RawComponent {
+public:
+	Tag(std::string_view name) : RawComponent(name, {}) {}
+};
+
 }
