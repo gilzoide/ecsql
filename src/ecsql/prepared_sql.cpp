@@ -11,7 +11,11 @@ static sqlite3_stmt *prepare_statement(sqlite3 *db, std::string_view str, bool i
     sqlite3_stmt *stmt;
     int res = sqlite3_prepare_v3(db, str.data(), str.size(), is_persistent ? SQLITE_PREPARE_PERSISTENT : 0, &stmt, NULL);
     if (res != SQLITE_OK) {
-        throw std::runtime_error(sqlite3_errmsg(db));
+        std::string error = sqlite3_errmsg(db);
+        error += " (\"";
+        error += str;
+        error += "\")";
+        throw std::runtime_error(error);
     }
     return stmt;
 }
