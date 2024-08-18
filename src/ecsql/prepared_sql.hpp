@@ -56,7 +56,7 @@ private:
         return *this;
     }
 
-    template<> PreparedSQL& bind_advance(int& index, nullptr_t value) {
+    template<> PreparedSQL& bind_advance(int& index, std::nullptr_t value) {
         return bind_null(index++);
     }
 
