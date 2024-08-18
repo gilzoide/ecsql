@@ -4,15 +4,17 @@
 
 namespace ecsql {
 
-RawComponent::RawComponent(std::string_view name, const std::vector<std::string>& fields)
+RawComponent::RawComponent(std::string_view name, const std::vector<std::string>& fields, bool allow_duplicate)
 	: name(name)
 	, fields(fields)
+	, allow_duplicate(allow_duplicate)
 {
 }
 
-RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fields)
+RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fields, bool allow_duplicate)
 	: name(name)
 	, fields(fields)
+	, allow_duplicate(allow_duplicate)
 {
 }
 
@@ -26,20 +28,36 @@ void RawComponent::prepare(sqlite3 *db) {
 	update_stmt = PreparedSQL(db, update_sql(), true);
 }
 
+int RawComponent::entity_id_index() const {
+	return allow_duplicate ? 1 : 0;
+}
+
+int RawComponent::first_field_index() const {
+	return allow_duplicate ? 2 : 1;
+}
+
 std::string RawComponent::schema_sql() const {
 	std::string query;
 	query = "CREATE TABLE ";
 	query += name;
-	query += "(\n  id INTEGER PRIMARY KEY,\n  entity_id INTEGER NOT NULL REFERENCES entity(id) ON DELETE CASCADE";
+	if (allow_duplicate) {
+		query += "(\n  id INTEGER PRIMARY KEY,\n  entity_id INTEGER NOT NULL REFERENCES entity(id) ON DELETE CASCADE";
+	}
+	else {
+		query += "(\n  entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE";
+	}
 	for (auto& it : fields) {
-		query += ",\n  ";
+		query += ", ";
 		query += it;
 	}
-	query += "\n);\nCREATE INDEX ";
-	query += name;
-	query += "_entity_id ON ";
-	query += name;
-	query += "(entity_id);";
+	query += "\n);";
+	if (allow_duplicate) {
+		query += "\nCREATE INDEX ";
+		query += name;
+		query += "_entity_id ON ";
+		query += name;
+		query += "(entity_id);";
+	}
 	return query;
 }
 
