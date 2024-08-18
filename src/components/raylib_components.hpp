@@ -7,5 +7,6 @@
 
 inline ecsql::Component<Color> ColorComponent;
 inline ecsql::Component<Rectangle> RectangleComponent;
+inline ecsql::Component<float> Rotation2DComponent { "Rotation2D" };
 
 void register_raylib_components(ecsql::Ecsql& world);

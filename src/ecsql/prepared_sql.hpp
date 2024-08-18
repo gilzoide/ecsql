@@ -46,6 +46,11 @@ public:
 
     RowIterator begin();
     RowIterator end();
+    
+    template<typename... Types>
+    PreparedSQL& operator()(Types&&... values) {
+        return reset().bind(1, std::forward<Types>(values)...);
+    }
 
 private:
     std::shared_ptr<sqlite3_stmt> stmt;

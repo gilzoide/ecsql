@@ -125,14 +125,13 @@ Entity Ecsql::create_entity() {
 }
 
 Entity Ecsql::create_entity(std::string_view name) {
-	return create_entity_stmt.reset()
-		.bind(1, name)
+	return create_entity_stmt(name)
 		.step_single()
 		.get<Entity>(0);
 }
 
 bool Ecsql::delete_entity(Entity id) {
-	return delete_entity_stmt.reset().bind(1, id).step_single().get<bool>(0);
+	return delete_entity_stmt(id).step_single().get<bool>(0);
 }
 
 void Ecsql::update() {

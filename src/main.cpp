@@ -8,10 +8,12 @@
 #include <tracy/Tracy.hpp>
 
 #include "components/raylib_components.hpp"
+#include "components/tags.hpp"
 #include "components/texture_reference.hpp"
 #include "ecsql/ecsql.hpp"
 #include "flyweights/texture_flyweight.hpp"
 #include "systems/draw_systems.hpp"
+#include "systems/rotate_on_hover.hpp"
 
 void game_loop(ecsql::Ecsql& world) {
 	BeginDrawing();
@@ -45,21 +47,29 @@ int main(int argc, const char **argv) {
 	
 	// Components
 	register_raylib_components(ecsql_world);
+	register_tags(ecsql_world);
 	TextureReference::register_component(ecsql_world);
 
 	// Systems
+	register_rotate_on_hover_systems(ecsql_world);
 	register_draw_systems(ecsql_world);
 
 	// Scene
 	ecsql_world.inside_transaction([](auto& world) {
-		Entity img1 = world.create_entity();
-		TextureReferenceComponent.insert(img1, "textures/chick.png");
-		RectangleComponent.insert(img1, Rectangle { 100, 100, 200, 200 });
+		for (int i = 0; i < 100; i++) {
+			Entity img1 = world.create_entity();
+			TextureReferenceComponent.insert(img1, "textures/chick.png");
+			RectangleComponent.insert(img1, Rectangle { 0 + 4*(float) i, 0 + 4*(float) i, 200, 200 });
+		}
 		
-		Entity img2 = world.create_entity();
-		TextureReferenceComponent.insert(img2, "textures/chick.png");
-		RectangleComponent.insert(img2, Rectangle { 400, 100, 200, 200 });
-		ColorComponent.insert(img2, LIME);
+		for (int i = 0; i < 100; i++) {
+			Entity img2 = world.create_entity();
+			RotateOnHover.insert(img2);
+			TextureReferenceComponent.insert(img2, "textures/chick.png");
+			RectangleComponent.insert(img2, Rectangle { 150 + 4*(float) i, 0 + 4*(float) i, 200, 200 });
+			Rotation2DComponent.insert(img2, 45);
+			ColorComponent.insert(img2, LIME);
+		}
 	});
 
 	SetTargetFPS(60);
