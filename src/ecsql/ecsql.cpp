@@ -118,20 +118,15 @@ void Ecsql::register_on_update_system(HookSystem&& system) {
 }
 
 Entity Ecsql::create_entity() {
-	return create_entity_stmt.reset()
-		.bind(1, nullptr)
-		.step_single()
-		.get<Entity>(0);
+	return create_entity_stmt(nullptr).get<Entity>();
 }
 
 Entity Ecsql::create_entity(std::string_view name) {
-	return create_entity_stmt(name)
-		.step_single()
-		.get<Entity>(0);
+	return create_entity_stmt(name).get<Entity>();
 }
 
 bool Ecsql::delete_entity(Entity id) {
-	return delete_entity_stmt(id).step_single().get<bool>(0);
+	return delete_entity_stmt(id).get<bool>();
 }
 
 void Ecsql::update() {

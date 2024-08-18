@@ -33,12 +33,12 @@ public:
 
 	template<typename... Types>
 	void insert(Entity entity, Types&&... values) {
-		insert_stmt.reset().bind(1, entity, std::forward<Types>(values)...).step_single();
+		insert_stmt(entity, std::forward<Types>(values)...);
 	}
 	
 	template<typename... Types>
 	void update(Entity entity, Types&&... values) {
-		update_stmt.reset().bind(1, std::forward<Types>(values)..., entity).step_single();
+		update_stmt(std::forward<Types>(values)..., entity);
 	}
 
 protected:

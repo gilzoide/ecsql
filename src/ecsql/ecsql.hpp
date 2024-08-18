@@ -47,14 +47,14 @@ public:
 
     template<typename Fn>
     void inside_transaction(Fn&& f) {
-        begin_stmt.reset().step();
+        begin_stmt();
         try {
             f(*this);
-            commit_stmt.reset().step();
+            commit_stmt();
         }
         catch (std::runtime_error& err) {
             std::cerr << "Runtime error: " << err.what() << std::endl;
-            rollback_stmt.reset().step();
+            rollback_stmt();
         }
     }
 

@@ -10,8 +10,7 @@ void register_rotate_on_hover_systems(ecsql::Ecsql& world) {
         [](auto& select_rect, auto& update_rotation) {
             Vector2 mouse_position = GetMousePosition();
             for (ecsql::SQLRow row : select_rect(mouse_position.x, mouse_position.y)) {
-                auto id = row.get<Entity>(0);
-                update_rotation(id).step_single();
+                update_rotation(row.get<Entity>());
             }
         },
         R"(

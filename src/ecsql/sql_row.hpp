@@ -28,7 +28,7 @@ struct SQLRow {
 
     operator bool() const;
 
-    template<typename... Types> auto get(int index) const {
+    template<typename... Types> auto get(int index = 0) const {
         if constexpr (sizeof...(Types) == 1) {
             return get_advance<Types...>(index);
         }

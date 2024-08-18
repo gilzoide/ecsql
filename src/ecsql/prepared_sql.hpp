@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entity.hpp"
+#include "executed_sql.hpp"
 #include "sql_row.hpp"
 
 namespace ecsql {
@@ -26,31 +27,14 @@ public:
     }
 
     PreparedSQL& reset();
-    int step();
-    SQLRow step_single();
-
-    struct RowIterator {
-        using value_type = SQLRow;
-
-        RowIterator& operator++();
-        RowIterator operator++(int _);
-        
-        SQLRow operator*() const;
-        SQLRow operator->() const;
-
-        bool operator==(RowIterator other) const;
-        bool operator!=(RowIterator other) const;
-
-        std::shared_ptr<sqlite3_stmt> stmt;
-    };
-
-    RowIterator begin();
-    RowIterator end();
     
     template<typename... Types>
-    PreparedSQL& operator()(Types&&... values) {
-        return reset().bind(1, std::forward<Types>(values)...);
+    ExecutedSQL operator()(Types&&... values) {
+        reset().bind(1, std::forward<Types>(values)...);
+        return { stmt };
     }
+
+    std::shared_ptr<sqlite3_stmt> get_stmt() const;
 
 private:
     std::shared_ptr<sqlite3_stmt> stmt;

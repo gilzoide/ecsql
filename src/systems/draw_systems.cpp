@@ -11,7 +11,7 @@ void register_draw_systems(ecsql::Ecsql& world) {
     world.register_system({
         "DrawTextureRect",
         [](auto& sql) {
-            for (ecsql::SQLRow row : sql) {
+            for (ecsql::SQLRow row : sql()) {
                 auto [texref, rectangle, rotation, color] = row.get<TextureReference, Rectangle, float, std::optional<Color>>(0);
                 auto tex = texref.get();
                 Rectangle source {
