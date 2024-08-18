@@ -5,7 +5,7 @@
 
 namespace ecsql {
 
-class PreparedSQL : public SQLRow {
+class PreparedSQL {
 public:
     PreparedSQL() = default;
     PreparedSQL(sqlite3 *db, std::string_view str);
@@ -20,8 +20,8 @@ public:
     PreparedSQL& bind_text(int index, std::string_view value, void(*dtor)(void*) = SQLITE_STATIC);
 
     template<typename... Types>
-    PreparedSQL& bind(int index, const Types&... values) {
-        (bind_advance(index, values), ...);
+    PreparedSQL& bind(int index, Types&&... values) {
+        (bind_advance(index, std::forward<Types>(values)), ...);
         return *this;
     }
 
@@ -48,6 +48,8 @@ public:
     RowIterator end();
 
 private:
+    std::shared_ptr<sqlite3_stmt> stmt;
+
     template<typename T> PreparedSQL& bind_advance(int& index, T value) {
         reflect::for_each<T>([&](auto I) {
             auto&& field = reflect::get<I>(value);

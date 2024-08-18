@@ -22,7 +22,7 @@ PreparedSQL::PreparedSQL(sqlite3 *db, std::string_view str)
 }
 
 PreparedSQL::PreparedSQL(sqlite3 *db, std::string_view str, bool is_persistent)
-    : SQLRow(std::shared_ptr<sqlite3_stmt>(prepare_statement(db, str, is_persistent), sqlite3_finalize))
+    : stmt(prepare_statement(db, str, is_persistent), sqlite3_finalize)
 {
 }
 
