@@ -8,8 +8,9 @@
 
 namespace ecsql {
 
-#if DEBUG
+#if defined(DEBUG) && !defined(NDEBUG)
 static const char DEFAULT_DB_NAME[] = "ecsql_world.sqlite3";
+static const char LAST_DB_NAME[] = "ecsql_world-last.sqlite3";
 #else
 static const char DEFAULT_DB_NAME[] = ":memory:";
 #endif
@@ -77,6 +78,9 @@ Ecsql::Ecsql(sqlite3 *db)
 
 Ecsql::~Ecsql() {
 	sqlite3_close_v2(db);
+#if defined(DEBUG) && !defined(NDEBUG)
+	backup_into(LAST_DB_NAME);
+#endif
 }
 
 void Ecsql::register_component(RawComponent& component) {
@@ -149,6 +153,41 @@ void Ecsql::on_update(const char *table) {
 	execute_prehook(table, on_update_systems);
 }
 
+bool Ecsql::backup_into(const char *db_name) {
+	sqlite3 *db;
+	if (sqlite3_open_v2(db_name, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr) != SQLITE_OK) {
+		std::cerr << "Error backing up into \"" << db_name << "\": " << sqlite3_errmsg(db) << std::endl;
+		return false;
+	}
+	bool result = backup_into(db);
+	sqlite3_close(db);
+	return result;
+}
+
+bool Ecsql::backup_into(sqlite3 *db) {
+	sqlite3_backup *backup = sqlite3_backup_init(db, "main", this->db, "main");
+	sqlite3_backup_step(backup, -1);
+	return sqlite3_backup_finish(backup) == SQLITE_OK;
+}
+
+bool Ecsql::restore_from(const char *db_name) {
+	sqlite3 *db;
+	if (sqlite3_open_v2(db_name, &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
+		std::cerr << "Error restoring from \"" << db_name << "\": " << sqlite3_errmsg(db) << std::endl;
+		return false;
+	}
+	bool result = restore_from(db);
+	sqlite3_close(db);
+	return result;
+}
+
+bool Ecsql::restore_from(sqlite3 *db) {
+	sqlite3_backup *backup = sqlite3_backup_init(this->db, "main", db, "main");
+	sqlite3_backup_step(backup, -1);
+	return sqlite3_backup_finish(backup) == SQLITE_OK;
+}
+
+// private methods
 void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system) {
 	auto it = map.find(system.component_name);
 	if (it == map.end()) {
