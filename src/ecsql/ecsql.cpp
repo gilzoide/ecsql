@@ -10,7 +10,7 @@ namespace ecsql {
 
 #if defined(DEBUG) && !defined(NDEBUG)
 static const char DEFAULT_DB_NAME[] = "ecsql_world.sqlite3";
-static const char LAST_DB_NAME[] = "ecsql_world-last.sqlite3";
+static const char LAST_DB_NAME[] = "ecsql_world-backup10.sqlite3";
 #else
 static const char DEFAULT_DB_NAME[] = ":memory:";
 #endif

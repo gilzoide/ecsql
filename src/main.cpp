@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <iostream>
 #include <string>
 
 #ifdef __EMSCRIPTEN__
@@ -15,14 +16,37 @@
 #include "systems/draw_systems.hpp"
 #include "systems/rotate_on_hover.hpp"
 
+#if defined(DEBUG) && !defined(NDEBUG)
+void run_debug_functionality(ecsql::Ecsql& world) {
+	DrawFPS(0, 0);
+
+	for (int fkey = KEY_F1; fkey <= KEY_F10; fkey++) {
+		bool is_shift_down = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT); 
+		if (IsKeyPressed(fkey)) {
+			const char *db_name = TextFormat("ecsql_world-backup%02d.sqlite3", fkey - KEY_F1 + 1);
+			if (is_shift_down) {
+				if (world.backup_into(db_name)) {
+					std::cout << "Backed up into \"" << db_name << "\"" << std::endl;
+				}
+			}
+			else {
+				if (world.restore_from(db_name)) {
+					std::cout << "Restored from \"" << db_name << "\"" << std::endl;
+				}
+			}
+		}
+	}
+}
+#endif
+
 void game_loop(ecsql::Ecsql& world) {
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
 
 	world.update();
 
-#if DEBUG
-	DrawFPS(0, 0);
+#if defined(DEBUG) && !defined(NDEBUG)
+	run_debug_functionality(world);
 #endif
 
 	EndDrawing();
