@@ -34,14 +34,14 @@ void game_loop(void *world) {
 }
 
 int main(int argc, const char **argv) {
-	TracySetProgramName(argv[0]);
-
 	const char *exe_dir_path = GetDirectoryPath(argv[0]);
 	if (exe_dir_path && exe_dir_path[0]) {
 		ChangeDirectory(exe_dir_path);
 	}
 
-	InitWindow(800, 600, "ECSQL");
+	const char *exe_file_name = GetFileName(argv[0]);
+	TracySetProgramName(exe_file_name);
+	InitWindow(800, 600, exe_file_name);
 
 	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
 	
