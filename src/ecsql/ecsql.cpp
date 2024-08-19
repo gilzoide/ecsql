@@ -76,7 +76,7 @@ Ecsql::Ecsql(sqlite3 *db)
 }
 
 Ecsql::~Ecsql() {
-	sqlite3_close(db);
+	sqlite3_close_v2(db);
 }
 
 void Ecsql::register_component(RawComponent& component) {
