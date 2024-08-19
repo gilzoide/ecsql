@@ -8,7 +8,11 @@
 
 namespace ecsql {
 
-static const char MEMORY_DB_NAME[] = ":memory:";
+#if DEBUG
+static const char DEFAULT_DB_NAME[] = "ecsql_world.sqlite3";
+#else
+static const char DEFAULT_DB_NAME[] = ":memory:";
+#endif
 
 static sqlite3 *ecsql_create_db(const char *db_name) {
 	std::remove(db_name);
@@ -19,10 +23,6 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
 	res = sqlite3_exec(db, Entity::schema_sql(), nullptr, nullptr, nullptr);
-	if (res != SQLITE_OK) {
-		throw std::runtime_error(sqlite3_errmsg(db));
-	}
-	res = sqlite3_exec(db, "PRAGMA journal_mode = off", nullptr, nullptr, nullptr);
 	if (res != SQLITE_OK) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
@@ -55,17 +55,17 @@ static void ecsql_preupdate_hook(
 }
 
 Ecsql::Ecsql()
-	: Ecsql(MEMORY_DB_NAME)
+	: Ecsql(DEFAULT_DB_NAME)
 {
 }
 
 Ecsql::Ecsql(const char *db_name)
-	: Ecsql(ecsql_create_db(db_name ?: MEMORY_DB_NAME))
+	: Ecsql(ecsql_create_db(db_name ?: DEFAULT_DB_NAME))
 {
 }
 
 Ecsql::Ecsql(sqlite3 *db)
-	: db(db ?: ecsql_create_db(MEMORY_DB_NAME))
+	: db(db ?: ecsql_create_db(DEFAULT_DB_NAME))
 	, begin_stmt(db, "BEGIN", true)
 	, commit_stmt(db, "COMMIT", true)
 	, rollback_stmt(db, "ROLLBACK", true)
