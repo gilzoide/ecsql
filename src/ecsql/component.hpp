@@ -41,6 +41,9 @@ public:
 		update_stmt(std::forward<Types>(values)..., entity);
 	}
 
+	const std::string& get_name() const;
+	const std::vector<std::string>& get_fields() const;
+
 protected:
 	std::string name;
 	std::vector<std::string> fields;

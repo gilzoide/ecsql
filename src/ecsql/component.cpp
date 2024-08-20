@@ -100,4 +100,12 @@ std::string RawComponent::update_sql() const {
 	return query;
 }
 
+const std::string& RawComponent::get_name() const {
+	return name;
+}
+
+const std::vector<std::string>& RawComponent::get_fields() const {
+	return fields;
+}
+
 }
