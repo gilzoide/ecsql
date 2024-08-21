@@ -12,6 +12,7 @@
 #include "components/tags.hpp"
 #include "components/texture_reference.hpp"
 #include "ecsql/ecsql.hpp"
+#include "ecsql/hook_system.hpp"
 #include "flyweights/texture_flyweight.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/rotate_on_hover.hpp"
@@ -70,9 +71,12 @@ int main(int argc, const char **argv) {
 	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
 	
 	// Components
-	register_raylib_components(ecsql_world);
-	register_tags(ecsql_world);
-	TextureReference::register_component(ecsql_world);
+	ecsql::RawComponent::foreach_static_linked_list([&](auto component) {
+		ecsql_world.register_component(*component);
+	});
+	ecsql::HookSystem::foreach_static_linked_list([&](auto system) {
+		ecsql_world.register_hook_system(*system);
+	});
 
 	// Systems
 	register_rotate_on_hover_systems(ecsql_world);

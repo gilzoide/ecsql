@@ -32,14 +32,8 @@ public:
     void register_system(System& system);
     void register_system(System&& system);
     
-    void register_on_insert_system(const HookSystem& system);
-    void register_on_insert_system(HookSystem&& system);
-    
-    void register_on_delete_system(const HookSystem& system);
-    void register_on_delete_system(HookSystem&& system);
-    
-    void register_on_update_system(const HookSystem& system);
-    void register_on_update_system(HookSystem&& system);
+	void register_hook_system(const HookSystem& system);
+    void register_hook_system(HookSystem&& system);
 
     Entity create_entity();
     Entity create_entity(std::string_view name);

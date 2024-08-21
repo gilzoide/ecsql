@@ -10,6 +10,7 @@
 
 #include "entity.hpp"
 #include "prepared_sql.hpp"
+#include "static_linked_list.hpp"
 
 typedef struct sqlite3 sqlite3;
 
@@ -51,6 +52,8 @@ protected:
 
 	PreparedSQL insert_stmt;
 	PreparedSQL update_stmt;
+
+	STATIC_LINKED_LIST_DEFINE(RawComponent);
 };
 
 template<typename T>

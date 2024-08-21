@@ -1,6 +1,7 @@
 #include <sqlite3.h>
 
 #include "component.hpp"
+#include "static_linked_list.hpp"
 
 namespace ecsql {
 
@@ -9,6 +10,7 @@ RawComponent::RawComponent(std::string_view name, const std::vector<std::string>
 	, fields(fields)
 	, allow_duplicate(allow_duplicate)
 {
+	STATIC_LINKED_LIST_INSERT();
 }
 
 RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fields, bool allow_duplicate)
@@ -16,6 +18,7 @@ RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fie
 	, fields(fields)
 	, allow_duplicate(allow_duplicate)
 {
+	STATIC_LINKED_LIST_INSERT();
 }
 
 void RawComponent::prepare(sqlite3 *db) {

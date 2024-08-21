@@ -100,25 +100,31 @@ void Ecsql::register_system(System&& system) {
 	systems.push_back(system);
 }
 
-void Ecsql::register_on_insert_system(const HookSystem& system) {
-	register_prehook(on_insert_systems, system);
+void Ecsql::register_hook_system(const HookSystem& system) {
+	switch (system.hook_type) {
+		case HookSystem::HookType::Insert:
+			register_prehook(on_insert_systems, system);
+			break;
+		case HookSystem::HookType::Update:
+			register_prehook(on_update_systems, system);
+			break;
+		case HookSystem::HookType::Delete:
+			register_prehook(on_delete_systems, system);
+			break;
+	}
 }
-void Ecsql::register_on_insert_system(HookSystem&& system) {
-	register_prehook(on_insert_systems, system);
-}
-
-void Ecsql::register_on_delete_system(const HookSystem& system) {
-	register_prehook(on_delete_systems, system);
-}
-void Ecsql::register_on_delete_system(HookSystem&& system) {
-	register_prehook(on_delete_systems, system);
-}
-
-void Ecsql::register_on_update_system(const HookSystem& system) {
-	register_prehook(on_update_systems, system);
-}
-void Ecsql::register_on_update_system(HookSystem&& system) {
-	register_prehook(on_update_systems, system);
+void Ecsql::register_hook_system(HookSystem&& system) {
+	switch (system.hook_type) {
+		case HookSystem::HookType::Insert:
+			register_prehook(on_insert_systems, system);
+			break;
+		case HookSystem::HookType::Update:
+			register_prehook(on_update_systems, system);
+			break;
+		case HookSystem::HookType::Delete:
+			register_prehook(on_delete_systems, system);
+			break;
+	}
 }
 
 Entity Ecsql::create_entity() {
