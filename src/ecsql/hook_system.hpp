@@ -15,13 +15,14 @@ class SQLRow;
 class SQLHookRow;
 class PreparedSQL;
 
+enum class HookType {
+	OnInsert,
+	OnUpdate,
+	OnDelete,
+};
+
 class HookSystem {
 public:
-	enum class HookType {
-		Insert,
-		Update,
-		Delete,
-	};
 
 	template<typename Fn>
 	HookSystem(HookType hook_type, std::string_view component_name, Fn&& implementation)

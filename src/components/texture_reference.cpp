@@ -9,7 +9,7 @@ TextureFlyweight::autorelease_value TextureReference::get() {
 }
 
 HookSystem OnInsertTextureReference {
-	HookSystem::HookType::Insert,
+	HookType::OnInsert,
 	TextureReferenceComponent,
 	[](SQLHookRow&, SQLHookRow& new_row) {
 		texture_flyweight.get(new_row.get<const char *>(TextureReferenceComponent.first_field_index()));
@@ -17,7 +17,7 @@ HookSystem OnInsertTextureReference {
 };
 
 HookSystem OnUpdateTextureReference {
-	HookSystem::HookType::Update,
+	HookType::OnUpdate,
 	TextureReferenceComponent,
 	[](SQLHookRow& old_row, SQLHookRow& new_row) {
 		texture_flyweight.release(old_row.get<const char *>(TextureReferenceComponent.first_field_index()));
@@ -26,7 +26,7 @@ HookSystem OnUpdateTextureReference {
 };
 
 HookSystem OnDeleteTextureReference {
-	HookSystem::HookType::Delete,
+	HookType::OnDelete,
 	TextureReferenceComponent,
 	[](SQLHookRow& old_row, SQLHookRow&) {
 		texture_flyweight.release(old_row.get<const char *>(TextureReferenceComponent.first_field_index()));

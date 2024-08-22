@@ -102,26 +102,26 @@ void Ecsql::register_system(System&& system) {
 
 void Ecsql::register_hook_system(const HookSystem& system) {
 	switch (system.hook_type) {
-		case HookSystem::HookType::Insert:
+		case HookType::OnInsert:
 			register_prehook(on_insert_systems, system);
 			break;
-		case HookSystem::HookType::Update:
+		case HookType::OnUpdate:
 			register_prehook(on_update_systems, system);
 			break;
-		case HookSystem::HookType::Delete:
+		case HookType::OnDelete:
 			register_prehook(on_delete_systems, system);
 			break;
 	}
 }
 void Ecsql::register_hook_system(HookSystem&& system) {
 	switch (system.hook_type) {
-		case HookSystem::HookType::Insert:
+		case HookType::OnInsert:
 			register_prehook(on_insert_systems, system);
 			break;
-		case HookSystem::HookType::Update:
+		case HookType::OnUpdate:
 			register_prehook(on_update_systems, system);
 			break;
-		case HookSystem::HookType::Delete:
+		case HookType::OnDelete:
 			register_prehook(on_delete_systems, system);
 			break;
 	}
