@@ -20,6 +20,9 @@ add_subdirectory(sqlite-amalgamation)
 target_link_libraries(libs INTERFACE sqlite3)
 
 # Tracy
+if (NOT CMAKE_BUILD_TYPE STREQUAL Debug)
+    option(TRACY_ENABLE "Enable profiling" OFF)
+endif ()
 add_subdirectory(tracy)
 target_compile_options(TracyClient PRIVATE "-w")  # disable warnings
 target_link_libraries(libs INTERFACE TracyClient)

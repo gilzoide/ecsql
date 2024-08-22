@@ -11,9 +11,7 @@ struct sqlite3;
 
 namespace ecsql {
 
-class SQLRow;
 class SQLHookRow;
-class PreparedSQL;
 
 enum class HookType {
 	OnInsert,
@@ -23,7 +21,6 @@ enum class HookType {
 
 class HookSystem {
 public:
-
 	template<typename Fn>
 	HookSystem(HookType hook_type, std::string_view component_name, Fn&& implementation)
 		: component_name(component_name)
