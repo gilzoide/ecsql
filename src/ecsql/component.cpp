@@ -22,10 +22,7 @@ RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fie
 }
 
 void RawComponent::prepare(sqlite3 *db) {
-	int res = sqlite3_exec(db, schema_sql().c_str(), nullptr, nullptr, nullptr);
-	if (res != SQLITE_OK) {
-		throw std::runtime_error(sqlite3_errmsg(db));
-	}
+	PreparedSQL(db, schema_sql())();
 
 	insert_stmt = PreparedSQL(db, insert_sql(), true);
 	if (!fields.empty()) {

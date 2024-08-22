@@ -10,6 +10,7 @@
 #include <sqlite3.h>
 
 #include "entity.hpp"
+#include "executed_sql.hpp"
 #include "prepared_sql.hpp"
 
 namespace ecsql {
@@ -64,6 +65,11 @@ public:
     bool restore_from(sqlite3 *db);
 
     sqlite3 *get_db() const;
+
+	template<typename... Args>
+	ExecutedSQL execute_sql(std::string_view sql, Args&&... args) {
+		return PreparedSQL(db, sql, false)(std::forward<Args>(args)...);
+	}
 
 private:
     sqlite3 *db;

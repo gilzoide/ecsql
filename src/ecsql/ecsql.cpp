@@ -193,6 +193,10 @@ bool Ecsql::restore_from(sqlite3 *db) {
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
 
+sqlite3 *Ecsql::get_db() const {
+	return db;
+}
+
 // private methods
 void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system) {
 	auto it = map.find(system.component_name);
@@ -218,10 +222,6 @@ void Ecsql::execute_prehook(const char *table, const std::unordered_map<std::str
 			system(old_row, new_row);
 		}
 	}
-}
-
-sqlite3 *Ecsql::get_db() const {
-	return db;
 }
 
 }
