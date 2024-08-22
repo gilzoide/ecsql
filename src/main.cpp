@@ -87,7 +87,7 @@ int main(int argc, const char **argv) {
 		for (int i = 0; i < 100; i++) {
 			Entity img1 = world.create_entity();
 			TextureReferenceComponent.insert(img1, "textures/chick.png");
-			RectangleComponent.insert(img1, Rectangle { 0 + 4*(float) i, 0 + 4*(float) i, 200, 200 });
+			PositionComponent.insert(img1, Vector2 { 0 + 4*(float) i, 0 + 4*(float) i });
 		}
 		
 		for (int i = 0; i < 100; i++) {

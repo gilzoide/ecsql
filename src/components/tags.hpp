@@ -4,5 +4,3 @@
 #include "../ecsql/ecsql.hpp"
 
 inline ecsql::Tag RotateOnHover { "RotateOnHover" };
-
-void register_tags(ecsql::Ecsql& world);

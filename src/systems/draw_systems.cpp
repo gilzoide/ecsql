@@ -5,7 +5,6 @@
 #include "draw_systems.hpp"
 #include "../ecsql/system.hpp"
 #include "../components/texture_reference.hpp"
-#include "../flyweights/texture_flyweight.hpp"
 
 void register_draw_systems(ecsql::Ecsql& world) {
     world.register_system({
@@ -27,9 +26,37 @@ void register_draw_systems(ecsql::Ecsql& world) {
         R"(
             SELECT path, x, y, width, height, Rotation2D.value, r, g, b, a
             FROM TextureReference
-            INNER JOIN Rectangle USING(entity_id)
-            LEFT JOIN Rotation2D USING(entity_id)
-            LEFT JOIN Color USING(entity_id)
+            NATURAL JOIN Rectangle
+            NATURAL LEFT JOIN Rotation2D
+            NATURAL LEFT JOIN Color
+        )",
+    });
+    world.register_system({
+        "DrawTexture",
+        [](auto& sql) {
+            for (ecsql::SQLRow row : sql()) {
+                auto [texref, position, rotation, color] = row.get<TextureReference, Vector2, float, std::optional<Color>>(0);
+                auto tex = texref.get();
+                Rectangle source {
+                    0, 0,
+                    (float) tex.value.width, (float) tex.value.height,
+                };
+                Vector2 center { source.width * 0.5f, source.height * 0.5f };
+				Rectangle dest {
+					position.x + center.x,
+					position.y + center.y,
+					source.width,
+					source.height,
+				};
+                DrawTexturePro(tex, source, dest, center, rotation, color.value_or(WHITE));
+            }
+        },
+        R"(
+            SELECT path, x, y, Rotation2D.value, r, g, b, a
+            FROM TextureReference
+            NATURAL JOIN Position
+            NATURAL LEFT JOIN Rotation2D
+            NATURAL LEFT JOIN Color
         )",
     });
 }
