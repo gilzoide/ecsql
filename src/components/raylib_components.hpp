@@ -7,5 +7,6 @@
 
 inline ecsql::Component<Color> ColorComponent;
 inline ecsql::Component<Vector3> PositionComponent { "Position" };
+inline ecsql::Component<Vector3> ScaleComponent { "Scale" };
 inline ecsql::Component<Rectangle> RectangleComponent;
-inline ecsql::Component<float> Rotation2DComponent { "Rotation2D" };
+inline ecsql::Component<Vector3> RotationComponent { "Rotation" };

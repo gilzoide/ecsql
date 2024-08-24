@@ -24,11 +24,11 @@ void register_draw_systems(ecsql::Ecsql& world) {
             }
         },
         R"(
-            SELECT path, x, y, width, height, Rotation2D.value, r, g, b, a
+            SELECT path, Rectangle.x, Rectangle.y, width, height, Rotation.z, r, g, b, a
             FROM TextureReference
-            NATURAL JOIN Rectangle
-            NATURAL LEFT JOIN Rotation2D
-            NATURAL LEFT JOIN Color
+            JOIN Rectangle USING(entity_id)
+            LEFT JOIN Rotation USING(entity_id)
+            LEFT JOIN Color USING(entity_id)
         )",
     });
     world.register_system({
@@ -52,11 +52,11 @@ void register_draw_systems(ecsql::Ecsql& world) {
             }
         },
         R"(
-            SELECT path, x, y, Rotation2D.value, r, g, b, a
+            SELECT path, Position.x, Position.y, Rotation.z, r, g, b, a
             FROM TextureReference
-            NATURAL JOIN Position
-            NATURAL LEFT JOIN Rotation2D
-            NATURAL LEFT JOIN Color
+            JOIN Position USING(entity_id)
+            LEFT JOIN Rotation USING(entity_id)
+            LEFT JOIN Color USING(entity_id)
         )",
     });
 }
