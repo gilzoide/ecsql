@@ -1,0 +1,7 @@
+[entidate1.Position]
+x = 10
+y = 10
+z = 5
+
+[entidate1.TextureReference]
+path = "assets/textures/chick.png"

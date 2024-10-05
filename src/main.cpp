@@ -83,27 +83,10 @@ int main(int argc, const char **argv) {
 	register_draw_systems(ecsql_world);
 
 	// Scene
-	ecsql_world.inside_transaction([](ecsql::Ecsql& world) {
-		for (int i = 0; i < 100; i++) {
-			Entity img1 = world.create_entity();
-			TextureFlyweight.component.insert(img1, "assets/textures/chick.png");
-			PositionComponent.insert(img1, Vector2 { 0 + 4*(float) i, 0 + 4*(float) i });
-		}
-		
-		for (int i = 0; i < 100; i++) {
-			Entity img2 = world.create_entity();
-			RotateOnHover.insert(img2);
-			TextureFlyweight.component.insert(img2, "assets/textures/chick.png");
-			RectangleComponent.insert(img2, Rectangle { 150 + 4*(float) i, 0 + 4*(float) i, 200, 200 });
-			RotationComponent.insert(img2, 0, 0, 45);
-			ColorComponent.insert(img2, LIME);
-		}
-
-		Entity cube = world.create_entity();
-		ModelFlyweight.component.insert(cube, "assets/models/cube.obj");
-		PositionComponent.insert(cube, 0, 0, 0);
-		ColorComponent.insert(cube, SKYBLUE);
-	});
+	const char *main_scene = argc >= 2 ? argv[1] : "assets/main.toml";
+	if (!ecsql_world.load_scene_file(main_scene)) {
+		std::cerr << "Could not load main scene " << main_scene << ". Bailing out." << std::endl;
+	}
 
 	SetTargetFPS(60);
 #ifdef __EMSCRIPTEN__

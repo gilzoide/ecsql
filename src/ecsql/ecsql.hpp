@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <istream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -41,15 +42,17 @@ public:
     bool delete_entity(Entity id);
 
     template<typename Fn>
-    void inside_transaction(Fn&& f) {
+    bool inside_transaction(Fn&& f) {
         begin_stmt();
         try {
             f(*this);
             commit_stmt();
+			return true;
         }
         catch (std::runtime_error& err) {
             std::cerr << "Runtime error: " << err.what() << std::endl;
             rollback_stmt();
+			return false;
         }
     }
 
@@ -63,6 +66,9 @@ public:
     
     bool restore_from(const char *db_name);
     bool restore_from(sqlite3 *db);
+
+	bool load_scene(std::istream& stream, std::string_view source_path = {});
+	bool load_scene_file(const char *file_name);
 
     sqlite3 *get_db() const;
 
