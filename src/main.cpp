@@ -102,7 +102,7 @@ int main(int argc, const char **argv) {
 		Entity cube = world.create_entity();
 		ModelFlyweight.component.insert(cube, "assets/models/cube.obj");
 		PositionComponent.insert(cube, 0, 0, 0);
-		ColorComponent.insert(cube, BLUE);
+		ColorComponent.insert(cube, SKYBLUE);
 	});
 
 	SetTargetFPS(60);
