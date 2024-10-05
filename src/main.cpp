@@ -12,6 +12,7 @@
 #include "components/tags.hpp"
 #include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
+#include "flyweights/model_flyweight.hpp"
 #include "flyweights/texture_flyweight.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/rotate_on_hover.hpp"
@@ -82,7 +83,7 @@ int main(int argc, const char **argv) {
 	register_draw_systems(ecsql_world);
 
 	// Scene
-	ecsql_world.inside_transaction([](auto& world) {
+	ecsql_world.inside_transaction([](ecsql::Ecsql& world) {
 		for (int i = 0; i < 100; i++) {
 			Entity img1 = world.create_entity();
 			TextureFlyweight.component.insert(img1, "assets/textures/chick.png");
@@ -97,6 +98,11 @@ int main(int argc, const char **argv) {
 			RotationComponent.insert(img2, 0, 0, 45);
 			ColorComponent.insert(img2, LIME);
 		}
+
+		Entity cube = world.create_entity();
+		ModelFlyweight.component.insert(cube, "assets/models/cube.obj");
+		PositionComponent.insert(cube, 0, 0, 0);
+		ColorComponent.insert(cube, BLUE);
 	});
 
 	SetTargetFPS(60);
