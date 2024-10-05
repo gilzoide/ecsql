@@ -1,6 +1,6 @@
 #include "texture_flyweight.hpp"
 
-TextureFlyweight texture_flyweight {
+ComponentFlyweight<Texture2D> TextureFlyweight {
     [](const std::string& key) {
         return LoadTexture(key.c_str());
     },

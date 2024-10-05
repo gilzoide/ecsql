@@ -4,15 +4,15 @@
 
 #include "draw_systems.hpp"
 #include "../ecsql/system.hpp"
-#include "../components/texture_reference.hpp"
+#include "../flyweights/texture_flyweight.hpp"
 
 void register_draw_systems(ecsql::Ecsql& world) {
     world.register_system({
         "DrawTextureRect",
         [](auto& sql) {
             for (ecsql::SQLRow row : sql()) {
-                auto [texref, rectangle, rotation, color] = row.get<TextureReference, Rectangle, float, std::optional<Color>>(0);
-                auto tex = texref.get();
+                auto [texref, rectangle, rotation, color] = row.get<std::string_view, Rectangle, float, std::optional<Color>>(0);
+                auto tex = TextureFlyweight.get(texref);
                 Rectangle source {
                     0, 0,
                     (float) tex.value.width, (float) tex.value.height,
@@ -35,8 +35,8 @@ void register_draw_systems(ecsql::Ecsql& world) {
         "DrawTexture",
         [](auto& sql) {
             for (ecsql::SQLRow row : sql()) {
-                auto [texref, position, rotation, color] = row.get<TextureReference, Vector2, float, std::optional<Color>>(0);
-                auto tex = texref.get();
+                auto [texref, position, rotation, color] = row.get<std::string_view, Vector2, float, std::optional<Color>>(0);
+                auto tex = TextureFlyweight.get(texref);
                 Rectangle source {
                     0, 0,
                     (float) tex.value.width, (float) tex.value.height,

@@ -1,10 +1,7 @@
 #pragma once
 
-#include <string>
-
 #include <raylib.h>
 
-#include <flyweight.hpp>
+#include "component_flyweight.hpp"
 
-using TextureFlyweight = flyweight::flyweight_refcounted<Texture2D, std::string>;
-extern TextureFlyweight texture_flyweight;
+extern ComponentFlyweight<Texture2D> TextureFlyweight;
