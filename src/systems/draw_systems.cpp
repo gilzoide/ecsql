@@ -26,7 +26,7 @@ void register_draw_systems(ecsql::Ecsql& world) {
         },
         R"(
             SELECT path, Rectangle.x, Rectangle.y, width, height, Rotation.z, r, g, b, a
-            FROM TextureReference
+            FROM Texture
             JOIN Rectangle USING(entity_id)
             LEFT JOIN Rotation USING(entity_id)
             LEFT JOIN Color USING(entity_id)
@@ -54,7 +54,7 @@ void register_draw_systems(ecsql::Ecsql& world) {
         },
         R"(
             SELECT path, Position.x, Position.y, Rotation.z, r, g, b, a
-            FROM TextureReference
+            FROM Texture
             JOIN Position USING(entity_id)
             LEFT JOIN Rotation USING(entity_id)
             LEFT JOIN Color USING(entity_id)
@@ -80,7 +80,7 @@ void register_draw_systems(ecsql::Ecsql& world) {
 		},
 		R"(
 			SELECT path, Position.x, Position.y, Position.z, r, g, b, a
-            FROM ModelReference
+            FROM Model
             JOIN Position USING(entity_id)
             LEFT JOIN Color USING(entity_id)
 		)",

@@ -30,7 +30,7 @@ struct ComponentFlyweight {
 
 	flyweight::flyweight_refcounted<T, Key> flyweight;
 	
-	RawComponent component { std::string(reflect::type_name<T>()) + "Reference", { "path" } };
+	RawComponent component { reflect::type_name<T>(), { "path" } };
 	
 	HookSystem on_insert {
 		HookType::OnInsert,
