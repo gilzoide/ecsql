@@ -16,8 +16,8 @@ void System::operator()() {
 }
 
 void System::prepare(sqlite3 *db) {
-	while (prepared_sql.size() < sql.size()) {
-		prepared_sql.emplace_back(db, sql[prepared_sql.size()], true);
+	for (int i = prepared_sql.size(); i < sql.size(); i++) {
+		prepared_sql.emplace_back(db, sql[i], true);
 	}
 }
 
