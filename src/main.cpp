@@ -85,14 +85,14 @@ int main(int argc, const char **argv) {
 	ecsql_world.inside_transaction([](auto& world) {
 		for (int i = 0; i < 100; i++) {
 			Entity img1 = world.create_entity();
-			TextureFlyweight.component.insert(img1, "textures/chick.png");
+			TextureFlyweight.component.insert(img1, "assets/textures/chick.png");
 			PositionComponent.insert(img1, Vector2 { 0 + 4*(float) i, 0 + 4*(float) i });
 		}
 		
 		for (int i = 0; i < 100; i++) {
 			Entity img2 = world.create_entity();
 			RotateOnHover.insert(img2);
-			TextureFlyweight.component.insert(img2, "textures/chick.png");
+			TextureFlyweight.component.insert(img2, "assets/textures/chick.png");
 			RectangleComponent.insert(img2, Rectangle { 150 + 4*(float) i, 0 + 4*(float) i, 200, 200 });
 			RotationComponent.insert(img2, 0, 0, 45);
 			ColorComponent.insert(img2, LIME);
