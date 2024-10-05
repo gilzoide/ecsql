@@ -15,13 +15,24 @@ using namespace ecsql;
 
 template<typename T, typename Key = std::string>
 struct ComponentFlyweight {
-	ComponentFlyweight() : flyweight() {}
+	ComponentFlyweight(std::string_view component_name = reflect::type_name<T>(), std::string_view key_name = "path")
+		: component(component_name, { std::string(key_name) })
+	{
+	}
 
 	template<typename Creator>
-	ComponentFlyweight(Creator&& creator) : flyweight(creator) {}
+	ComponentFlyweight(Creator&& creator, std::string_view component_name = reflect::type_name<T>(), std::string_view key_name = "path")
+		: flyweight(creator)
+		, component(component_name, { std::string(key_name) })
+	{
+	}
 
 	template<typename Creator, typename Deleter>
-	ComponentFlyweight(Creator&& creator, Deleter&& deleter) : flyweight(creator, deleter) {}
+	ComponentFlyweight(Creator&& creator, Deleter&& deleter, std::string_view component_name = reflect::type_name<T>(), std::string_view key_name = "path")
+		: flyweight(creator, deleter)
+		, component(component_name, { std::string(key_name) })
+	{
+	}
 
 	template<typename U>
 	flyweight::flyweight_refcounted<T, Key>::autorelease_value get(const U& key) {
@@ -29,8 +40,7 @@ struct ComponentFlyweight {
 	}
 
 	flyweight::flyweight_refcounted<T, Key> flyweight;
-	
-	RawComponent component { reflect::type_name<T>(), { "path" } };
+	RawComponent component;
 	
 	HookSystem on_insert {
 		HookType::OnInsert,
