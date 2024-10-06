@@ -8,6 +8,7 @@
 #include <raylib.h>
 #include <tracy/Tracy.hpp>
 
+#include "memory.hpp"
 #include "components/all_components.hpp"
 #include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
@@ -67,6 +68,8 @@ int main(int argc, const char **argv) {
 	const char *exe_file_name = GetFileName(argv[0]);
 	TracySetProgramName(exe_file_name);
 	InitWindow(800, 600, exe_file_name);
+
+	configure_sqlite_memory_methods();
 
 	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
 	
