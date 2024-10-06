@@ -36,26 +36,32 @@ void register_draw_systems(ecsql::Ecsql& world) {
         "DrawTexture",
         [](auto& sql) {
             for (ecsql::SQLRow row : sql()) {
-                auto [tex_path, position, rotation, color] = row.get<std::string_view, Vector2, float, std::optional<Color>>();
+                auto [tex_path, position, normalized_pivot, rotation, color] = row.get<std::string_view, Vector2, Vector2, float, Color>();
                 auto tex = TextureFlyweight.get(tex_path);
                 Rectangle source {
                     0, 0,
                     (float) tex.value.width, (float) tex.value.height,
                 };
-                Vector2 center { source.width * 0.5f, source.height * 0.5f };
+                Vector2 pivot { source.width * normalized_pivot.x, source.height * normalized_pivot.y };
 				Rectangle dest {
-					position.x + center.x,
-					position.y + center.y,
+					position.x,
+					position.y,
 					source.width,
 					source.height,
 				};
-                DrawTexturePro(tex, source, dest, center, rotation, color.value_or(WHITE));
+                DrawTexturePro(tex, source, dest, pivot, rotation, color);
             }
         },
         R"(
-            SELECT path, Position.x, Position.y, Rotation.z, r, g, b, a
+            SELECT
+			  path,
+			  Position.x, Position.y,
+			  ifnull(Pivot.x, 0.5), ifnull(Pivot.y, 0.5),
+			  Rotation.z,
+			  ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
             FROM Texture
             JOIN Position USING(entity_id)
+			LEFT JOIN Pivot USING(entity_id)
             LEFT JOIN Rotation USING(entity_id)
             LEFT JOIN Color USING(entity_id)
         )",

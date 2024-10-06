@@ -1,7 +1,10 @@
-[entidate1.Position]
-x = 10
-y = 10
-z = 5
-
-[entidate1.Texture]
+[chick1.Texture]
 path = "assets/textures/chick.png"
+
+[chick1.Position]
+x = 100
+y = 100
+
+[chick1.Pivot]
+x = 0
+y = 0
