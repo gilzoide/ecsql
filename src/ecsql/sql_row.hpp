@@ -122,9 +122,7 @@ protected:
     }
     
     template<> std::string get_advance(int& index) const {
-        int size = sqlite3_column_bytes(stmt.get(), index);
-        const char *text = get_advance<const char *>(index);
-        return std::string(text, size);
+        return std::string(get_advance<std::string_view>(index));
     }
     
     template<> std::string_view get_advance(int& index) const {

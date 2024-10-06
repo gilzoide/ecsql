@@ -102,6 +102,10 @@ private:
         return bind_text(index++, value);
     }
 
+    template<> PreparedSQL& bind_advance(int& index, const std::string& value) {
+        return bind_text(index++, value);
+    }
+
     template<> PreparedSQL& bind_advance(int& index, std::string_view value) {
         return bind_text(index++, value);
     }
