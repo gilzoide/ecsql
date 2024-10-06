@@ -6,6 +6,7 @@
 #include "component.hpp"
 #include "ecsql.hpp"
 #include "hook_system.hpp"
+#include "scene.hpp"
 #include "sql_hook_row.hpp"
 #include "system.hpp"
 
@@ -196,69 +197,17 @@ bool Ecsql::restore_from(sqlite3 *db) {
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
 
-bool Ecsql::load_scene(std::istream& stream, std::string_view source_path) {
-	return inside_transaction([&](auto) {
-		toml::parse_result toml = toml::parse(stream);
-		for (auto&& [entity_name, entity_node] : toml) {
-			Entity entity = create_entity(entity_name);
-			if (toml::table *entity_table = entity_node.as_table()) {
-				for (auto&& [component_name, component_node] : *entity_table) {
-					if (toml::table *component_table = component_node.as_table()) {
-						std::string sql = "INSERT INTO ";
-						sql += component_name;
-						sql += "(entity_id";
-						for (auto&& [column_name, _] : *component_table) {
-							sql += ", ";
-							sql += column_name;
-						}
-						sql += ") VALUES (?";
-						for (int i = 0; i < component_table->size(); i++) {
-							sql += ", ?";
-						}
-						sql += ")";
-
-						PreparedSQL prepared_sql(db, sql, false);
-						int i = 1;
-						prepared_sql.bind(i++, entity);
-						for (auto&& [_, value_node] : *component_table) {
-							if (auto bool_value = value_node.as_boolean()) {
-								prepared_sql.bind(i++, bool_value->get());
-							}
-							else if (auto int_value = value_node.as_integer()) {
-								prepared_sql.bind(i++, int_value->get());
-							}
-							else if (auto float_value = value_node.as_floating_point()) {
-								prepared_sql.bind(i++, float_value->get());
-							}
-							else if (auto string_value = value_node.as_string()) {
-								prepared_sql.bind(i++, (std::string_view) string_value->get());
-							}
-						}
-						prepared_sql();
-					}
-					else {
-						std::string error = "[Ecsql::load_scene] Expected component for entity named '";
-						error += entity_name;
-						error += '.';
-						error += component_name;
-						error += '\'';
-						throw std::runtime_error(error);
-					}
-				}
-			}
-			else {
-				std::string error = "[Ecsql::load_scene] Expected table for entity named '";
-				error += entity_name;
-				error += '\'';
-				throw std::runtime_error(error);
-			}
-		}
-	});
+void Ecsql::load_scene(std::string_view source) {
+	ecsql::load_scene(*this, source);
 }
 
-bool Ecsql::load_scene_file(const char *file_name) {
+void Ecsql::load_scene(std::istream& stream, std::string_view source_path) {
+	ecsql::load_scene(*this, stream, source_path);
+}
+
+void Ecsql::load_scene_file(std::string_view file_name) {
 	std::ifstream stream(file_name);
-	return load_scene(stream, file_name);
+	ecsql::load_scene(*this, stream, file_name);
 }
 
 sqlite3 *Ecsql::get_db() const {

@@ -67,8 +67,9 @@ public:
     bool restore_from(const char *db_name);
     bool restore_from(sqlite3 *db);
 
-	bool load_scene(std::istream& stream, std::string_view source_path = {});
-	bool load_scene_file(const char *file_name);
+	void load_scene(std::string_view source);
+	void load_scene(std::istream& stream, std::string_view source_path = {});
+	void load_scene_file(std::string_view file_name);
 
     sqlite3 *get_db() const;
 
