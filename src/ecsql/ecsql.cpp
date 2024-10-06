@@ -77,6 +77,7 @@ Ecsql::Ecsql(sqlite3 *db)
 	, create_entity_stmt(db, "INSERT INTO entity(name) VALUES(?) RETURNING id", true)
 	, delete_entity_stmt(db, "DELETE FROM entity WHERE id = ?", true)
 {
+	execute_sql("PRAGMA foreign_keys = 1");
 	sqlite3_preupdate_hook(db, ecsql_preupdate_hook, this);
 }
 
