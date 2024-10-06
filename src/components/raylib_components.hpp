@@ -3,7 +3,6 @@
 #include <raylib.h>
 
 #include "../ecsql/component.hpp"
-#include "../ecsql/ecsql.hpp"
 
 inline ecsql::Component<Color> ColorComponent;
 inline ecsql::Component<Vector3> PositionComponent { "Position" };

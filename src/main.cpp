@@ -8,13 +8,13 @@
 #include <raylib.h>
 #include <tracy/Tracy.hpp>
 
-#include "components/raylib_components.hpp"
-#include "components/tags.hpp"
+#include "components/all_components.hpp"
 #include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
 #include "flyweights/model_flyweight.hpp"
 #include "flyweights/texture_flyweight.hpp"
 #include "systems/draw_systems.hpp"
+#include "systems/move_on_arrows.hpp"
 #include "systems/rotate_on_hover.hpp"
 
 #if defined(DEBUG) && !defined(NDEBUG)
@@ -79,6 +79,7 @@ int main(int argc, const char **argv) {
 	});
 
 	// Systems
+	register_move_on_arrows(ecsql_world);
 	register_rotate_on_hover_systems(ecsql_world);
 	register_draw_systems(ecsql_world);
 

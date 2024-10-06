@@ -8,3 +8,8 @@ y = 100
 [chick1.Pivot]
 x = 0
 y = 0
+
+[chick1.LinearSpeed]
+value = 5
+
+[chick1.MoveOnArrows]
