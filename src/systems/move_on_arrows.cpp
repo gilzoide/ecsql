@@ -13,11 +13,11 @@ void register_move_on_arrows(ecsql::Ecsql& world) {
 			bool going_left = IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A);
 			bool going_right = IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D);
 			Vector2 movement = {
-				(float) going_right - (float) going_left,
-				(float) going_down - (float) going_up,
+				.x = (float) going_right - (float) going_left,
+				.y = (float) going_down - (float) going_up,
 			};
-			movement = Vector2Normalize(movement);
 			if (movement.x || movement.y) {
+				movement = Vector2Normalize(movement);
 				update_position(movement.x, movement.y);
 			}
 		},
