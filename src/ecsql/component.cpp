@@ -44,7 +44,7 @@ std::string RawComponent::schema_sql() const {
 		query += "(\n  entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE";
 	}
 	for (auto& it : fields) {
-		query += ", ";
+		query += ",\n  ";
 		query += it;
 	}
 	query += "\n);";
