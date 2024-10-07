@@ -76,10 +76,10 @@ int main(int argc, const char **argv) {
 	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
 	
 	// Components
-	ecsql::RawComponent::foreach_static_linked_list([&](auto component) {
+	ecsql::RawComponent::foreach_static_linked_list([&](ecsql::RawComponent *component) {
 		ecsql_world.register_component(*component);
 	});
-	ecsql::HookSystem::foreach_static_linked_list([&](auto system) {
+	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {
 		ecsql_world.register_hook_system(*system);
 	});
 

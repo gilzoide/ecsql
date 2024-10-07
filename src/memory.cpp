@@ -1,9 +1,22 @@
-#include <sqlite3.h>
-#include <tracy/Tracy.hpp>
-
 #include "memory.hpp"
 
 #ifdef TRACY_ENABLE
+#include <sqlite3.h>
+#include <tracy/Tracy.hpp>
+
+// Global operator new/delete
+void *operator new(std::size_t n) {
+	void *ptr = malloc(n);
+	TracyAlloc(ptr, n);
+	return ptr;
+}
+
+void operator delete(void * p) noexcept {
+	TracyFree(p);
+	free(p);
+}
+
+// SQLite memory allocations
 const char *SQLITE_MEMORY_ZONE_NAME = "sqlite3";
 static sqlite3_mem_methods default_sqlite_mem_methods;
 
