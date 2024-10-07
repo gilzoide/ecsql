@@ -20,6 +20,7 @@
 
 #if defined(DEBUG) && !defined(NDEBUG)
 void run_debug_functionality(ecsql::Ecsql& world) {
+	ZoneScoped;
 	DrawFPS(0, 0);
 
 	for (int fkey = KEY_F1; fkey <= KEY_F10; fkey++) {
@@ -42,6 +43,7 @@ void run_debug_functionality(ecsql::Ecsql& world) {
 #endif
 
 void game_loop(ecsql::Ecsql& world) {
+	ZoneScoped;
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
 
