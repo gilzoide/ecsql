@@ -21,7 +21,7 @@ Components may be added and removed from their entities in either a one-to-one o
 Thinking about this analogy of ECS worlds as databases, what if we implemented an ECS framework using SQL databases, powered by [SQLite](https://sqlite.org)?
 
 The pros:
-- With SQL we can not only query for specific components, but we can further filter data based on their values.
+- With SQL, not only can we query for a specific component set, but we can further filter data based on their values.
   For example, we can query for specific enumeration values inside components to implement state machines.
 - We can use an in-memory database or operate directly to files in the filesystem.
   Using files will likely be slower, since they require I/O with the filesystem, but this feature might be useful in some cases.
@@ -49,58 +49,45 @@ CREATE TABLE entity (
 
 ## Representing components in SQL
 Components are data blocks that can be attached to entities.
-All components must have an associated entity.
-Also when the entity is deleted, its components should be deleted along with it.
+All components must be associated to a living entity.
+When the entity is deleted, its components should be deleted along with it.
 
-To me, the best representation for ECS components in SQL is creating a table for each one of them.
-All components have their own ids, and their owner entity's id.
-When querying component sets for a system, all we need to do is `JOIN` all these tables together using the entity id.
+To me, the best representation for ECS components in SQL is creating a table for each component type.
+- Each component instance is uniquely identified by its owner entity's id.
+- When querying component sets for a system, all we need to do is `JOIN` all these tables together using the entity id.
+- To make sure components are deleted along with their owner entity, all we have to do is use a foreign key with `ON DELETE CASCADE` and SQLite will handle it automatically for us.
 
 The base for every component could be defined like the following:
 ```sql
 CREATE TABLE component (
-  -- Component's own id, used for updating its data from systems
-  id INTEGER PRIMARY KEY,
-
   -- Owner entity id
-  -- "NOT NULL": components must always be associated with an entity
+  -- "PRIMARY KEY": components are uniquely identified by their entity's id
   -- "REFERENCES entity(id)": foreign key constraint
   -- "ON DELETE CASCADE": delete this component when entity is deleted
-  entity_id INTEGER NOT NULL REFERENCES entity(id) ON DELETE CASCADE
+  entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE
 );
-```
-
-Since we'll want to match components using the entity id, let's also add an index to it for faster queries:
-```sql
-CREATE INDEX component_entity_id ON component(entity_id);
 ```
 
 For example, a 3D "Position" component could be defined like the following table:
 ```sql
 CREATE TABLE position (
-  id INTEGER PRIMARY KEY,
-  entity_id INTEGER NOT NULL REFERENCES entity(id) ON DELETE CASCADE,
+  entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE,
 
   -- 3D position axes, all defaulting to 0
   x FLOAT DEFAULT 0,
   y FLOAT DEFAULT 0,
   z FLOAT DEFAULT 0
 );
-
--- Don't forget the index on "entity_id"
-CREATE INDEX position_entity_id ON position(entity_id);
 ```
 
 As another example, a "Velocity" component could be defined like so:
 ```sql
 CREATE TABLE velocity (
-  id INTEGER PRIMARY KEY,
-  entity_id INTEGER NOT NULL REFERENCES entity(id) ON DELETE CASCADE,
+  entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE,
 
   -- Velocity value, in m/s
   value FLOAT DEFAULT 0
 );
-CREATE INDEX velocity_entity_id ON velocity(entity_id);
 ```
 
 
@@ -111,13 +98,14 @@ Iterating over all entities that have both components can be accomplished with t
 ```sql
 SELECT 
   entity_id,
-  position.id, position.x, position.y, position.z,
-  velocity.id, velocity.value
-FROM position INNER JOIN velocity USING(entity_id);
+  position.x, position.y, position.z,
+  velocity.value
+FROM position
+JOIN velocity USING(entity_id);
 ```
 
 We could also easily support systems that require some components, but only optionally requires others.
-This can be done by simply changing the `INNER JOIN` by an `OUTER LEFT|RIGHT JOIN`, making SQLite return `NULL` for data from components that are not present in the entity.
+This can be done by simply changing the `JOIN` by a `LEFT|RIGHT JOIN`, making SQLite return `NULL` for data from components that are not present in the entity.
 
 
 ## Conclusion
