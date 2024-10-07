@@ -6,7 +6,6 @@
 #include "component.hpp"
 #include "ecsql.hpp"
 #include "hook_system.hpp"
-#include "scene.hpp"
 #include "sql_hook_row.hpp"
 #include "system.hpp"
 
@@ -196,19 +195,6 @@ bool Ecsql::restore_from(sqlite3 *db) {
 	sqlite3_backup *backup = sqlite3_backup_init(this->db, "main", db, "main");
 	sqlite3_backup_step(backup, -1);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
-}
-
-void Ecsql::load_scene(std::string_view source) {
-	ecsql::load_scene(*this, source);
-}
-
-void Ecsql::load_scene(std::istream& stream, std::string_view source_path) {
-	ecsql::load_scene(*this, stream, source_path);
-}
-
-void Ecsql::load_scene_file(std::string_view file_name) {
-	std::ifstream stream(file_name);
-	ecsql::load_scene(*this, stream, file_name);
 }
 
 sqlite3 *Ecsql::get_db() const {

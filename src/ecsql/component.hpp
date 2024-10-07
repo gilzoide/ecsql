@@ -32,16 +32,6 @@ public:
 	std::string insert_sql() const;
 	std::string update_sql() const;
 
-	template<typename... Types>
-	void insert(Entity entity, Types&&... values) {
-		insert_stmt(entity, std::forward<Types>(values)...);
-	}
-	
-	template<typename... Types>
-	void update(Entity entity, Types&&... values) {
-		update_stmt(std::forward<Types>(values)..., entity);
-	}
-
 	const std::string& get_name() const;
 	const std::vector<std::string>& get_fields() const;
 
@@ -49,9 +39,6 @@ protected:
 	std::string name;
 	std::vector<std::string> fields;
 	bool allow_duplicate;
-
-	PreparedSQL insert_stmt;
-	PreparedSQL update_stmt;
 
 	STATIC_LINKED_LIST_DEFINE(RawComponent);
 };
@@ -62,11 +49,11 @@ class Component : public RawComponent {
 		std::vector<std::string> fields;
 		if constexpr (std::is_class_v<T>) {
 			reflect::for_each<T>([&](auto I) {
-				fields.push_back(std::string(reflect::member_name<I, T>()));
+				fields.emplace_back(reflect::member_name<I, T>());
 			});
 		}
 		else {
-			fields.push_back("value");
+			fields.emplace_back("value");
 		}
 		return fields;
 	}

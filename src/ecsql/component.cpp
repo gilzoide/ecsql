@@ -23,11 +23,6 @@ RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fie
 
 void RawComponent::prepare(sqlite3 *db) {
 	PreparedSQL(db, schema_sql())();
-
-	insert_stmt = PreparedSQL(db, insert_sql(), true);
-	if (!fields.empty()) {
-		update_stmt = PreparedSQL(db, update_sql(), true);
-	}
 }
 
 int RawComponent::entity_id_index() const {

@@ -9,9 +9,9 @@
 #include <tracy/Tracy.hpp>
 
 #include "memory.hpp"
-#include "components/all_components.hpp"
 #include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
+#include "ecsql/serialization.hpp"
 #include "flyweights/model_flyweight.hpp"
 #include "flyweights/texture_flyweight.hpp"
 #include "systems/draw_systems.hpp"
@@ -82,6 +82,13 @@ int main(int argc, const char **argv) {
 	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {
 		ecsql_world.register_hook_system(*system);
 	});
+	bool loaded_components = ecsql_world.inside_transaction([](ecsql::Ecsql& world) {
+		load_components_file(world, "assets/components.toml");
+	});
+	if (!loaded_components) {
+		std::cerr << "Could not load components file 'assets/components.toml'. Bailing out." << std::endl;
+		return 1;
+	}
 
 	// Systems
 	register_move_on_arrows(ecsql_world);
@@ -91,10 +98,11 @@ int main(int argc, const char **argv) {
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "assets/main.toml";
 	bool loaded_main_scene = ecsql_world.inside_transaction([main_scene](ecsql::Ecsql& world) {
-		world.load_scene_file(main_scene);
+		load_scene_file(world, main_scene);
 	});
 	if (!loaded_main_scene) {
-		std::cerr << "Could not load main scene " << main_scene << ". Bailing out." << std::endl;
+		std::cerr << "Could not load main scene '" << main_scene << "'. Bailing out." << std::endl;
+		return 1;
 	}
 
 	SetTargetFPS(60);
