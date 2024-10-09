@@ -34,29 +34,40 @@ PreparedSQL& PreparedSQL::bind_null(int index) {
     sqlite3_bind_null(stmt.get(), index);
     return *this;
 }
+
 PreparedSQL& PreparedSQL::bind_bool(int index, bool value) {
     sqlite3_bind_int(stmt.get(), index, value);
     return *this;
 }
+
 PreparedSQL& PreparedSQL::bind_int(int index, int value) {
     sqlite3_bind_int(stmt.get(), index, value);
     return *this;
 }
+
 PreparedSQL& PreparedSQL::bind_int64(int index, sqlite3_int64 value) {
     sqlite3_bind_int64(stmt.get(), index, value);
     return *this;
 }
+
 PreparedSQL& PreparedSQL::bind_double(int index, double value) {
     sqlite3_bind_double(stmt.get(), index, value);
     return *this;
 }
+
 PreparedSQL& PreparedSQL::bind_text(int index, const char *value, int length, void(*dtor)(void*)) {
     sqlite3_bind_text(stmt.get(), index, value, length, dtor);
     return *this;
 }
+
 PreparedSQL& PreparedSQL::bind_text(int index, std::string_view value, void(*dtor)(void*)) {
     sqlite3_bind_text(stmt.get(), index, value.data(), value.length(), dtor);
     return *this;
+}
+
+PreparedSQL& PreparedSQL::bind_blob(int index, void *data, int length, void(*dtor)(void*)) {
+	sqlite3_bind_blob64(stmt.get(), index, data, length, dtor);
+	return *this;
 }
 
 PreparedSQL& PreparedSQL::reset() {

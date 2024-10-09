@@ -2,6 +2,7 @@
 
 #include "entity.hpp"
 #include "executed_sql.hpp"
+#include "is_span.hpp"
 #include "sql_row.hpp"
 
 namespace ecsql {
@@ -19,6 +20,11 @@ public:
     PreparedSQL& bind_double(int index, double value);
     PreparedSQL& bind_text(int index, const char *value, int length = -1, void(*dtor)(void*) = SQLITE_STATIC);
     PreparedSQL& bind_text(int index, std::string_view value, void(*dtor)(void*) = SQLITE_STATIC);
+    PreparedSQL& bind_blob(int index, void *data, int length, void(*dtor)(void*) = SQLITE_STATIC);
+	template<typename T>
+    PreparedSQL& bind_blob(int index, std::span<T> value, void(*dtor)(void*) = SQLITE_STATIC) {
+		return bind_blob(index, (void *) value.data(), value.size_bytes(), dtor);
+	}
 
     template<typename... Types>
     PreparedSQL& bind(int index, Types&&... values) {
@@ -40,10 +46,15 @@ private:
     std::shared_ptr<sqlite3_stmt> stmt;
 
     template<typename T> PreparedSQL& bind_advance(int& index, T value) {
-        reflect::for_each<T>([&](auto I) {
-            auto&& field = reflect::get<I>(value);
-            bind_advance<std::remove_cvref_t<decltype(field)>>(index, field);
-        });
+		if constexpr (is_span<T>) {
+			bind_blob(index++, value);
+		}
+		else {
+			reflect::for_each<T>([&](auto I) {
+				auto&& field = reflect::get<I>(value);
+				bind_advance<std::remove_cvref_t<decltype(field)>>(index, field);
+			});
+		}
         return *this;
     }
 
