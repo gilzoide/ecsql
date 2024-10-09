@@ -23,8 +23,16 @@ double SQLRow::column_double(int index) const {
     return sqlite3_column_double(stmt.get(), index);
 }
 
-const unsigned char *SQLRow::column_text(int index) const {
-    return sqlite3_column_text(stmt.get(), index);
+std::string_view SQLRow::column_text(int index) const {
+	const unsigned char *text = sqlite3_column_text(stmt.get(), index);
+	int size = sqlite3_column_bytes(stmt.get(), index);
+    return std::string_view((const char *) text, size);
+}
+
+std::span<const uint8_t> SQLRow::column_blob(int index) const {
+	const uint8_t *data = (const uint8_t *) sqlite3_column_blob(stmt.get(), index);
+	int size = sqlite3_column_bytes(stmt.get(), index);
+	return std::span<const uint8_t>(data, size);
 }
 
 bool SQLRow::column_is_null(int index) const {
