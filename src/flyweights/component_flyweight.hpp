@@ -35,11 +35,11 @@ struct ComponentFlyweight {
 	}
 
 	template<typename U>
-	flyweight::flyweight_refcounted<T, Key>::autorelease_value get(U&& key) {
+	flyweight::flyweight_refcounted<Key, T>::autorelease_value_type get(U&& key) {
 		return flyweight.get_autorelease(Key(std::forward<U>(key)));
 	}
 
-	flyweight::flyweight_refcounted<T, Key> flyweight;
+	flyweight::flyweight_refcounted<Key, T> flyweight;
 	RawComponent component;
 	
 	HookSystem on_insert {
