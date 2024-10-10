@@ -4,6 +4,8 @@
 #include "component.hpp"
 #include "serialization.hpp"
 
+#include "../assetio/assetio.hpp"
+
 namespace ecsql {
 
 void load_scene(Ecsql& world, const toml::table& toml) {
@@ -63,8 +65,8 @@ void load_scene(Ecsql& world, const toml::table& toml) {
 	}
 }
 
-void load_scene(Ecsql& world, std::string_view source) {
-	load_scene(world, toml::parse(source));
+void load_scene(Ecsql& world, std::string_view source, std::string_view source_path) {
+	load_scene(world, toml::parse(source, source_path));
 }
 
 void load_scene(Ecsql& world, std::istream& stream, std::string_view source_path) {
@@ -72,8 +74,8 @@ void load_scene(Ecsql& world, std::istream& stream, std::string_view source_path
 }
 
 void load_scene_file(Ecsql& world, std::string_view file_name) {
-	std::fstream file(file_name);
-	load_scene(world, file, file_name);
+	auto file_data = assetio::read_asset_data<std::string>(file_name.data());
+	load_scene(world, file_data, file_name);
 }
 
 void load_components(Ecsql& world, const toml::table& toml) {
@@ -111,8 +113,8 @@ void load_components(Ecsql& world, const toml::table& toml) {
 	}
 }
 
-void load_components(Ecsql& world, std::string_view source) {
-	load_components(world, toml::parse(source));
+void load_components(Ecsql& world, std::string_view source, std::string_view source_path) {
+	load_components(world, toml::parse(source, source_path));
 }
 
 void load_components(Ecsql& world, std::istream& stream, std::string_view source_path) {
@@ -120,8 +122,8 @@ void load_components(Ecsql& world, std::istream& stream, std::string_view source
 }
 
 void load_components_file(Ecsql& world, std::string_view file_name) {
-	std::fstream file(file_name);
-	load_components(world, file, file_name);
+	auto file_data = assetio::read_asset_data<std::string>(file_name.data());
+	load_components(world, file_data, file_name);
 }
 
 }

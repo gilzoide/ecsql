@@ -13,3 +13,6 @@
 [submodule "libs/tomlplusplus"]
 	path = libs/tomlplusplus
 	url = https://github.com/marzer/tomlplusplus.git
+[submodule "libs/physfs"]
+	path = libs/physfs
+	url = https://github.com/icculus/physfs

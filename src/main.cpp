@@ -1,3 +1,4 @@
+#include "assetio/assetio.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -67,6 +68,8 @@ int main(int argc, const char **argv) {
 		ChangeDirectory(exe_dir_path);
 	}
 
+	assetio::initialize(argv[0], "com.gilzoide", "ecsql");
+
 	const char *exe_file_name = GetFileName(argv[0]);
 	TracySetProgramName(exe_file_name);
 	InitWindow(800, 600, exe_file_name);
@@ -114,6 +117,8 @@ int main(int argc, const char **argv) {
     }
 #endif
 	CloseWindow();
+
+	assetio::terminate();
 
 	return 0;
 }

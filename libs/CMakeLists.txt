@@ -4,6 +4,13 @@ add_library(libs INTERFACE)
 add_subdirectory(flyweight.hpp)
 target_link_libraries(libs INTERFACE flyweight.hpp)
 
+# PhysFS
+option(PHYSFS_BUILD_SHARED "Build shared library" OFF)
+option(PHYSFS_BUILD_TEST "Build stdio test program." OFF)
+option(PHYSFS_BUILD_DOCS "Build doxygen based documentation" OFF)
+add_subdirectory(physfs)
+target_link_libraries(libs INTERFACE PhysFS::PhysFS-static)
+
 # Raylib
 if (EMSCRIPTEN)
     set(PLATFORM Web)
