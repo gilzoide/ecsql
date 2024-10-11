@@ -32,6 +32,7 @@ The cons:
 - Even if we avoid disk I/O using an in-memory database, querying with SQLite will be slower than the specialized data structures used by other ECS frameworks, possibly orders of magnitude slower.
   One of the benefits of ECS is that it's possible to layout data in a cache-friendly manner, so that iterating on components is very very fast.
 - Some types of data, like pointers to native structures, don't have a nice representation in SQLite and might need an additional indirection when stored as component data.
+- You need to know SQL to make the most out of this system.
 
 Even if it will certainly be slower than specialized ECS implementations, SQLite is very fast in general and it might be fast enough for some game projects, so I want to experiment with this idea and see how far it goes.
 This experimental ECS framework powered by SQLite will be called **ECSQL**.
