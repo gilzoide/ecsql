@@ -22,7 +22,7 @@ set_target_properties(ecsql PROPERTIES CXX_STANDARD 20)
 if (EMSCRIPTEN)
     target_link_options(ecsql PRIVATE
         -sALLOW_MEMORY_GROWTH
-        --embed-file textures
+        --embed-file assets.zip
     )
     set_target_properties(ecsql PROPERTIES SUFFIX ".html")
 endif ()
