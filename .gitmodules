@@ -1,0 +1,18 @@
+[submodule "libs/raylib"]
+	path = libs/raylib
+	url = https://github.com/raysan5/raylib.git
+[submodule "libs/reflect"]
+	path = libs/reflect
+	url = https://github.com/qlibs/reflect.git
+[submodule "libs/flyweight"]
+	path = libs/flyweight.hpp
+	url = https://github.com/gilzoide/flyweight.hpp.git
+[submodule "libs/tracy"]
+	path = libs/tracy
+	url = https://github.com/wolfpld/tracy.git
+[submodule "libs/tomlplusplus"]
+	path = libs/tomlplusplus
+	url = https://github.com/marzer/tomlplusplus.git
+[submodule "libs/physfs"]
+	path = libs/physfs
+	url = https://github.com/icculus/physfs

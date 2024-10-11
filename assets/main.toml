@@ -1,0 +1,11 @@
+[chick1.Texture]
+path = "assets/textures/chick.png"
+
+[chick1.Position]
+x = 100
+y = 100
+
+[chick1.LinearSpeed]
+value = 5
+
+[chick1.MoveOnArrows]

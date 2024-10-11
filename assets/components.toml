@@ -1,0 +1,40 @@
+# Raylib
+[Position]
+x = 0
+y = 0
+z = 0
+
+[Scale]
+x = 1
+y = 1
+z = 1
+
+[Rectangle]
+x = 0
+y = 0
+width = 1
+height = 1
+
+[Pivot]
+x = 0.5
+y = 0.5
+z = 0.5
+
+[Rotation]
+x = 0
+y = 0
+z = 0
+
+[Color]
+r = 255
+g = 255
+b = 255
+a = 255
+
+# Gameplay
+[LinearSpeed]
+value = 1
+
+# Tags
+[MoveOnArrows]
+[RotateOnHover]
