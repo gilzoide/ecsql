@@ -16,3 +16,6 @@
 [submodule "libs/physfs"]
 	path = libs/physfs
 	url = https://github.com/icculus/physfs
+[submodule "libs/idbvfs"]
+	path = libs/idbvfs
+	url = https://github.com/gilzoide/idbvfs.git

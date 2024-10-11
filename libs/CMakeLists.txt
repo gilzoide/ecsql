@@ -4,6 +4,12 @@ add_library(libs INTERFACE)
 add_subdirectory(flyweight.hpp)
 target_link_libraries(libs INTERFACE flyweight.hpp)
 
+# idbvfs
+if (EMSCRIPTEN)
+  add_subdirectory(idbvfs)
+  target_link_libraries(libs INTERFACE idbvfs)
+endif ()
+
 # PhysFS
 option(PHYSFS_BUILD_SHARED "Build shared library" OFF)
 option(PHYSFS_BUILD_TEST "Build stdio test program." OFF)

@@ -11,11 +11,12 @@
 
 namespace ecsql {
 
-#if defined(DEBUG) && !defined(NDEBUG)
+#if defined(DEBUG) && !defined(NDEBUG) && !defined(__EMSCRIPTEN__)
 static const char DEFAULT_DB_NAME[] = "ecsql_world.sqlite3";
 static const char LAST_DB_NAME[] = "ecsql_world-backup10.sqlite3";
 #else
 static const char DEFAULT_DB_NAME[] = ":memory:";
+static const char LAST_DB_NAME[] = "";
 #endif
 
 static sqlite3 *ecsql_create_db(const char *db_name) {
@@ -82,9 +83,9 @@ Ecsql::Ecsql(sqlite3 *db)
 
 Ecsql::~Ecsql() {
 	sqlite3_close_v2(db);
-#if defined(DEBUG) && !defined(NDEBUG)
-	backup_into(LAST_DB_NAME);
-#endif
+	if (LAST_DB_NAME[0]) {
+		backup_into(LAST_DB_NAME);
+	}
 }
 
 void Ecsql::register_component(RawComponent& component) {

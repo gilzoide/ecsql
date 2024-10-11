@@ -4,6 +4,7 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <idbvfs.h>
 #endif
 #include <raylib.h>
 #include <tracy/Tracy.hpp>
@@ -74,6 +75,9 @@ int main(int argc, const char **argv) {
 	InitWindow(800, 600, exe_file_name);
 
 	configure_sqlite_memory_methods();
+#if __EMSCRIPTEN__
+	idbvfs_register(true);
+#endif
 
 	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
 	
