@@ -1,4 +1,3 @@
-#include "assetio/assetio.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -9,12 +8,12 @@
 #include <raylib.h>
 #include <tracy/Tracy.hpp>
 
+#include "assetio/assetio.hpp"
 #include "memory.hpp"
+#include "ecsql/component.hpp"
 #include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
 #include "ecsql/serialization.hpp"
-#include "flyweights/model_flyweight.hpp"
-#include "flyweights/texture_flyweight.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/rotate_on_hover.hpp"

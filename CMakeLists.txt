@@ -10,19 +10,19 @@ target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 file(GLOB_RECURSE assets assets/**)
 file(ARCHIVE_CREATE
-    OUTPUT ${CMAKE_BINARY_DIR}/assets.zip
-    PATHS ${assets}
-    FORMAT zip
+  OUTPUT ${CMAKE_BINARY_DIR}/assets.zip
+  PATHS ${assets}
+  FORMAT zip
 )
 
 target_link_libraries(ecsql libs)
-set_target_properties(ecsql PROPERTIES CXX_STANDARD 20)
+target_compile_features(ecsql PUBLIC cxx_std_20)
 
 # Emscripten / Web build support
 if (EMSCRIPTEN)
-    target_link_options(ecsql PRIVATE
-        -sALLOW_MEMORY_GROWTH
-        --embed-file assets.zip
-    )
-    set_target_properties(ecsql PROPERTIES SUFFIX ".html")
+  target_link_options(ecsql PRIVATE
+    -sALLOW_MEMORY_GROWTH
+    --embed-file assets.zip
+  )
+  set_target_properties(ecsql PROPERTIES SUFFIX ".html")
 endif ()
