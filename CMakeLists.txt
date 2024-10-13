@@ -6,17 +6,10 @@ add_subdirectory(libs)
 
 file(GLOB_RECURSE src "src/*.cpp")
 add_executable(ecsql ${src})
-target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
-
-file(GLOB_RECURSE assets assets/**)
-file(ARCHIVE_CREATE
-  OUTPUT ${CMAKE_BINARY_DIR}/assets.zip
-  PATHS ${assets}
-  FORMAT zip
-)
-
 target_link_libraries(ecsql libs)
 target_compile_features(ecsql PUBLIC cxx_std_20)
+# define `DEBUG` symbol on CMake Debug builds
+target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Emscripten / Web build support
 if (EMSCRIPTEN)
@@ -26,3 +19,12 @@ if (EMSCRIPTEN)
   )
   set_target_properties(ecsql PROPERTIES SUFFIX ".html")
 endif ()
+
+
+# Pack all assets in the assets.zip file
+file(GLOB_RECURSE assets assets/**)
+file(ARCHIVE_CREATE
+  OUTPUT ${CMAKE_BINARY_DIR}/assets.zip
+  PATHS ${assets}
+  FORMAT zip
+)
