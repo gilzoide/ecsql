@@ -3,7 +3,7 @@
 
 #include "assetio.hpp"
 
-namespace assetio {
+namespace ecsql {
 
 static unsigned char *LoadFileDataCallback(const char *fileName, int *dataSize) {
 	std::unique_ptr<PHYSFS_File, PHYSFS_FileDeleter> file(PHYSFS_openRead(fileName));
@@ -52,7 +52,7 @@ static bool SaveFileTextCallback(const char *fileName, char *text) {
 	return false;
 }
 
-void initialize(const char *argv0, const char *organization, const char *app_name) {
+void assetio_initialize(const char *argv0, const char *organization, const char *app_name) {
 	PHYSFS_init(argv0);
 	PHYSFS_setSaneConfig(organization, app_name, "zip", 0, 1);
 
@@ -62,7 +62,7 @@ void initialize(const char *argv0, const char *organization, const char *app_nam
 	SetSaveFileTextCallback(SaveFileTextCallback);
 }
 
-void terminate() {
+void assetio_terminate() {
 	PHYSFS_deinit();
 }
 

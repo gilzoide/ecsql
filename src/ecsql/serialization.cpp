@@ -72,7 +72,7 @@ void load_scene(Ecsql& world, std::istream& stream, std::string_view source_path
 }
 
 void load_scene_file(Ecsql& world, std::string_view file_name) {
-	auto file_data = assetio::read_asset_data<std::string>(file_name.data());
+	auto file_data = read_asset_data<std::string>(file_name.data());
 	load_scene(world, file_data, file_name);
 }
 
@@ -120,7 +120,7 @@ void load_components(Ecsql& world, std::istream& stream, std::string_view source
 }
 
 void load_components_file(Ecsql& world, std::string_view file_name) {
-	auto file_data = assetio::read_asset_data<std::string>(file_name.data());
+	auto file_data = read_asset_data<std::string>(file_name.data());
 	load_components(world, file_data, file_name);
 }
 
