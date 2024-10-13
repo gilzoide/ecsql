@@ -1,5 +1,6 @@
 #include <string_view>
 
+#include <cdedent.hpp>
 #include <raylib.h>
 
 #include "draw_systems.hpp"
@@ -30,7 +31,7 @@ void register_draw_systems(ecsql::Ecsql& world) {
             JOIN Rectangle USING(entity_id)
             LEFT JOIN Rotation USING(entity_id)
             LEFT JOIN Color USING(entity_id)
-        )",
+        )"_dedent,
     });
     world.register_system({
         "DrawTexture",
@@ -64,7 +65,7 @@ void register_draw_systems(ecsql::Ecsql& world) {
 			LEFT JOIN Pivot USING(entity_id)
             LEFT JOIN Rotation USING(entity_id)
             LEFT JOIN Color USING(entity_id)
-        )",
+        )"_dedent,
     });
 	world.register_system({
 		"DrawModel",
@@ -89,6 +90,6 @@ void register_draw_systems(ecsql::Ecsql& world) {
             FROM Model
             JOIN Position USING(entity_id)
             LEFT JOIN Color USING(entity_id)
-		)",
+		)"_dedent,
 	});
 }

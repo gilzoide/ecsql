@@ -1,3 +1,4 @@
+#include <cdedent.hpp>
 #include <raylib.h>
 #include <raymath.h>
 
@@ -30,6 +31,6 @@ void register_move_on_arrows(ecsql::Ecsql& world) {
 				LEFT JOIN LinearSpeed USING(entity_id)
 			) AS movement
 			WHERE Position.entity_id = movement.entity_id
-		)",
+		)"_dedent,
 	});
 }

@@ -19,3 +19,6 @@
 [submodule "libs/idbvfs"]
 	path = libs/idbvfs
 	url = https://github.com/gilzoide/idbvfs.git
+[submodule "libs/cdedent"]
+	path = libs/cdedent
+	url = https://github.com/gilzoide/cdedent.git

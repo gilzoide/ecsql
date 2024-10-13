@@ -1,4 +1,6 @@
 #include <iostream>
+
+#include <cdedent.hpp>
 #include <raylib.h>
 
 #include "rotate_on_hover.hpp"
@@ -19,7 +21,7 @@ void register_rotate_on_hover_systems(ecsql::Ecsql& world) {
 			JOIN Rectangle USING(entity_id)
 			JOIN Rotation USING(entity_id)
             WHERE Rectangle.x <= ?1 AND Rectangle.y <= ?2 AND Rectangle.x + width >= ?1 AND Rectangle.y + height >= ?2
-        )",
+        )"_dedent,
         "UPDATE Rotation SET z = z + 1 WHERE entity_id = ?"
     });
 }

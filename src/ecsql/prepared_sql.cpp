@@ -1,4 +1,3 @@
-#include <iostream>
 #include <stdexcept>
 
 #include <sqlite3.h>
@@ -12,9 +11,9 @@ static sqlite3_stmt *prepare_statement(sqlite3 *db, std::string_view str, bool i
     int res = sqlite3_prepare_v3(db, str.data(), str.size(), is_persistent ? SQLITE_PREPARE_PERSISTENT : 0, &stmt, NULL);
     if (res != SQLITE_OK) {
         std::string error = sqlite3_errmsg(db);
-        error += " (\"";
+        error += " @ \"";
         error += str;
-        error += "\")";
+        error += "\"";
         throw std::runtime_error(error);
     }
     return stmt;
