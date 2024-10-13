@@ -63,6 +63,8 @@ void game_loop(void *world) {
 }
 
 int main(int argc, const char **argv) {
+	configure_memory_hooks();
+
 	const char *exe_dir_path = GetDirectoryPath(argv[0]);
 	if (exe_dir_path && exe_dir_path[0]) {
 		ChangeDirectory(exe_dir_path);
@@ -74,7 +76,6 @@ int main(int argc, const char **argv) {
 	TracySetProgramName(exe_file_name);
 	InitWindow(800, 600, exe_file_name);
 
-	configure_sqlite_memory_methods();
 #if __EMSCRIPTEN__
 	idbvfs_register(true);
 #endif

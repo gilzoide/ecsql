@@ -1,3 +1,3 @@
 #pragma once
 
-void configure_sqlite_memory_methods();
+void configure_memory_hooks();
