@@ -1,12 +1,18 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <vector>
+
 #include <physfs.h>
 
 namespace assetio {
 
 void initialize(const char *argv0, const char *organization, const char *app_name);
 void terminate();
+
+std::vector<uint8_t> read_asset_bytes(const char *filename, int buffer_size = 1024);
+std::string read_asset_text(const char *filename, int buffer_size = 1024);
 
 struct PHYSFS_FileDeleter {
 	void operator()(PHYSFS_File *file) {

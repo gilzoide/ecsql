@@ -66,4 +66,12 @@ void terminate() {
 	PHYSFS_deinit();
 }
 
+std::vector<uint8_t> read_asset_bytes(const char *filename, int buffer_size) {
+	return read_asset_data<std::vector<uint8_t>>(filename, buffer_size);
+}
+
+std::string read_asset_text(const char *filename, int buffer_size) {
+	return read_asset_data<std::string>(filename, buffer_size);
+}
+
 }

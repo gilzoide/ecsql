@@ -1,10 +1,8 @@
 #include <fstream>
-#include <toml++/toml.hpp>
 
+#include "assetio.hpp"
 #include "component.hpp"
 #include "serialization.hpp"
-
-#include "../assetio/assetio.hpp"
 
 namespace ecsql {
 
