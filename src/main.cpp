@@ -88,13 +88,6 @@ int main(int argc, const char **argv) {
 	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {
 		ecsql_world.register_hook_system(*system);
 	});
-	bool loaded_components = ecsql_world.inside_transaction([](ecsql::Ecsql& world) {
-		load_components_file(world, "assets/components.toml");
-	});
-	if (!loaded_components) {
-		std::cerr << "Could not load components file 'assets/components.toml'. Bailing out." << std::endl;
-		return 1;
-	}
 
 	// Systems
 	register_move_on_arrows(ecsql_world);
