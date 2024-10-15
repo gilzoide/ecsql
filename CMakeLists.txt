@@ -22,9 +22,15 @@ endif ()
 
 
 # Pack all assets in the assets.zip file
-file(GLOB_RECURSE assets assets/**)
-file(ARCHIVE_CREATE
-  OUTPUT ${CMAKE_BINARY_DIR}/assets.zip
-  PATHS ${assets}
-  FORMAT zip
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+file(GLOB_RECURSE asset_files assets/**)
+set(pack_assets_script "tools/pack_assets.py")
+add_custom_command(
+  OUTPUT assets.zip
+  COMMAND ${Python3_EXECUTABLE} ${pack_assets_script} assets "${CMAKE_BINARY_DIR}/assets.zip"
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  DEPENDS ${asset_files} ${pack_assets_script}
 )
+add_custom_target(assets_zip DEPENDS assets.zip)
+add_dependencies(ecsql assets_zip)
