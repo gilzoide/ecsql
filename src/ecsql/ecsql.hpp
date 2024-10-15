@@ -18,14 +18,13 @@ namespace ecsql {
 
 class RawComponent;
 class HookSystem;
-class System;
 class SQLRow;
+class System;
 
 class Ecsql {
 public:
     Ecsql();
     Ecsql(const char *db_name);
-    Ecsql(sqlite3 *db);
     ~Ecsql();
 
     void register_component(RawComponent& component);
@@ -67,15 +66,15 @@ public:
     bool restore_from(const char *db_name);
     bool restore_from(sqlite3 *db);
 
-    sqlite3 *get_db() const;
+    std::shared_ptr<sqlite3> get_db() const;
 
 	template<typename... Args>
 	ExecutedSQL execute_sql(std::string_view sql, Args&&... args) {
-		return PreparedSQL(db, sql, false)(std::forward<Args>(args)...);
+		return PreparedSQL(db.get(), sql, false)(std::forward<Args>(args)...);
 	}
 
 private:
-    sqlite3 *db;
+    std::shared_ptr<sqlite3> db;
     PreparedSQL begin_stmt;
     PreparedSQL commit_stmt;
     PreparedSQL rollback_stmt;

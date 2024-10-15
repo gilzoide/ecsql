@@ -65,43 +65,37 @@ Ecsql::Ecsql()
 }
 
 Ecsql::Ecsql(const char *db_name)
-	: Ecsql(ecsql_create_db(db_name ?: DEFAULT_DB_NAME))
-{
-}
-
-Ecsql::Ecsql(sqlite3 *db)
-	: db(db ?: ecsql_create_db(DEFAULT_DB_NAME))
-	, begin_stmt(db, "BEGIN", true)
-	, commit_stmt(db, "COMMIT", true)
-	, rollback_stmt(db, "ROLLBACK", true)
-	, create_entity_stmt(db, "INSERT INTO entity(name) VALUES(?) RETURNING id", true)
-	, delete_entity_stmt(db, "DELETE FROM entity WHERE id = ?", true)
+	: db(ecsql_create_db(db_name ?: DEFAULT_DB_NAME), sqlite3_close_v2)
+	, begin_stmt(db.get(), "BEGIN", true)
+	, commit_stmt(db.get(), "COMMIT", true)
+	, rollback_stmt(db.get(), "ROLLBACK", true)
+	, create_entity_stmt(db.get(), "INSERT INTO entity(name) VALUES(?) RETURNING id", true)
+	, delete_entity_stmt(db.get(), "DELETE FROM entity WHERE id = ?", true)
 {
 	execute_sql("PRAGMA foreign_keys = 1");
-	sqlite3_preupdate_hook(db, ecsql_preupdate_hook, this);
+	sqlite3_preupdate_hook(db.get(), ecsql_preupdate_hook, this);
 }
 
 Ecsql::~Ecsql() {
-	sqlite3_close_v2(db);
 	if (LAST_DB_NAME[0]) {
 		backup_into(LAST_DB_NAME);
 	}
 }
 
 void Ecsql::register_component(RawComponent& component) {
-	component.prepare(db);
+	component.prepare(db.get());
 }
 void Ecsql::register_component(RawComponent&& component) {
-	component.prepare(db);
+	component.prepare(db.get());
 }
 
 void Ecsql::register_system(System& system) {
-	system.prepare(db);
+	system.prepare(db.get());
 	systems.push_back(system);
 }
 
 void Ecsql::register_system(System&& system) {
-	system.prepare(db);
+	system.prepare(db.get());
 	systems.push_back(system);
 }
 
@@ -176,7 +170,7 @@ bool Ecsql::backup_into(const char *db_name) {
 }
 
 bool Ecsql::backup_into(sqlite3 *db) {
-	sqlite3_backup *backup = sqlite3_backup_init(db, "main", this->db, "main");
+	sqlite3_backup *backup = sqlite3_backup_init(db, "main", this->db.get(), "main");
 	sqlite3_backup_step(backup, -1);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
@@ -193,12 +187,12 @@ bool Ecsql::restore_from(const char *db_name) {
 }
 
 bool Ecsql::restore_from(sqlite3 *db) {
-	sqlite3_backup *backup = sqlite3_backup_init(this->db, "main", db, "main");
+	sqlite3_backup *backup = sqlite3_backup_init(this->db.get(), "main", db, "main");
 	sqlite3_backup_step(backup, -1);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
 
-sqlite3 *Ecsql::get_db() const {
+std::shared_ptr<sqlite3> Ecsql::get_db() const {
 	return db;
 }
 
@@ -221,8 +215,8 @@ void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSys
 void Ecsql::execute_prehook(const char *table, const std::unordered_map<std::string, std::vector<HookSystem>>& map) {
 	auto it = map.find(table);
 	if (it != map.end()) {
-		SQLHookRow old_row { db, false };
-		SQLHookRow new_row { db, true };
+		SQLHookRow old_row { db.get(), false };
+		SQLHookRow new_row { db.get(), true };
 		for (auto& system : it->second) {
 			system(old_row, new_row);
 		}

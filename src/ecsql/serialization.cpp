@@ -41,7 +41,7 @@ void load_scene(Ecsql& world, const toml::table& toml) {
 			}
 			sql += ")";
 
-			PreparedSQL prepared_sql(world.get_db(), sql, false);
+			PreparedSQL prepared_sql(world.get_db().get(), sql, false);
 			int i = 1;
 			prepared_sql.bind(i++, entity);
 			for (auto&& [_, value_node] : *component_table) {
