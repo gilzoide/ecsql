@@ -1,5 +1,4 @@
 #include <raylib.h>
-#include <cstdlib>
 
 #include "assetio.hpp"
 
@@ -63,6 +62,11 @@ void assetio_initialize(const char *argv0, const char *organization, const char 
 }
 
 void assetio_terminate() {
+	SetLoadFileDataCallback(nullptr);
+	SetSaveFileDataCallback(nullptr);
+	SetLoadFileTextCallback(nullptr);
+	SetSaveFileTextCallback(nullptr);
+
 	PHYSFS_deinit();
 }
 
