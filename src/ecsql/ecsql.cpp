@@ -1,11 +1,9 @@
 #include <cstdio>
-#include <fstream>
-
-#include <toml++/toml.hpp>
 
 #include "component.hpp"
 #include "ecsql.hpp"
 #include "hook_system.hpp"
+#include "prepared_sql.hpp"
 #include "sql_hook_row.hpp"
 #include "system.hpp"
 
@@ -27,10 +25,12 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 	if (res != SQLITE_OK) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
-	res = sqlite3_exec(db, Entity::schema_sql(), nullptr, nullptr, nullptr);
-	if (res != SQLITE_OK) {
-		throw std::runtime_error(sqlite3_errmsg(db));
-	}
+
+	PreparedSQL(db, Entity::schema_sql())();
+	PreparedSQL(db, "PRAGMA foreign_keys = 1")();
+	PreparedSQL(db, "CREATE TABLE time(delta)")();
+	PreparedSQL(db, "INSERT INTO time(delta) VALUES(0)")();
+
 	return db;
 }
 
@@ -71,8 +71,8 @@ Ecsql::Ecsql(const char *db_name)
 	, rollback_stmt(db.get(), "ROLLBACK", true)
 	, create_entity_stmt(db.get(), "INSERT INTO entity(name) VALUES(?) RETURNING id", true)
 	, delete_entity_stmt(db.get(), "DELETE FROM entity WHERE id = ?", true)
+	, update_delta_time_stmt(db.get(), "UPDATE time SET delta = ?", true)
 {
-	execute_sql("PRAGMA foreign_keys = 1");
 	sqlite3_preupdate_hook(db.get(), ecsql_preupdate_hook, this);
 }
 
@@ -138,8 +138,9 @@ bool Ecsql::delete_entity(Entity id) {
 	return delete_entity_stmt(id).get<bool>();
 }
 
-void Ecsql::update() {
-	inside_transaction([](Ecsql& self) {
+void Ecsql::update(float time_delta) {
+	inside_transaction([=](Ecsql& self) {
+		self.update_delta_time_stmt(time_delta);
 		for (auto& system : self.systems) {
 			system();
 		}

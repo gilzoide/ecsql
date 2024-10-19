@@ -6,6 +6,6 @@ x = 100
 y = 100
 
 [chick1.LinearSpeed]
-value = 5
+value = 300
 
 [chick1.MoveOnArrows]

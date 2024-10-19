@@ -26,9 +26,10 @@ void register_move_on_arrows(ecsql::Ecsql& world) {
 			UPDATE Position
 			SET x = x + ? * movement.speed, y = y + ? * movement.speed
 			FROM (
-				SELECT entity_id, ifnull(LinearSpeed.value, 1) AS speed
+				SELECT entity_id, ifnull(LinearSpeed.value, 1) * time.delta AS speed
 				FROM MoveOnArrows
 				LEFT JOIN LinearSpeed USING(entity_id)
+				JOIN time
 			) AS movement
 			WHERE Position.entity_id = movement.entity_id
 		)"_dedent,

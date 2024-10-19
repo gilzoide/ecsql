@@ -47,7 +47,8 @@ void game_loop(ecsql::Ecsql& world) {
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
 
-	world.update();
+	float time_delta = GetFrameTime();
+	world.update(time_delta);
 
 #if defined(DEBUG) && !defined(NDEBUG)
 	run_debug_functionality(world);

@@ -55,7 +55,7 @@ public:
         }
     }
 
-    void update();
+    void update(float time_delta);
     void on_insert(const char *table);
     void on_delete(const char *table);
     void on_update(const char *table);
@@ -80,6 +80,7 @@ private:
     PreparedSQL rollback_stmt;
     PreparedSQL create_entity_stmt;
     PreparedSQL delete_entity_stmt;
+    PreparedSQL update_delta_time_stmt;
 
     std::vector<System> systems;
     std::unordered_map<std::string, std::vector<HookSystem>> on_insert_systems;
