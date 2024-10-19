@@ -26,7 +26,7 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
 
-	PreparedSQL(db, Entity::schema_sql())();
+	PreparedSQL(db, Entity::schema_sql)();
 	PreparedSQL(db, "PRAGMA foreign_keys = 1")();
 	PreparedSQL(db, "CREATE TABLE time(delta)")();
 	PreparedSQL(db, "INSERT INTO time(delta) VALUES(0)")();
@@ -69,8 +69,8 @@ Ecsql::Ecsql(const char *db_name)
 	, begin_stmt(db.get(), "BEGIN", true)
 	, commit_stmt(db.get(), "COMMIT", true)
 	, rollback_stmt(db.get(), "ROLLBACK", true)
-	, create_entity_stmt(db.get(), "INSERT INTO entity(name) VALUES(?) RETURNING id", true)
-	, delete_entity_stmt(db.get(), "DELETE FROM entity WHERE id = ?", true)
+	, create_entity_stmt(db.get(), Entity::insert_sql, true)
+	, delete_entity_stmt(db.get(), Entity::delete_sql, true)
 	, update_delta_time_stmt(db.get(), "UPDATE time SET delta = ?", true)
 {
 	sqlite3_preupdate_hook(db.get(), ecsql_preupdate_hook, this);
