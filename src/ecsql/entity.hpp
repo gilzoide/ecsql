@@ -2,6 +2,8 @@
 
 #include <sqlite3.h>
 
+namespace ecsql {
+
 struct Entity {
     Entity();
     Entity(sqlite3_int64 id);
@@ -10,3 +12,6 @@ struct Entity {
 
     sqlite3_int64 id;
 };
+	
+}
+
