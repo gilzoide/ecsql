@@ -95,7 +95,7 @@ int main(int argc, const char **argv) {
 	register_draw_systems(ecsql_world);
 
 	// Scene
-	const char *main_scene = argc >= 2 ? argv[1] : "assets/main.toml";
+	const char *main_scene = argc >= 2 ? argv[1] : "main.toml";
 	bool loaded_main_scene = ecsql_world.inside_transaction([main_scene](ecsql::Ecsql& world) {
 		load_scene_file(world, main_scene);
 	});

@@ -17,7 +17,8 @@ def pack_assets(assets_folder: str, zipname: str):
                 if filename.startswith("."):
                     continue
                 filepath = os.path.join(dirname, filename)
-                zipfile.write(filepath)
+                archivepath = os.path.relpath(filepath, assets_folder)
+                zipfile.write(filepath, archivepath)
 
 
 if __name__ == "__main__":
