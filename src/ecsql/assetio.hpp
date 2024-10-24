@@ -8,7 +8,7 @@
 
 namespace ecsql {
 
-void assetio_initialize(const char *argv0, const char *organization, const char *app_name);
+void assetio_initialize(const char *argv0, const char *organization, const char *app_name, const char *archive_ext = "zip", bool archives_first = true);
 void assetio_terminate();
 
 std::vector<uint8_t> read_asset_bytes(const char *filename, int buffer_size = 1024);

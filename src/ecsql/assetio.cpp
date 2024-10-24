@@ -51,9 +51,9 @@ static bool SaveFileTextCallback(const char *fileName, char *text) {
 	return false;
 }
 
-void assetio_initialize(const char *argv0, const char *organization, const char *app_name) {
+void assetio_initialize(const char *argv0, const char *organization, const char *app_name, const char *archive_ext, bool archives_first) {
 	PHYSFS_init(argv0);
-	PHYSFS_setSaneConfig(organization, app_name, "zip", 0, 1);
+	PHYSFS_setSaneConfig(organization, app_name, archive_ext, 0, archives_first);
 
 	SetLoadFileDataCallback(LoadFileDataCallback);
 	SetSaveFileDataCallback(SaveFileDataCallback);
