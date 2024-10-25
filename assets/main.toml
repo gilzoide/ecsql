@@ -1,11 +1,17 @@
-[chick1.Texture]
-path = "textures/chick.png"
+[PlayerShip.Texture]
+path = "textures/playerShip1_blue.png"
 
-[chick1.Position]
-x = 100
-y = 100
+[PlayerShip.Position]
+x = 400
+y = 500
 
-[chick1.LinearSpeed]
+[PlayerShip.LinearSpeed]
 value = 300
 
-[chick1.MoveOnArrows]
+[PlayerShip.MoveOnArrows]
+
+[PlayerShip.Spawner]
+direction_x = 0
+direction_y = -500
+texture_path = "textures/laserBlue01.png"
+cooldown = 0.2

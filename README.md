@@ -4,3 +4,7 @@ Experimental [ECS](https://www.flecs.dev/ecs-faq/) framework powered by [SQLite]
 
 ## Articles
 - [ECS and databases](docs/01-ecs-databases.md)
+
+
+## Credits
+- All textures: [Kenney Assets](https://kenney.nl/assets)
