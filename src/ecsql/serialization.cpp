@@ -6,7 +6,8 @@
 
 namespace ecsql {
 
-void load_scene(Ecsql& world, const toml::table& toml) {
+std::string load_scene(const toml::table& toml) {
+	std::string sql;
 	for (auto&& [entity_name, entity_node] : toml) {
 		const toml::table *entity_table = entity_node.as_table();
 		if (!entity_table) {
@@ -16,7 +17,18 @@ void load_scene(Ecsql& world, const toml::table& toml) {
 			throw std::runtime_error(error);
 		}
 
-		Entity entity = world.create_entity(entity_name);
+		// Insert entity
+		sql += "INSERT INTO entity(name) VALUES(";
+		if (entity_name.empty()) {
+			sql += "NULL";
+		}
+		else {
+			sql += '\'';
+			sql += entity_name.str();
+			sql += '\'';
+		}
+		sql += ");\n";
+
 		for (auto&& [component_name, component_node] : *entity_table) {
 			const toml::table *component_table = component_node.as_table();
 			if (!component_table) {
@@ -28,59 +40,66 @@ void load_scene(Ecsql& world, const toml::table& toml) {
 				throw std::runtime_error(error);
 			}
 
-			std::string sql = "INSERT INTO ";
+			sql += "INSERT INTO ";
 			sql += component_name;
 			sql += "(entity_id";
 			for (auto&& [column_name, _] : *component_table) {
 				sql += ", ";
 				sql += column_name;
 			}
-			sql += ") VALUES (?";
-			for (int i = 0; i < component_table->size(); i++) {
-				sql += ", ?";
-			}
-			sql += ")";
-
-			PreparedSQL prepared_sql(world.get_db().get(), sql, false);
-			int i = 1;
-			prepared_sql.bind(i++, entity);
-			for (auto&& [_, value_node] : *component_table) {
+			sql += ") VALUES (last_insert_rowid()";
+			for (auto&& [column_name, value_node] : *component_table) {
+				sql += ", ";
 				if (auto bool_value = value_node.as_boolean()) {
-					prepared_sql.bind(i++, bool_value->get());
+					sql += bool_value->get() ? "TRUE" : "FALSE";
 				}
 				else if (auto int_value = value_node.as_integer()) {
-					prepared_sql.bind(i++, int_value->get());
+					sql += std::to_string(int_value->get());
 				}
 				else if (auto float_value = value_node.as_floating_point()) {
-					prepared_sql.bind(i++, float_value->get());
+					sql += std::to_string(float_value->get());
 				}
 				else if (auto string_value = value_node.as_string()) {
-					prepared_sql.bind(i++, (std::string_view) string_value->get());
+					sql += '\'';
+					sql += string_value->get();
+					sql += '\'';
+				}
+				else {
+					std::string error = "[Ecsql::load_scene] Expected bool, int, float or string for column named '";
+					error += entity_name;
+					error += '.';
+					error += component_name;
+					error += '.';
+					error += column_name;
+					error += '\'';
+					throw std::runtime_error(error);
 				}
 			}
-			prepared_sql();
+			sql += ");\n";
 		}
 	}
+	return sql;
 }
 
-void load_scene(Ecsql& world, std::string_view source, std::string_view source_path) {
-	load_scene(world, toml::parse(source, source_path));
+std::string load_scene(std::string_view source, std::string_view source_path) {
+	return load_scene(toml::parse(source, source_path));
 }
 
-void load_scene(Ecsql& world, std::istream& stream, std::string_view source_path) {
-	load_scene(world, toml::parse(stream, source_path));
+std::string load_scene(std::istream& stream, std::string_view source_path) {
+	return load_scene(toml::parse(stream, source_path));
 }
 
-void load_scene_file(Ecsql& world, std::string_view file_name) {
+std::string load_scene_file(std::string_view file_name) {
 	auto file_data = read_asset_data<std::string>(file_name.data());
-	load_scene(world, file_data, file_name);
+	return load_scene(file_data, file_name);
 }
 
-void load_components(Ecsql& world, const toml::table& toml) {
+std::string load_components(const toml::table& toml) {
+	std::string sql;
 	for (auto [component_name, component_node] : toml) {
 		const toml::table *component_table = component_node.as_table();
 		if (!component_table) {
-			std::string error = "[Ecsql::load_scene] Expected table for component named '";
+			std::string error = "[Ecsql::load_components] Expected table for component named '";
 			error += component_name;
 			error += '\'';
 			throw std::runtime_error(error);
@@ -104,24 +123,34 @@ void load_components(Ecsql& world, const toml::table& toml) {
 			else if (auto string_value = value_node.as_string()) {
 				field += string_value->get();
 			}
+			else {
+					std::string error = "[Ecsql::load_components] Expected bool, int, float or string for field named '";
+					error += component_name;
+					error += '.';
+					error += field_name;
+					error += '\'';
+					throw std::runtime_error(error);
+				}
 			fields.emplace_back(field);
 		}
 
-		world.register_component({ component_name, fields });
+		sql += RawComponent(component_name, fields).schema_sql();
+		sql += '\n';
 	}
+	return sql;
 }
 
-void load_components(Ecsql& world, std::string_view source, std::string_view source_path) {
-	load_components(world, toml::parse(source, source_path));
+std::string load_components(std::string_view source, std::string_view source_path) {
+	return load_components(toml::parse(source, source_path));
 }
 
-void load_components(Ecsql& world, std::istream& stream, std::string_view source_path) {
-	load_components(world, toml::parse(stream, source_path));
+std::string load_components(std::istream& stream, std::string_view source_path) {
+	return load_components(toml::parse(stream, source_path));
 }
 
-void load_components_file(Ecsql& world, std::string_view file_name) {
+std::string load_components_file(std::string_view file_name) {
 	auto file_data = read_asset_data<std::string>(file_name.data());
-	load_components(world, file_data, file_name);
+	return load_components(file_data, file_name);
 }
 
 }

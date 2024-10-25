@@ -199,6 +199,10 @@ std::shared_ptr<sqlite3> Ecsql::get_db() const {
 	return db;
 }
 
+void Ecsql::execute_sql_script(const char *sql) {
+	ecsql::execute_sql_script(db.get(), sql);
+}
+
 // private methods
 void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system) {
 	auto it = map.find(system.component_name);

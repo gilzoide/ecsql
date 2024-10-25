@@ -67,6 +67,7 @@ public:
     bool restore_from(sqlite3 *db);
 
     std::shared_ptr<sqlite3> get_db() const;
+	void execute_sql_script(const char *sql);
 
 	template<typename... Args>
 	ExecutedSQL execute_sql(std::string_view sql, Args&&... args) {

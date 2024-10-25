@@ -101,7 +101,7 @@ int main(int argc, const char **argv) {
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.toml";
 	bool loaded_main_scene = ecsql_world.inside_transaction([main_scene](ecsql::Ecsql& world) {
-		load_scene_file(world, main_scene);
+		world.execute_sql_script(ecsql::load_scene_file(main_scene).c_str());
 	});
 	if (!loaded_main_scene) {
 		std::cerr << "Could not load main scene '" << main_scene << "'. Bailing out." << std::endl;
