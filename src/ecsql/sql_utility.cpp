@@ -1,15 +1,10 @@
+#include <cctype>
 #include <memory>
 #include <stdexcept>
 
-#include "sql_script.hpp"
+#include "sql_utility.hpp"
 
 namespace ecsql {
-
-struct sqlite3_deleter {
-	void operator()(void *ptr) {
-		sqlite3_free(ptr);
-	}
-};
 
 void execute_sql_script(sqlite3 *db, const char *sql) {
 	char *errmsg;
@@ -18,6 +13,17 @@ void execute_sql_script(sqlite3 *db, const char *sql) {
 	if (result != SQLITE_OK) {
 		throw std::runtime_error(error_message.get());
 	}
+}
+
+std::string_view extract_identifier(std::string_view field) {
+	auto it = field.cbegin();
+	while (it != field.cend() && isspace(*it)) {
+		it++;
+	}
+	while (it != field.cend() && isalnum(*it)) {
+		it++;
+	}
+	return std::string_view(field.cbegin(), it);
 }
 
 }

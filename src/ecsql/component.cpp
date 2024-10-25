@@ -1,7 +1,7 @@
 #include <sqlite3.h>
 
 #include "component.hpp"
-#include "sql_script.hpp"
+#include "sql_utility.hpp"
 #include "static_linked_list.hpp"
 
 namespace ecsql {
@@ -66,7 +66,7 @@ std::string RawComponent::insert_sql() const {
 	query += "(entity_id";
 	for (auto& it : fields) {
 		query += ", ";
-		query += it;
+		query += extract_identifier(it);
 	}
 	query += ") VALUES(?";
 	for (auto& it : fields) {
@@ -89,7 +89,7 @@ std::string RawComponent::update_sql() const {
 		else {
 			query += ", ";
 		}
-		query += it;
+		query += extract_identifier(it);
 		query += " = ?";
 	}
 	query += "WHERE entity_id = ?";

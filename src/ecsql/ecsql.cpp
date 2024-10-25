@@ -5,7 +5,7 @@
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
 #include "sql_hook_row.hpp"
-#include "sql_script.hpp"
+#include "sql_utility.hpp"
 #include "system.hpp"
 #include "time.hpp"
 
