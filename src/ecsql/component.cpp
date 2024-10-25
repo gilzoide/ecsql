@@ -81,18 +81,15 @@ std::string RawComponent::update_sql() const {
 	query = "UPDATE ";
 	query += name;
 	query += " SET ";
-	bool first_it = true;
-	for (auto& it : fields) {
-		if (first_it) {
-			first_it = false;
-		}
-		else {
+	for (int i = 0; i < fields.size(); i++) {
+		if (i > 0) {
 			query += ", ";
 		}
-		query += extract_identifier(it);
+		query += extract_identifier(fields[i]);
 		query += " = ?";
+		query += std::to_string(i + 2);
 	}
-	query += "WHERE entity_id = ?";
+	query += " WHERE entity_id = ?1";
 	return query;
 }
 
