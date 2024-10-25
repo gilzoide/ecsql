@@ -5,7 +5,9 @@
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
 #include "sql_hook_row.hpp"
+#include "sql_script.hpp"
 #include "system.hpp"
+#include "time.hpp"
 
 namespace ecsql {
 
@@ -26,10 +28,10 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
 
-	PreparedSQL(db, Entity::schema_sql)();
-	PreparedSQL(db, "PRAGMA foreign_keys = 1")();
-	PreparedSQL(db, "CREATE TABLE time(delta)")();
-	PreparedSQL(db, "INSERT INTO time(delta) VALUES(0)")();
+	execute_sql_script(db, Entity::schema_sql);
+	execute_sql_script(db, "PRAGMA foreign_keys = 1");
+	execute_sql_script(db, time::schema_sql);
+	execute_sql_script(db, time::insert_singleton_sql);
 
 	return db;
 }
@@ -71,7 +73,7 @@ Ecsql::Ecsql(const char *db_name)
 	, rollback_stmt(db.get(), "ROLLBACK", true)
 	, create_entity_stmt(db.get(), Entity::insert_sql, true)
 	, delete_entity_stmt(db.get(), Entity::delete_sql, true)
-	, update_delta_time_stmt(db.get(), "UPDATE time SET delta = ?", true)
+	, update_delta_time_stmt(db.get(), time::update_delta_sql, true)
 {
 	sqlite3_preupdate_hook(db.get(), ecsql_preupdate_hook, this);
 }

@@ -12,12 +12,12 @@ struct Entity {
 
     sqlite3_int64 id;
 
-	inline static std::string_view schema_sql = (
+	inline static const char schema_sql[] = (
 		"CREATE TABLE entity(id INTEGER PRIMARY KEY, name TEXT);\n"
 		"CREATE INDEX entity_name ON entity(name);"
 	);
-	inline static std::string_view insert_sql = "INSERT INTO entity(name) VALUES(?) RETURNING id";
-	inline static std::string_view delete_sql = "DELETE FROM entity WHERE id = ?";
+	inline static const char insert_sql[] = "INSERT INTO entity(name) VALUES(?) RETURNING id";
+	inline static const char delete_sql[] = "DELETE FROM entity WHERE id = ?";
 };
 	
 }
