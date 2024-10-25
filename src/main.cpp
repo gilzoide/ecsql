@@ -18,7 +18,7 @@
 #include "systems/draw_systems.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/move_vector.hpp"
-#include "systems/spawn_moving_object.hpp"
+#include "systems/spawn_scene_on_key.hpp"
 
 #if defined(DEBUG) && !defined(NDEBUG)
 void run_debug_functionality(ecsql::Ecsql& world) {
@@ -93,10 +93,10 @@ int main(int argc, const char **argv) {
 	});
 
 	// Systems
+	register_spawn_scene_on_key(ecsql_world);
 	register_move_vector(ecsql_world);
 	register_move_on_arrows(ecsql_world);
 	register_draw_systems(ecsql_world);
-	register_spawn_moving_object(ecsql_world);
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.toml";

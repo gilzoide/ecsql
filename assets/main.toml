@@ -10,8 +10,9 @@ value = 300
 
 [PlayerShip.MoveOnArrows]
 
-[PlayerShip.Spawner]
-direction_x = 0
-direction_y = -500
-texture_path = "textures/laserBlue01.png"
+# Bullet spawner
+[PlayerShip.SceneSql]
+path = "bullet.toml"
+
+[PlayerShip.SpawnOnKey]
 cooldown = 0.2
