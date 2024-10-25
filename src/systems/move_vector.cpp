@@ -7,9 +7,6 @@
 void register_move_vector(ecsql::Ecsql& world) {
 	world.register_system({
 		"MoveVector",
-		[](auto& update_position) {
-			update_position();
-		},
 		R"(
 			UPDATE Position
 			SET x = Position.x + movement.x, y = Position.y + movement.y
@@ -19,5 +16,8 @@ void register_move_vector(ecsql::Ecsql& world) {
 			) AS movement
 			WHERE Position.entity_id = movement.entity_id
 		)"_dedent,
+		[](auto& update_position) {
+			update_position();
+		},
 	});
 }

@@ -12,35 +12,27 @@ struct sqlite3;
 
 namespace ecsql {
 
-class SQLRow;
+class Ecsql;
 class PreparedSQL;
+class SQLRow;
 
 class System {
 public:
+	System(std::string_view name, std::function<void()> implementation);
+	System(std::string_view name, std::function<void(Ecsql&)> implementation);
+	System(std::string_view name, const std::string& sql, std::function<void(PreparedSQL&)> implementation);
+	System(std::string_view name, const std::string& sql, std::function<void(Ecsql&, PreparedSQL&)> implementation);
 	System(std::string_view name, const std::vector<std::string>& sql, std::function<void(std::vector<PreparedSQL>&)> implementation);
+	System(std::string_view name, const std::vector<std::string>& sql, std::function<void(Ecsql&, std::vector<PreparedSQL>&)> implementation);
 
-	template<typename Fn, typename... Sqls>
-	System(std::string_view name, Fn&& f, Sqls&&... sqls)
-		: name(name)
-		, sql(std::vector<std::string> { std::forward<Sqls>(sqls)... })
-		, implementation([=](std::vector<PreparedSQL>& prepared_sqls) {
-			ZoneScoped;
-			ZoneName(name.data(), name.size());
-			[&]<std::size_t... I> (std::index_sequence<I...>) {
-                f(prepared_sqls[I]...);
-            } (std::index_sequence_for<Sqls...>());
-		})
-	{
-	}
-
-	void operator()();
+	void operator()(Ecsql& world);
 
 	void prepare(sqlite3 *db);
 
 	std::string name;
 	std::vector<std::string> sql;
 	std::vector<PreparedSQL> prepared_sql;
-	std::function<void(std::vector<PreparedSQL>&)> implementation;
+	std::function<void(Ecsql&, std::vector<PreparedSQL>&)> implementation;
 };
 
 }

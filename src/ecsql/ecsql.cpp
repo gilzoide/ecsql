@@ -144,7 +144,7 @@ void Ecsql::update(float time_delta) {
 	inside_transaction([=](Ecsql& self) {
 		self.update_delta_time_stmt(time_delta);
 		for (auto& system : self.systems) {
-			system();
+			system(self);
 		}
 	});
 }
