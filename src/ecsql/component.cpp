@@ -6,18 +6,20 @@
 
 namespace ecsql {
 
-RawComponent::RawComponent(std::string_view name, const std::vector<std::string>& fields, bool allow_duplicate)
+RawComponent::RawComponent(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema, bool allow_duplicate)
 	: name(name)
 	, fields(fields)
 	, allow_duplicate(allow_duplicate)
+	, additional_schema(additional_schema)
 {
 	STATIC_LINKED_LIST_INSERT();
 }
 
-RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fields, bool allow_duplicate)
+RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema, bool allow_duplicate)
 	: name(name)
 	, fields(fields)
 	, allow_duplicate(allow_duplicate)
+	, additional_schema(additional_schema)
 {
 	STATIC_LINKED_LIST_INSERT();
 }
@@ -55,6 +57,10 @@ std::string RawComponent::schema_sql() const {
 		query += "_entity_id ON ";
 		query += name;
 		query += "(entity_id);";
+	}
+	if (!additional_schema.empty()) {
+		query += "\n";
+		query += additional_schema;
 	}
 	return query;
 }

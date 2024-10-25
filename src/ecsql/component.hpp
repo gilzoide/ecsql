@@ -18,8 +18,8 @@ namespace ecsql {
 
 class RawComponent {
 public:
-	RawComponent(std::string_view name, const std::vector<std::string>& fields, bool allow_duplicate = false);
-	RawComponent(std::string_view name, std::vector<std::string>&& fields, bool allow_duplicate = false);
+	RawComponent(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
+	RawComponent(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
 
 	void prepare(sqlite3 *db);
 
@@ -38,6 +38,7 @@ public:
 protected:
 	std::string name;
 	std::vector<std::string> fields;
+	std::string additional_schema;
 	bool allow_duplicate;
 
 	STATIC_LINKED_LIST_DEFINE(RawComponent);
