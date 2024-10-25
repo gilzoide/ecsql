@@ -1,6 +1,7 @@
 #include <sqlite3.h>
 
 #include "component.hpp"
+#include "sql_script.hpp"
 #include "static_linked_list.hpp"
 
 namespace ecsql {
@@ -22,7 +23,7 @@ RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fie
 }
 
 void RawComponent::prepare(sqlite3 *db) {
-	PreparedSQL(db, schema_sql())();
+	execute_sql_script(db, schema_sql().c_str());
 }
 
 int RawComponent::entity_id_index() const {
