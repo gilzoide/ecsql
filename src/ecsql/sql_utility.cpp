@@ -1,6 +1,7 @@
 #include <cctype>
 #include <memory>
 #include <stdexcept>
+#include <string>
 
 #include "sql_utility.hpp"
 
@@ -11,7 +12,11 @@ void execute_sql_script(sqlite3 *db, const char *sql) {
 	int result = sqlite3_exec(db, sql, nullptr, nullptr, &errmsg);
 	std::unique_ptr<char, sqlite3_deleter> error_message(errmsg);
 	if (result != SQLITE_OK) {
-		throw std::runtime_error(error_message.get());
+		std::string msg = error_message.get();
+		msg += " @ '";
+		msg += sql;
+		msg += '\'';
+		throw std::runtime_error(msg);
 	}
 }
 

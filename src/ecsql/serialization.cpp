@@ -124,13 +124,13 @@ std::string load_components(const toml::table& toml) {
 				field += string_value->get();
 			}
 			else {
-					std::string error = "[Ecsql::load_components] Expected bool, int, float or string for field named '";
-					error += component_name;
-					error += '.';
-					error += field_name;
-					error += '\'';
-					throw std::runtime_error(error);
-				}
+				std::string error = "[Ecsql::load_components] Expected bool, int, float or string for field named '";
+				error += component_name;
+				error += '.';
+				error += field_name;
+				error += '\'';
+				throw std::runtime_error(error);
+			}
 			fields.emplace_back(field);
 		}
 
