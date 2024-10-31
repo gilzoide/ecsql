@@ -1,3 +1,5 @@
+> Note: this document assumes you have basic knowledge of SQL
+
 ## Primer on ECS
 Entity Component System, or ECS for short, is a design pattern that provides code reusability by separating data from behaviour logic, often used by video games.
 ECS models are composed of:
@@ -8,7 +10,6 @@ ECS models are composed of:
 - Systems: functions that implement behavior logic, applied selectively to entities that have a specific set of components.
   For example, a "Move" system that moves entites in a 3D space could be applied selectively to entities that have both a "Position" and "Velocity" components.
 - World: the container for all ECS data, such as living entities and components.
-  ECS implementations often support creating and processing multiple worlds at the same time.
 
 For more detailed explanation of ECS concepts, check out this [ECS FAQ](https://www.flecs.dev/ecs-faq/).
 
@@ -16,7 +17,7 @@ For more detailed explanation of ECS concepts, check out this [ECS FAQ](https://
 ## ECS and databases
 An ECS world can be viewed as a database, which stores all living entities and their components data.
 The world is queried to match systems with the correct component set, using a sort of JOIN operation between different components.
-Components may be added and removed from their entities in either a one-to-one or one-to-many relationship.
+Components may be added and removed from their entities in either a one-to-one (1:1) or one-to-many (1:N) relationship.
 
 Thinking about this analogy of ECS worlds as databases, what if we implemented an ECS framework using SQL databases, powered by [SQLite](https://sqlite.org)?
 
@@ -25,8 +26,10 @@ The pros:
   For example, we can query for specific enumeration values inside components to implement state machines.
 - We can use an in-memory database or operate directly to files in the filesystem.
   Using files will likely be slower, since they require I/O with the filesystem, but this feature might be useful in some cases.
-- We can load and save all data to files using [SQLite's Backup API](https://www.sqlite.org/backup.html), easily implementing quick save/quick load features.
-- Since world data is queried using SQL, we can implement systems in different progamming languages and all of them can operate on the same data, all it takes is an open connection to the database.
+  For example, saving world data in disk permits inspecting the final state of the application after a crash.
+- We can load and save all data to files using [SQLite's Backup API](https://www.sqlite.org/backup.html), easily implementing quick save and quick load features.
+- Since world data is operated using SQL, we can implement systems in different progamming languages and all of them can operate on the same data, all it takes is an open connection to the shared database.
+  This is specially useful to develop platform-specific funcionatility and scripting systems.
 
 The cons:
 - Even if we avoid disk I/O using an in-memory database, querying with SQLite will be slower than the specialized data structures used by other ECS frameworks, possibly orders of magnitude slower.
@@ -34,7 +37,7 @@ The cons:
 - Some types of data, like pointers to native structures, don't have a nice representation in SQLite and might need an additional indirection when stored as component data.
 - You need to know SQL to make the most out of this system.
 
-Even if it will certainly be slower than specialized ECS implementations, SQLite is very fast in general and it might be fast enough for some game projects, so I want to experiment with this idea and see how far it goes.
+Even if it will certainly be slower than specialized ECS implementations, SQLite is very fast in general and it is likely fast enough for lots of game projects, so I want to experiment with this idea and see how far it goes.
 This experimental ECS framework powered by SQLite will be called **ECSQL**.
 
 
@@ -63,7 +66,7 @@ The base for every component could be defined like the following:
 CREATE TABLE component (
   -- Owner entity id
   -- "PRIMARY KEY": components are uniquely identified by their entity's id
-  -- "REFERENCES entity(id)": foreign key constraint
+  -- "REFERENCES entity(id)": foreign key constraint, 1:1 relationship
   -- "ON DELETE CASCADE": delete this component when entity is deleted
   entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE
 );
@@ -75,9 +78,9 @@ CREATE TABLE position (
   entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE,
 
   -- 3D position axes, all defaulting to 0
-  x FLOAT DEFAULT 0,
-  y FLOAT DEFAULT 0,
-  z FLOAT DEFAULT 0
+  x DEFAULT 0,
+  y DEFAULT 0,
+  z DEFAULT 0
 );
 ```
 
@@ -87,7 +90,7 @@ CREATE TABLE velocity (
   entity_id INTEGER PRIMARY KEY REFERENCES entity(id) ON DELETE CASCADE,
 
   -- Velocity value, in m/s
-  value FLOAT DEFAULT 0
+  value DEFAULT 0
 );
 ```
 
@@ -106,7 +109,7 @@ JOIN velocity USING(entity_id);
 ```
 
 We could also easily support systems that require some components, but only optionally requires others.
-This can be done by simply changing the `JOIN` by a `LEFT|RIGHT JOIN`, making SQLite return `NULL` for data from components that are not present in the entity.
+This can be done by simply changing the `JOIN` by a `LEFT JOIN` or `RIGHT JOIN`, making SQLite return `NULL` for data from components that are not present in the entity.
 
 
 ## Conclusion
