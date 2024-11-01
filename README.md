@@ -3,7 +3,7 @@ Experimental [ECS](https://www.flecs.dev/ecs-faq/) framework powered by [SQLite]
 
 
 ## Articles
-- [ECS and databases](docs/01-ecs-databases-en.md)
+- [ECS meets SQL: the world as a relational database](docs/01-ecs-databases-en.md)
 
 
 ## Credits

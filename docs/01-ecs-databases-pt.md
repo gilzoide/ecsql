@@ -14,7 +14,7 @@ Projetos ECS são compostos de:
 Para informações mais detalhadas sobre conceitos do padrão ECS, recomendo a letura do [ECS FAQ](https://www.flecs.dev/ecs-faq/) (em Inglês).
 
 
-## ECS e bases de dados
+## ECS e bases de dados relacionais
 Um mundo de ECS pode ser enxergado como uma base de dados, que mantém os dados das entidades existentes e seus componentes.
 O mundo é consultado pelos sistemas de modo que somente as entidades que possuem o conjunto certo de componentes sejam processadas, usando uma espécie de operação *JOIN* entre diferentes componentes.
 Componentes podem ser adicionados e removidos de entidades em uma relação um-pra-um (1:1) ou um-pra-muitos (1:N).

@@ -14,7 +14,7 @@ ECS models are composed of:
 For more detailed explanation of ECS concepts, check out this [ECS FAQ](https://www.flecs.dev/ecs-faq/).
 
 
-## ECS and databases
+## ECS and relational databases
 An ECS world can be viewed as a database, which stores all living entities and their components data.
 The world is queried to match systems with the correct component set, using a sort of JOIN operation between different components.
 Components may be added and removed from their entities in either a one-to-one (1:1) or one-to-many (1:N) relationship.
