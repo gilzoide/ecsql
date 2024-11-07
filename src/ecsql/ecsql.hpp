@@ -38,6 +38,8 @@ public:
 
     Entity create_entity();
     Entity create_entity(std::string_view name);
+    Entity create_entity(std::string_view name, Entity parent);
+    Entity create_entity(Entity parent);
     bool delete_entity(Entity id);
 
     template<typename Fn>

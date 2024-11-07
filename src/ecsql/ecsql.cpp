@@ -8,6 +8,7 @@
 #include "sql_utility.hpp"
 #include "system.hpp"
 #include "time.hpp"
+#include "world_schema.hpp"
 
 namespace ecsql {
 
@@ -28,10 +29,7 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
 
-	execute_sql_script(db, Entity::schema_sql);
-	execute_sql_script(db, "PRAGMA foreign_keys = 1");
-	execute_sql_script(db, time::schema_sql);
-	execute_sql_script(db, time::insert_singleton_sql);
+	execute_sql_script(db, world_schema);
 
 	return db;
 }
@@ -134,6 +132,14 @@ Entity Ecsql::create_entity() {
 
 Entity Ecsql::create_entity(std::string_view name) {
 	return create_entity_stmt(name).get<Entity>();
+}
+
+Entity Ecsql::create_entity(std::string_view name, Entity parent) {
+	return create_entity_stmt(name, parent).get<Entity>();
+}
+
+Entity Ecsql::create_entity(Entity parent) {
+	return create_entity_stmt(nullptr, parent).get<Entity>();
 }
 
 bool Ecsql::delete_entity(Entity id) {
