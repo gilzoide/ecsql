@@ -8,7 +8,7 @@
 #include "sql_utility.hpp"
 #include "system.hpp"
 #include "time.hpp"
-#include "world_schema.hpp"
+#include "world_schema.h"
 
 namespace ecsql {
 

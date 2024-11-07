@@ -22,3 +22,6 @@
 [submodule "libs/cdedent"]
 	path = libs/cdedent
 	url = https://github.com/gilzoide/cdedent.git
+[submodule "tools/file2c"]
+	path = tools/file2c
+	url = https://github.com/gilzoide/file2c.git

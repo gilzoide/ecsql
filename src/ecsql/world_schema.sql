@@ -1,8 +1,3 @@
-#include "world_schema.hpp"
-
-namespace ecsql {
-
-const char world_schema[] = R"(
 PRAGMA foreign_keys = 1;
 
 CREATE TABLE entity(
@@ -42,6 +37,3 @@ CREATE VIEW entity_nested_children AS
 -- Time singleton
 CREATE TABLE time(delta, uptime);
 INSERT INTO time(delta, uptime) VALUES(0, 0);
-)";
-
-}
