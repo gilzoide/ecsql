@@ -126,23 +126,23 @@ void Ecsql::register_hook_system(HookSystem&& system) {
 	}
 }
 
-Entity Ecsql::create_entity() {
-	return create_entity_stmt(nullptr).get<Entity>();
+EntityID Ecsql::create_entity() {
+	return create_entity_stmt(nullptr).get<EntityID>();
 }
 
-Entity Ecsql::create_entity(std::string_view name) {
-	return create_entity_stmt(name).get<Entity>();
+EntityID Ecsql::create_entity(std::string_view name) {
+	return create_entity_stmt(name).get<EntityID>();
 }
 
-Entity Ecsql::create_entity(std::string_view name, Entity parent) {
-	return create_entity_stmt(name, parent).get<Entity>();
+EntityID Ecsql::create_entity(std::string_view name, EntityID parent) {
+	return create_entity_stmt(name, parent).get<EntityID>();
 }
 
-Entity Ecsql::create_entity(Entity parent) {
-	return create_entity_stmt(nullptr, parent).get<Entity>();
+EntityID Ecsql::create_entity(EntityID parent) {
+	return create_entity_stmt(nullptr, parent).get<EntityID>();
 }
 
-bool Ecsql::delete_entity(Entity id) {
+bool Ecsql::delete_entity(EntityID id) {
 	return delete_entity_stmt(id).get<bool>();
 }
 

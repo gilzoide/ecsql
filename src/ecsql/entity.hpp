@@ -6,11 +6,12 @@
 
 namespace ecsql {
 
-struct Entity {
-    Entity();
-    Entity(sqlite3_int64 id);
+typedef sqlite3_int64 EntityID;
 
-    sqlite3_int64 id;
+struct Entity {
+    EntityID id;
+	std::string_view name;
+    EntityID parent_id;
 
 	inline static const char insert_sql[] = "INSERT INTO entity(name) VALUES(?) RETURNING id";
 	inline static const char delete_sql[] = "DELETE FROM entity WHERE id = ?";

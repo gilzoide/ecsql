@@ -120,10 +120,6 @@ private:
     template<> PreparedSQL& bind_advance(int& index, std::string_view value) {
         return bind_text(index++, value);
     }
-    
-    template<> PreparedSQL& bind_advance(int& index, Entity value) {
-        return bind_int64(index++, value.id);
-    }
 };
 
 }

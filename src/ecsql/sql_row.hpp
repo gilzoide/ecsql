@@ -141,10 +141,6 @@ protected:
 		std::span<const uint8_t> span = column_blob(index++);
         return std::vector<uint8_t>(span.begin(), span.end());
     }
-    
-    template<> Entity get_advance(int& index) const {
-        return column_int64(index++);
-    }
 };
 
 }

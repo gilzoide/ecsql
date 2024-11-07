@@ -36,11 +36,11 @@ public:
 	void register_hook_system(const HookSystem& system);
     void register_hook_system(HookSystem&& system);
 
-    Entity create_entity();
-    Entity create_entity(std::string_view name);
-    Entity create_entity(std::string_view name, Entity parent);
-    Entity create_entity(Entity parent);
-    bool delete_entity(Entity id);
+    EntityID create_entity();
+    EntityID create_entity(std::string_view name);
+    EntityID create_entity(std::string_view name, EntityID parent);
+    EntityID create_entity(EntityID parent);
+    bool delete_entity(EntityID id);
 
     template<typename Fn>
     bool inside_transaction(Fn&& f) {

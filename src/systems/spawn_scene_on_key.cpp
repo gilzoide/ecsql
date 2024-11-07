@@ -40,12 +40,12 @@ void register_spawn_scene_on_key(ecsql::Ecsql& world) {
 			auto update_position = sqls[2];
 
 			for (ecsql::SQLRow row : get_spawn_info()) {
-				auto [entity, position, scene_path] = row.get<Entity, Vector3, std::string_view>();
+				auto [entity, position, scene_path] = row.get<EntityID, Vector3, std::string_view>();
 				
 				auto scene_sql = SceneSqlFlyweight.get(scene_path);
 				world.execute_sql_script(scene_sql.value.c_str());
 
-				Entity spawned_entity = sqlite3_last_insert_rowid(world.get_db().get());
+				EntityID spawned_entity = sqlite3_last_insert_rowid(world.get_db().get());
 				update_position(spawned_entity, position);
 			}
 			update_spawn_time();
