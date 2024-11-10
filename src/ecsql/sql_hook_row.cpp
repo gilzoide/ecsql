@@ -59,8 +59,12 @@ std::span<const uint8_t> SQLHookRow::column_blob(int index) const {
 	return std::span<const uint8_t>(data, size);
 }
 
+int SQLHookRow::column_type(int index) const {
+	return sqlite3_value_type(column_value(index));
+}
+
 bool SQLHookRow::column_is_null(int index) const {
-    return sqlite3_value_type(column_value(index)) == SQLITE_NULL;
+    return column_type(index) == SQLITE_NULL;
 }
 
 }

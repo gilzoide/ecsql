@@ -60,9 +60,15 @@ std::string load_scene(const toml::table& toml) {
 					sql += std::to_string(float_value->get());
 				}
 				else if (auto string_value = value_node.as_string()) {
+					if (column_name == "parent_id") {
+						sql += "(SELECT id FROM entity WHERE name = ";
+					}
 					sql += '\'';
 					sql += string_value->get();
 					sql += '\'';
+					if (column_name == "parent_id") {
+						sql += " ORDER BY id DESC LIMIT 1)";
+					}
 				}
 				else {
 					std::string error = "[Ecsql::load_scene] Expected bool, int, float or string for column named '";

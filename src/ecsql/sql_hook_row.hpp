@@ -31,6 +31,7 @@ struct SQLHookRow {
     std::string_view column_text(int index) const;
 	std::span<const uint8_t> column_blob(int index) const;
 
+	int column_type(int index) const;
     bool column_is_null(int index) const;
 
     template<typename... Types> auto get(int index) const {

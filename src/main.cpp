@@ -22,6 +22,7 @@
 #include "systems/move_on_arrows.hpp"
 #include "systems/move_vector.hpp"
 #include "systems/spawn_scene_on_key.hpp"
+#include "systems/yoga.hpp"
 
 #if defined(DEBUG) && !defined(NDEBUG)
 void run_debug_functionality(ecsql::Ecsql& world) {
@@ -102,6 +103,7 @@ int main(int argc, const char **argv) {
 	register_move_vector(ecsql_world);
 	register_move_on_arrows(ecsql_world);
 	register_destroy_on_out_of_screen(ecsql_world);
+	register_update_yoga(ecsql_world);
 	register_draw_systems(ecsql_world);
 
 	// Scene
