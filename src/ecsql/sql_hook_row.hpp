@@ -13,26 +13,27 @@
 
 #include "entity.hpp"
 #include "is_optional.hpp"
+#include "sql_value.hpp"
 
 namespace ecsql {
 
 struct SQLHookRow {
     SQLHookRow(sqlite3 *db, sqlite3_int64 rowid, bool use_new_row);
 
-	sqlite3_int64 column_rowid() const;
+	sqlite3_int64 get_rowid() const;
 
 	int column_count() const;
+    
+	SQLValue column_value(int index) const;
+	int column_type(int index) const;
+    bool column_is_null(int index) const;
 
-    sqlite3_value *column_value(int index) const;
     bool column_bool(int index) const;
     int column_int(int index) const;
     sqlite3_int64 column_int64(int index) const;
     double column_double(int index) const;
     std::string_view column_text(int index) const;
 	std::span<const uint8_t> column_blob(int index) const;
-
-	int column_type(int index) const;
-    bool column_is_null(int index) const;
 
     template<typename... Types> auto get(int index) const {
         if constexpr (sizeof...(Types) == 1) {

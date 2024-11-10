@@ -385,8 +385,8 @@ ecsql::HookSystem OnInsertYogaNode {
 	ecsql::HookType::OnInsert,
 	YogaNode,
 	[](ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
-		YGNodeRef node = YogaNodeFlyweight.get(new_row.column_rowid());
-		YGNodeSetContext(node, (void*) new_row.column_rowid());
+		YGNodeRef node = YogaNodeFlyweight.get(new_row.get_rowid());
+		YGNodeSetContext(node, (void*) new_row.get_rowid());
 		setup_yoga_node(node, new_row);
 	},
 };
@@ -395,8 +395,8 @@ ecsql::HookSystem OnUpdateYogaNode {
 	ecsql::HookType::OnUpdate,
 	YogaNode,
 	[](ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
-		auto node = YogaNodeFlyweight.get_autorelease(new_row.column_rowid());
-		YGNodeSetContext(node, (void*) new_row.column_rowid());
+		auto node = YogaNodeFlyweight.get_autorelease(new_row.get_rowid());
+		YGNodeSetContext(node, (void*) new_row.get_rowid());
 		setup_yoga_node(node, new_row);
 	},
 };
@@ -405,7 +405,7 @@ ecsql::HookSystem OnDeleteYogaNode {
 	ecsql::HookType::OnDelete,
 	YogaNode,
 	[](ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
-		YogaNodeFlyweight.release(old_row.column_rowid());
+		YogaNodeFlyweight.release(old_row.get_rowid());
 	},
 };
 
