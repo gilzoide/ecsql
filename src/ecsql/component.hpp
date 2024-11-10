@@ -29,7 +29,7 @@ public:
 	int first_field_index() const;
 
 	std::string schema_sql() const;
-	std::string insert_sql() const;
+	std::string insert_sql(bool or_replace = false) const;
 	std::string update_sql() const;
 
 	const std::string& get_name() const;

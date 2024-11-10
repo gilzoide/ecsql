@@ -65,9 +65,13 @@ std::string RawComponent::schema_sql() const {
 	return query;
 }
 
-std::string RawComponent::insert_sql() const {
+std::string RawComponent::insert_sql(bool or_replace) const {
 	std::string query;
-	query = "INSERT INTO ";
+	query = "INSERT ";
+	if (or_replace) {
+		query += "OR REPLACE ";
+	}
+	query += "INTO ";
 	query += name;
 	query += "(entity_id";
 	for (auto& it : fields) {
