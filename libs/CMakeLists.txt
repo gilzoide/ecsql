@@ -48,3 +48,7 @@ endif ()
 add_subdirectory(tracy)
 target_compile_options(TracyClient PRIVATE "-w")  # disable warnings
 target_link_libraries(libs INTERFACE TracyClient)
+
+# Yoga
+add_subdirectory(yoga)
+target_link_libraries(libs INTERFACE yogacore)

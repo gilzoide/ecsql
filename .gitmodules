@@ -25,3 +25,6 @@
 [submodule "tools/file2c"]
 	path = tools/file2c
 	url = https://github.com/gilzoide/file2c.git
+[submodule "libs/yoga"]
+	path = libs/yoga
+	url = https://github.com/facebook/yoga.git
