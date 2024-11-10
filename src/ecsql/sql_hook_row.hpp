@@ -17,7 +17,11 @@
 namespace ecsql {
 
 struct SQLHookRow {
-    SQLHookRow(sqlite3 *db, bool use_new_row);
+    SQLHookRow(sqlite3 *db, sqlite3_int64 rowid, bool use_new_row);
+
+	sqlite3_int64 column_rowid() const;
+
+	int column_count() const;
 
     sqlite3_value *column_value(int index) const;
     bool column_bool(int index) const;
@@ -44,6 +48,7 @@ struct SQLHookRow {
 
 protected:
     sqlite3 *db;
+	sqlite3_int64 rowid;
     bool use_new_row;
 
     template<typename T> T get_advance(int& index) const

@@ -46,15 +46,15 @@ static void ecsql_preupdate_hook(
 	Ecsql *world = (Ecsql *) pCtx;
 	switch (op) {
 		case SQLITE_INSERT:
-			world->on_insert(zName);
+			world->on_insert(zName, iKey1, iKey2);
 			break;
 
 		case SQLITE_DELETE:
-			world->on_delete(zName);
+			world->on_delete(zName, iKey1, iKey2);
 			break;
 
 		case SQLITE_UPDATE:
-			world->on_update(zName);
+			world->on_update(zName, iKey1, iKey2);
 			break;
 	}
 }
@@ -155,16 +155,16 @@ void Ecsql::update(float time_delta) {
 	});
 }
 
-void Ecsql::on_insert(const char *table) {
-	execute_prehook(table, on_insert_systems);
+void Ecsql::on_insert(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
+	execute_prehook(table, old_rowid, new_rowid, on_insert_systems);
 }
 
-void Ecsql::on_delete(const char *table) {
-	execute_prehook(table, on_delete_systems);
+void Ecsql::on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
+	execute_prehook(table, old_rowid, new_rowid, on_delete_systems);
 }
 
-void Ecsql::on_update(const char *table) {
-	execute_prehook(table, on_update_systems);
+void Ecsql::on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
+	execute_prehook(table, old_rowid, new_rowid, on_update_systems);
 }
 
 bool Ecsql::backup_into(const char *db_name) {
@@ -225,11 +225,11 @@ void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSys
 	it->second.push_back(system);
 }
 
-void Ecsql::execute_prehook(const char *table, const std::unordered_map<std::string, std::vector<HookSystem>>& map) {
+void Ecsql::execute_prehook(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid, const std::unordered_map<std::string, std::vector<HookSystem>>& map) {
 	auto it = map.find(table);
 	if (it != map.end()) {
-		SQLHookRow old_row { db.get(), false };
-		SQLHookRow new_row { db.get(), true };
+		SQLHookRow old_row { db.get(), old_rowid, false };
+		SQLHookRow new_row { db.get(), new_rowid, true };
 		for (auto& system : it->second) {
 			system(old_row, new_row);
 		}

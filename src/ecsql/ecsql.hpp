@@ -58,9 +58,9 @@ public:
     }
 
     void update(float time_delta);
-    void on_insert(const char *table);
-    void on_delete(const char *table);
-    void on_update(const char *table);
+    void on_insert(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
+    void on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
+    void on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
 
     bool backup_into(const char *db_name);
     bool backup_into(sqlite3 *db);
@@ -92,7 +92,7 @@ private:
 
     void register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system);
     void register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, HookSystem&& system);
-    void execute_prehook(const char *table, const std::unordered_map<std::string, std::vector<HookSystem>>& map);
+    void execute_prehook(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid, const std::unordered_map<std::string, std::vector<HookSystem>>& map);
 };
 
 }

@@ -3,10 +3,19 @@
 
 namespace ecsql {
 
-SQLHookRow::SQLHookRow(sqlite3 *db, bool use_new_row)
+SQLHookRow::SQLHookRow(sqlite3 *db, sqlite3_int64 rowid, bool use_new_row)
     : db(db)
+	, rowid(rowid)
     , use_new_row(use_new_row)
 {
+}
+
+sqlite3_int64 SQLHookRow::column_rowid() const {
+	return rowid;
+}
+
+int SQLHookRow::column_count() const {
+	return sqlite3_preupdate_count(db);
 }
 
 sqlite3_value *SQLHookRow::column_value(int index) const {
