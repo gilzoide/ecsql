@@ -15,6 +15,7 @@
 #include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
 #include "ecsql/serialization.hpp"
+#include "systems/bake_position.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/move_vector.hpp"
@@ -94,6 +95,7 @@ int main(int argc, const char **argv) {
 
 	// Systems
 	register_spawn_scene_on_key(ecsql_world);
+	register_bake_position_system(ecsql_world);
 	register_move_vector(ecsql_world);
 	register_move_on_arrows(ecsql_world);
 	register_draw_systems(ecsql_world);

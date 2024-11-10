@@ -13,10 +13,9 @@ void register_spawn_scene_on_key(ecsql::Ecsql& world) {
 		"SpawnPrefabObject",
 		{
 			R"(
-				SELECT entity_id, x, y, z, SceneSql.path
+				SELECT entity_id, SceneSql.path
 				FROM SpawnOnKey
 					JOIN SceneSql USING(entity_id)
-					JOIN Position USING(entity_id)
 					JOIN time
 				WHERE last_spawn_time IS NULL
 					OR last_spawn_time < time.uptime - cooldown
@@ -28,7 +27,11 @@ void register_spawn_scene_on_key(ecsql::Ecsql& world) {
 				WHERE last_spawn_time IS NULL
 					OR last_spawn_time < time.uptime - cooldown
 			)"_dedent,
-			PositionComponent.update_sql(),
+			R"(
+				UPDATE BakePosition
+				SET parent_id = ?
+				WHERE entity_id = ?
+			)"_dedent,
 		},
 		[](Ecsql& world, std::vector<PreparedSQL>& sqls) {
 			if (!IsKeyDown(KEY_SPACE)) {
@@ -37,16 +40,16 @@ void register_spawn_scene_on_key(ecsql::Ecsql& world) {
 
 			auto get_spawn_info = sqls[0];
 			auto update_spawn_time = sqls[1];
-			auto update_position = sqls[2];
+			auto update_bake_position_parent = sqls[2];
 
 			for (ecsql::SQLRow row : get_spawn_info()) {
-				auto [entity, position, scene_path] = row.get<EntityID, Vector3, std::string_view>();
+				auto [entity, scene_path] = row.get<EntityID, std::string_view>();
 				
 				auto scene_sql = SceneSqlFlyweight.get(scene_path);
 				world.execute_sql_script(scene_sql.value.c_str());
 
 				EntityID spawned_entity = sqlite3_last_insert_rowid(world.get_db().get());
-				update_position(spawned_entity, position);
+				update_bake_position_parent(entity, spawned_entity);
 			}
 			update_spawn_time();
 		},

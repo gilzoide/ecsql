@@ -5,4 +5,5 @@ path = "textures/laserBlue01.png"
 x = 0
 y = -500
 
-[Bullet.Position]
+[Bullet.BakePosition]
+y = -50
