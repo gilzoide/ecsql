@@ -46,7 +46,7 @@ struct ComponentFlyweight {
 		HookType::OnInsert,
 		component,
 		[this](SQLHookRow&, SQLHookRow& new_row) {
-			flyweight.get(new_row.get<const char *>(component.first_field_index()));
+			flyweight.get(new_row.get<std::string>(component.first_field_index()));
 		}
 	};
 
@@ -54,8 +54,8 @@ struct ComponentFlyweight {
 		HookType::OnUpdate,
 		component,
 		[this](SQLHookRow& old_row, SQLHookRow& new_row) {
-			flyweight.release(old_row.get<const char *>(component.first_field_index()));
-			flyweight.get(new_row.get<const char *>(component.first_field_index()));
+			flyweight.release(old_row.get<std::string>(component.first_field_index()));
+			flyweight.get(new_row.get<std::string>(component.first_field_index()));
 		}
 	};
 
@@ -63,7 +63,7 @@ struct ComponentFlyweight {
 		HookType::OnDelete,
 		component,
 		[this](SQLHookRow& old_row, SQLHookRow&) {
-			flyweight.release(old_row.get<const char *>(component.first_field_index()));
+			flyweight.release(old_row.get<std::string>(component.first_field_index()));
 		}
 	};
 };
