@@ -14,8 +14,10 @@
 #include "ecsql/component.hpp"
 #include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
+#include "ecsql/screen.hpp"
 #include "ecsql/serialization.hpp"
 #include "systems/bake_position.hpp"
+#include "systems/destroy_on_out_of_screen.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/move_vector.hpp"
@@ -84,6 +86,7 @@ int main(int argc, const char **argv) {
 #endif
 
 	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
+	ecsql_world.execute_sql(ecsql::screen_size::update_sql, GetScreenWidth(), GetScreenHeight());
 	
 	// Components
 	ecsql::RawComponent::foreach_static_linked_list([&](ecsql::RawComponent *component) {
@@ -98,6 +101,7 @@ int main(int argc, const char **argv) {
 	register_bake_position_system(ecsql_world);
 	register_move_vector(ecsql_world);
 	register_move_on_arrows(ecsql_world);
+	register_destroy_on_out_of_screen(ecsql_world);
 	register_draw_systems(ecsql_world);
 
 	// Scene

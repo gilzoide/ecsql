@@ -1,5 +1,6 @@
 PRAGMA foreign_keys = ON;
 
+-- Entity
 CREATE TABLE entity(
   id INTEGER PRIMARY KEY,
   name TEXT,
@@ -25,3 +26,7 @@ CREATE VIEW entity_parents AS
 -- Time singleton
 CREATE TABLE time(delta, uptime);
 INSERT INTO time(delta, uptime) VALUES(0, 0);
+
+-- Screen Size singleton
+CREATE TABLE screen_size(width, height);
+INSERT INTO screen_size(width, height) VALUES(0, 0);
