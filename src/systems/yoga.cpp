@@ -422,9 +422,12 @@ void register_update_yoga(ecsql::Ecsql& world) {
 		"YogaUpdate",
 		{
 			R"(
-				SELECT entity_id, Rectangle.width, Rectangle.height
+				SELECT
+					entity_id,
+					ifnull(Rectangle.width, screen_size.width), ifnull(Rectangle.height, screen_size.height)
 				FROM YogaNode
 				LEFT JOIN Rectangle USING(entity_id)
+				JOIN screen_size
 				WHERE parent_id IS NULL
 			)"_dedent,
 			RectangleComponent.insert_sql(true),
@@ -439,8 +442,8 @@ void register_update_yoga(ecsql::Ecsql& world) {
 					continue;
 				}
 
-				auto [width, height] = row.get<std::optional<float>, std::optional<float>>(1);
-				YGNodeCalculateLayout(node, width.value_or(YGUndefined), height.value_or(YGUndefined), YGDirectionInherit);
+				auto [width, height] = row.get<float, float>(1);
+				YGNodeCalculateLayout(node, width, height, YGDirectionInherit);
 				recurse_update_rect(node, upsert_rectangle);
 			}
 		},
