@@ -31,9 +31,13 @@ height = 200
 parent_id = "Teste"
 width = "50%"
 aspect_ratio = 1
-[Teste2.Texture]
+[Teste2.Text]
+text = "Hello World!"
+
 [Teste2.Color]
 r = 0
+g = 0
+b = 0
 
 [Teste3.YogaNode]
 parent_id = "Teste"

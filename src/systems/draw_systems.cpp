@@ -68,6 +68,24 @@ void register_draw_systems(ecsql::Ecsql& world) {
 		},
 	});
 	world.register_system({
+		"DrawText",
+		R"(
+			SELECT
+				text, size,
+				x, y, width, height,
+				ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
+			FROM Text
+			JOIN Rectangle USING(entity_id)
+			LEFT JOIN Color USING(entity_id)
+		)"_dedent,
+		[](auto& sql) {
+			for (ecsql::SQLRow row : sql()) {
+				auto [text, size, rect, color] = row.get<const char *, int, Rectangle, Color>();
+				DrawText(text, rect.x, rect.y, size, color);
+			}
+		}
+	});
+	world.register_system({
 		"DrawModel",
 		R"(
 			SELECT path, Position.x, Position.y, Position.z, r, g, b, a

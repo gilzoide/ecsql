@@ -56,4 +56,12 @@ inline ecsql::RawComponent RectangleComponent {
 	}
 };
 
+inline ecsql::RawComponent TextComponent {
+	"Text",
+	{
+		"text TEXT",
+		"size DEFAULT 12",
+	}
+};
+
 void register_draw_systems(ecsql::Ecsql& world);
