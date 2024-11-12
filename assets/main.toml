@@ -1,48 +1,42 @@
 [PlayerShip.Texture]
-path = "textures/playerShip1_blue.png"
-
+  path = "textures/playerShip1_blue.png"
 [PlayerShip.Position]
-x = 400
-y = 500
-
+  x = 400
+  y = 500
 [PlayerShip.LinearSpeed]
-value = 300
-
+  value = 300
 [PlayerShip.MoveOnArrows]
-
 # Bullet spawner
 [PlayerShip.SceneSql]
-path = "bullet.toml"
-
+  path = "bullet.toml"
 [PlayerShip.SpawnOnKey]
-cooldown = 0.2
-
+  cooldown = 0.2
 
 
 [Teste.YogaNode]
-justify_content = "space-around"
-align_items = "center"
+  justify_content = "space-around"
+  align_items = "center"
 [Teste.Texture]
-[Teste.Rectangle]
-width = 200
-height = 200
+[Teste.ScreenRect]
+# [Teste.Rectangle]
+# width = 200
+# height = 200
 
 [Teste2.YogaNode]
-parent_id = "Teste"
-width = "50%"
-aspect_ratio = 1
+  parent_id = "Teste"
+  width = "50%"
+  aspect_ratio = 1
 [Teste2.Text]
-text = "Hello World!"
-
+  text = "Hello World!"
 [Teste2.Color]
-r = 0
-g = 0
-b = 0
+  r = 0
+  g = 0
+  b = 0
 
 [Teste3.YogaNode]
-parent_id = "Teste"
-width = 10
-height = 10
+  parent_id = "Teste"
+  width = 10
+  height = 10
 [Teste3.Texture]
 [Teste3.Color]
-g = 0
+  g = 0
