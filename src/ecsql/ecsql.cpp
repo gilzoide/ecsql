@@ -4,6 +4,7 @@
 #include "ecsql.hpp"
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
+#include "screen.hpp"
 #include "sql_hook_row.hpp"
 #include "sql_utility.hpp"
 #include "system.hpp"
@@ -165,6 +166,10 @@ void Ecsql::on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 
 
 void Ecsql::on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
 	execute_prehook(table, old_rowid, new_rowid, on_update_systems);
+}
+
+void Ecsql::on_window_resized(int new_width, int new_height) {
+	execute_sql(screen_size::update_sql, new_width, new_height);
 }
 
 bool Ecsql::backup_into(const char *db_name) {

@@ -21,6 +21,7 @@
 #include "systems/draw_systems.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/move_vector.hpp"
+#include "systems/screen_rect.hpp"
 #include "systems/spawn_scene_on_key.hpp"
 #include "systems/yoga.hpp"
 
@@ -53,6 +54,10 @@ void game_loop(ecsql::Ecsql& world) {
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
 
+	if (IsWindowResized()) {
+		world.on_window_resized(GetScreenWidth(), GetScreenHeight());
+	}
+
 	float time_delta = GetFrameTime();
 	world.update(time_delta);
 
@@ -80,6 +85,7 @@ int main(int argc, const char **argv) {
 
 	const char *exe_file_name = GetFileName(argv[0]);
 	TracySetProgramName(exe_file_name);
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, exe_file_name);
 
 #if __EMSCRIPTEN__
@@ -98,6 +104,7 @@ int main(int argc, const char **argv) {
 	});
 
 	// Systems
+	register_update_screen_rect(ecsql_world);
 	register_spawn_scene_on_key(ecsql_world);
 	register_bake_position_system(ecsql_world);
 	register_move_vector(ecsql_world);

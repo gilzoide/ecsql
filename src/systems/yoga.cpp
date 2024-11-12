@@ -3,6 +3,7 @@
 
 #include <cdedent.hpp>
 #include <flyweight.hpp>
+#include <raylib.h>
 #include <yoga/Yoga.h>
 
 #include "draw_systems.hpp"
@@ -438,7 +439,7 @@ void register_update_yoga(ecsql::Ecsql& world) {
 			for (ecsql::SQLRow row : get_root_yoga_entities()) {
 				auto entity_id = row.get<ecsql::EntityID>(0);
 				auto node = YogaNodeFlyweight.get_autorelease(entity_id);
-				if (!YGNodeIsDirty(node)) {
+				if (!YGNodeIsDirty(node) && !IsWindowResized()) {
 					continue;
 				}
 

@@ -62,6 +62,8 @@ public:
     void on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
     void on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
 
+	void on_window_resized(int new_width, int new_height);
+
     bool backup_into(const char *db_name);
     bool backup_into(sqlite3 *db);
     
