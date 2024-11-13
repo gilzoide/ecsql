@@ -9,6 +9,7 @@
 #include <raylib.h>
 #include <tracy/Tracy.hpp>
 
+#include "final_schema.h"
 #include "memory.hpp"
 #include "ecsql/assetio.hpp"
 #include "ecsql/component.hpp"
@@ -102,6 +103,7 @@ int main(int argc, const char **argv) {
 	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {
 		ecsql_world.register_hook_system(*system);
 	});
+	ecsql_world.execute_sql_script(final_schema);
 
 	// Systems
 	register_update_screen_rect(ecsql_world);

@@ -45,6 +45,8 @@ enum YogaNodeColumn {
 	// Gap
 	YogaNode_column_gap,
 	YogaNode_row_gap,
+	// Did text change? Used for setting up measurement function
+	is_text_dirty,
 };
 
 inline ecsql::RawComponent YogaNode {
@@ -90,7 +92,10 @@ inline ecsql::RawComponent YogaNode {
 		// Gap
 		"column_gap",
 		"row_gap",
+		// Did text change? Used for setting up measurement function
+		"is_text_dirty",
 	},
+	"CREATE INDEX YogaNode_is_text_dirty ON YogaNode(is_text_dirty);"
 };
 
 void register_update_yoga(ecsql::Ecsql& world);

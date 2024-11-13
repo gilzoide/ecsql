@@ -12,11 +12,67 @@
 #include "../ecsql/sql_hook_row.hpp"
 #include "../ecsql/system.hpp"
 
+struct YogaNodeContext {
+	ecsql::EntityID entity_id;
+	float measured_width = -1;
+	float measured_height = -1;
+
+	static YogaNodeContext *get(YGNodeConstRef node) {
+		return static_cast<YogaNodeContext *>(YGNodeGetContext(node));
+	}
+
+	void unset_measured_size(YGNodeRef node) {
+		measured_width = measured_height = -1;
+		YGNodeSetMeasureFunc(node, nullptr);
+	}
+
+	void set_measured_size(YGNodeRef node, float x, float y) {
+		measured_width = x;
+		measured_height = y;
+		YGNodeSetMeasureFunc(node, measure_func);
+	}
+
+	static YGSize measure_func(YGNodeConstRef node, float width, YGMeasureMode widthMode, float height, YGMeasureMode heightMode) {
+		if (YogaNodeContext *ctx = YogaNodeContext::get(node)) {
+			switch (widthMode) {
+				case YGMeasureModeUndefined:
+					width = ctx->measured_width;
+					break;
+
+				case YGMeasureModeAtMost:
+					width = std::min(width, ctx->measured_width);
+					break;
+
+				default:
+					break;
+			}
+			switch (heightMode) {
+				case YGMeasureModeUndefined:
+					height = ctx->measured_height;
+					break;
+
+				case YGMeasureModeAtMost:
+					height = std::min(height, ctx->measured_height);
+					break;
+
+				default:
+					break;
+			}
+		}
+		return { width, height };
+	}
+};
+
 flyweight::flyweight_refcounted<ecsql::EntityID, YGNodeRef> YogaNodeFlyweight {
 	[](ecsql::EntityID id) {
-		return YGNodeNew();
+		YGNodeRef node = YGNodeNew();
+		YGNodeSetContext(node, new YogaNodeContext { .entity_id = id });
+		return node;
 	},
-	YGNodeFree,
+	[](YGNodeRef node) {
+		delete YogaNodeContext::get(node);
+		YGNodeFree(node);
+	},
 };
 
 static void YGNodeStyleSetPosition(YGNodeRef node, YGEdge edge, YGValue value) {
@@ -29,7 +85,7 @@ static void YGNodeStyleSetPosition(YGNodeRef node, YGEdge edge, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetPosition(node, edge, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetPositionPercent(node, edge, value.value);
 			break;
@@ -45,7 +101,7 @@ static void YGNodeStyleSetMargin(YGNodeRef node, YGEdge edge, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetMargin(node, edge, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetMarginPercent(node, edge, value.value);
 			break;
@@ -66,7 +122,7 @@ static void YGNodeStyleSetPadding(YGNodeRef node, YGEdge edge, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetPadding(node, edge, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetPaddingPercent(node, edge, value.value);
 			break;
@@ -82,7 +138,7 @@ static void YGNodeStyleSetFlexBasis(YGNodeRef node, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetFlexBasis(node, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetFlexBasisPercent(node, value.value);
 			break;
@@ -102,7 +158,7 @@ static void YGNodeStyleSetWidth(YGNodeRef node, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetWidth(node, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetWidthPercent(node, value.value);
 			break;
@@ -122,7 +178,7 @@ static void YGNodeStyleSetHeight(YGNodeRef node, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetHeight(node, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetHeightPercent(node, value.value);
 			break;
@@ -143,7 +199,7 @@ static void YGNodeStyleSetMinWidth(YGNodeRef node, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetMinWidth(node, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetMinWidthPercent(node, value.value);
 			break;
@@ -160,7 +216,7 @@ static void YGNodeStyleSetMinHeight(YGNodeRef node, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetMinHeight(node, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetMinHeightPercent(node, value.value);
 			break;
@@ -177,7 +233,7 @@ static void YGNodeStyleSetMaxWidth(YGNodeRef node, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetMaxWidth(node, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetMaxWidthPercent(node, value.value);
 			break;
@@ -194,7 +250,7 @@ static void YGNodeStyleSetMaxHeight(YGNodeRef node, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetMaxHeight(node, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetMaxHeightPercent(node, value.value);
 			break;
@@ -211,7 +267,7 @@ static void YGNodeStyleSetGap(YGNodeRef node, YGGutter gutter, YGValue value) {
 		case YGUnitPoint:
 			YGNodeStyleSetGap(node, gutter, value.value);
 			break;
-		
+
 		case YGUnitPercent:
 			YGNodeStyleSetGapPercent(node, gutter, value.value);
 			break;
@@ -222,7 +278,7 @@ static YGValue to_YGValue(ecsql::SQLHookRow& row, int index) {
 	switch (row.column_type(index)) {
 		case SQLITE_NULL:
 			return YGValueUndefined;
-		
+
 		case SQLITE_TEXT: {
 			std::string_view value = row.column_text(index);
 			if (value.ends_with('%')) {
@@ -359,10 +415,10 @@ static void setup_yoga_node(YGNodeRef node, ecsql::SQLHookRow& row) {
 	// Size
 	YGNodeStyleSetWidth(node, to_YGValue(row, YogaNode_width));
 	YGNodeStyleSetHeight(node, to_YGValue(row, YogaNode_height));
-	
+
 	YGNodeStyleSetMinWidth(node, to_YGValue(row, YogaNode_min_width));
 	YGNodeStyleSetMinHeight(node, to_YGValue(row, YogaNode_min_height));
-	
+
 	YGNodeStyleSetMaxWidth(node, to_YGValue(row, YogaNode_max_width));
 	YGNodeStyleSetMaxHeight(node, to_YGValue(row, YogaNode_max_height));
 
@@ -387,7 +443,6 @@ ecsql::HookSystem OnInsertYogaNode {
 	YogaNode,
 	[](ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
 		YGNodeRef node = YogaNodeFlyweight.get(new_row.get_rowid());
-		YGNodeSetContext(node, (void*) new_row.get_rowid());
 		setup_yoga_node(node, new_row);
 	},
 };
@@ -397,7 +452,6 @@ ecsql::HookSystem OnUpdateYogaNode {
 	YogaNode,
 	[](ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
 		auto node = YogaNodeFlyweight.get_autorelease(new_row.get_rowid());
-		YGNodeSetContext(node, (void*) new_row.get_rowid());
 		setup_yoga_node(node, new_row);
 	},
 };
@@ -410,15 +464,54 @@ ecsql::HookSystem OnDeleteYogaNode {
 	},
 };
 
+ecsql::HookSystem OnDeleteText {
+	ecsql::HookType::OnDelete,
+	TextComponent,
+	[](ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
+		if (YGNodeRef *node_ptr = YogaNodeFlyweight.peek(old_row.get_rowid())) {
+			YGNodeRef node = *node_ptr;
+			YogaNodeContext::get(node)->unset_measured_size(node);
+		}
+	},
+};
+
 void recurse_update_rect(YGNodeRef node, ecsql::PreparedSQL& upsert_rectangle) {
-	ecsql::EntityID entity_id = (ecsql::EntityID) YGNodeGetContext(node);
-	upsert_rectangle(entity_id, YGNodeLayoutGetLeft(node), YGNodeLayoutGetTop(node), YGNodeLayoutGetWidth(node), YGNodeLayoutGetHeight(node));
+	upsert_rectangle(YogaNodeContext::get(node)->entity_id, YGNodeLayoutGetLeft(node), YGNodeLayoutGetTop(node), YGNodeLayoutGetWidth(node), YGNodeLayoutGetHeight(node));
 	for (size_t i = 0, count = YGNodeGetChildCount(node); i < count; i++) {
 		recurse_update_rect(YGNodeGetChild(node, i), upsert_rectangle);
 	}
 }
 
 void register_update_yoga(ecsql::Ecsql& world) {
+	world.register_system({
+		"YogaUpdateMeasurements",
+		{
+			R"(
+				SELECT entity_id, text, size
+				FROM Text
+				JOIN YogaNode USING(entity_id)
+				WHERE is_text_dirty
+			)"_dedent,
+			R"(
+				UPDATE YogaNode
+				SET is_text_dirty = FALSE
+				WHERE is_text_dirty = TRUE
+			)"_dedent,
+		},
+		[](auto& sqls) {
+			auto select_text = sqls[0];
+			auto reset_dirty_flag = sqls[1];
+
+			for (ecsql::SQLRow row : select_text()) {
+				auto [entity_id, text, font_size] = row.get<ecsql::EntityID, const char *, int>();
+				float width = MeasureText(text, font_size);
+				auto node = YogaNodeFlyweight.get_autorelease(entity_id);
+				YogaNodeContext::get(node)->set_measured_size(node, width, font_size);
+				YGNodeMarkDirty(node);
+			}
+			reset_dirty_flag();
+		},
+	});
 	world.register_system({
 		"YogaUpdate",
 		{

@@ -10,10 +10,15 @@ add_file2c(
   INPUT "src/ecsql/world_schema.sql"
   TEXT
 )
+add_file2c(
+  final_schema
+  INPUT "src/final_schema.sql"
+  TEXT
+)
 
 file(GLOB_RECURSE src "src/*.cpp")
 add_executable(ecsql ${src})
-target_link_libraries(ecsql libs world_schema)
+target_link_libraries(ecsql libs world_schema final_schema)
 target_compile_features(ecsql PUBLIC cxx_std_20)
 # define `DEBUG` symbol on CMake Debug builds
 target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
