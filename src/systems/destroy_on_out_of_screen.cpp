@@ -3,7 +3,7 @@
 #include "destroy_on_out_of_screen.hpp"
 #include "../ecsql/system.hpp"
 
-void register_destroy_on_out_of_screen(ecsql::Ecsql& world) {
+void register_destroy_on_out_of_screen(ecsql::World& world) {
 	world.register_system({
 		"DestroyOnOutOfScreen",
 		R"(

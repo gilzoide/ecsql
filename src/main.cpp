@@ -13,10 +13,10 @@
 #include "memory.hpp"
 #include "ecsql/assetio.hpp"
 #include "ecsql/component.hpp"
-#include "ecsql/ecsql.hpp"
 #include "ecsql/hook_system.hpp"
 #include "ecsql/screen.hpp"
 #include "ecsql/serialization.hpp"
+#include "ecsql/world.hpp"
 #include "systems/bake_position.hpp"
 #include "systems/destroy_on_out_of_screen.hpp"
 #include "systems/draw_systems.hpp"
@@ -27,12 +27,12 @@
 #include "systems/yoga.hpp"
 
 #if defined(DEBUG) && !defined(NDEBUG)
-void run_debug_functionality(ecsql::Ecsql& world) {
+void run_debug_functionality(ecsql::World& world) {
 	ZoneScoped;
 	DrawFPS(0, 0);
 
 	for (int fkey = KEY_F1; fkey <= KEY_F10; fkey++) {
-		bool is_shift_down = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT); 
+		bool is_shift_down = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
 		if (IsKeyPressed(fkey)) {
 			const char *db_name = TextFormat("ecsql_world-backup%02d.sqlite3", fkey - KEY_F1 + 1);
 			if (is_shift_down) {
@@ -50,7 +50,7 @@ void run_debug_functionality(ecsql::Ecsql& world) {
 }
 #endif
 
-void game_loop(ecsql::Ecsql& world) {
+void game_loop(ecsql::World& world) {
 	ZoneScoped;
 	BeginDrawing();
 	ClearBackground(RAYWHITE);
@@ -71,7 +71,7 @@ void game_loop(ecsql::Ecsql& world) {
 }
 
 void game_loop(void *world) {
-	game_loop(*(ecsql::Ecsql *) world);
+	game_loop(*(ecsql::World *) world);
 }
 
 int main(int argc, const char **argv) {
@@ -93,9 +93,9 @@ int main(int argc, const char **argv) {
 	idbvfs_register(true);
 #endif
 
-	ecsql::Ecsql ecsql_world(getenv("ECSQL_DB"));
+	ecsql::World ecsql_world(getenv("ECSQL_DB"));
 	ecsql_world.execute_sql(ecsql::screen_size::update_sql, GetScreenWidth(), GetScreenHeight());
-	
+
 	// Components
 	ecsql::RawComponent::foreach_static_linked_list([&](ecsql::RawComponent *component) {
 		ecsql_world.register_component(*component);
@@ -117,7 +117,7 @@ int main(int argc, const char **argv) {
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.toml";
-	bool loaded_main_scene = ecsql_world.inside_transaction([main_scene](ecsql::Ecsql& world) {
+	bool loaded_main_scene = ecsql_world.inside_transaction([main_scene](ecsql::World& world) {
 		world.execute_sql_script(ecsql::load_scene_file(main_scene).c_str());
 	});
 	if (!loaded_main_scene) {

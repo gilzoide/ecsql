@@ -2,7 +2,7 @@
 #include "../ecsql/system.hpp"
 #include "raylib.h"
 
-void register_update_screen_rect(ecsql::Ecsql& world) {
+void register_update_screen_rect(ecsql::World& world) {
 	world.register_system({
 		"UpdateScreenRect",
 		R"(

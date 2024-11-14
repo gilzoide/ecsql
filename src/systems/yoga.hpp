@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../ecsql/component.hpp"
-#include "../ecsql/ecsql.hpp"
+#include "../ecsql/world.hpp"
 
 enum YogaNodeColumn {
 	YogaNode_entity_id,
@@ -98,4 +98,4 @@ inline ecsql::RawComponent YogaNode {
 	"CREATE INDEX YogaNode_is_text_dirty ON YogaNode(is_text_dirty);"
 };
 
-void register_update_yoga(ecsql::Ecsql& world);
+void register_update_yoga(ecsql::World& world);

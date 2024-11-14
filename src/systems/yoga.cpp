@@ -482,7 +482,7 @@ void recurse_update_rect(YGNodeRef node, ecsql::PreparedSQL& upsert_rectangle) {
 	}
 }
 
-void register_update_yoga(ecsql::Ecsql& world) {
+void register_update_yoga(ecsql::World& world) {
 	world.register_system({
 		"YogaUpdateMeasurements",
 		{

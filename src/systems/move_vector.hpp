@@ -3,8 +3,8 @@
 #include <raylib.h>
 
 #include "../ecsql/component.hpp"
-#include "../ecsql/ecsql.hpp"
+#include "../ecsql/world.hpp"
 
 inline ecsql::Component<Vector2> MoveVector { "MoveVector" };
 
-void register_move_vector(ecsql::Ecsql& world);
+void register_move_vector(ecsql::World& world);

@@ -21,18 +21,18 @@ class HookSystem;
 class SQLRow;
 class System;
 
-class Ecsql {
+class World {
 public:
-    Ecsql();
-    Ecsql(const char *db_name);
-    ~Ecsql();
+    World();
+    World(const char *db_name);
+    ~World();
 
     void register_component(RawComponent& component);
     void register_component(RawComponent&& component);
-    
+
     void register_system(System& system);
     void register_system(System&& system);
-    
+
 	void register_hook_system(const HookSystem& system);
     void register_hook_system(HookSystem&& system);
 
@@ -66,7 +66,7 @@ public:
 
     bool backup_into(const char *db_name);
     bool backup_into(sqlite3 *db);
-    
+
     bool restore_from(const char *db_name);
     bool restore_from(sqlite3 *db);
 

@@ -5,7 +5,7 @@
 #include "move_on_arrows.hpp"
 #include "../ecsql/system.hpp"
 
-void register_move_on_arrows(ecsql::Ecsql& world) {
+void register_move_on_arrows(ecsql::World& world) {
 	world.register_system({
 		"MoveOnArrows",
 		R"(

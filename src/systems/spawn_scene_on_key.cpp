@@ -8,7 +8,7 @@
 #include "../flyweights/scene_sql_flyweight.hpp"
 #include "../flyweights/texture_flyweight.hpp"
 
-void register_spawn_scene_on_key(ecsql::Ecsql& world) {
+void register_spawn_scene_on_key(ecsql::World& world) {
 	world.register_system({
 		"SpawnPrefabObject",
 		{
@@ -33,7 +33,7 @@ void register_spawn_scene_on_key(ecsql::Ecsql& world) {
 				WHERE entity_id = ?
 			)"_dedent,
 		},
-		[](Ecsql& world, std::vector<PreparedSQL>& sqls) {
+		[](World& world, std::vector<PreparedSQL>& sqls) {
 			if (!IsKeyDown(KEY_SPACE)) {
 				return;
 			}
@@ -44,7 +44,7 @@ void register_spawn_scene_on_key(ecsql::Ecsql& world) {
 
 			for (ecsql::SQLRow row : get_spawn_info()) {
 				auto [entity, scene_path] = row.get<EntityID, std::string_view>();
-				
+
 				auto scene_sql = SceneSqlFlyweight.get(scene_path);
 				world.execute_sql_script(scene_sql.value.c_str());
 

@@ -1,7 +1,6 @@
 #include <cstdio>
 
 #include "component.hpp"
-#include "ecsql.hpp"
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
 #include "screen.hpp"
@@ -9,6 +8,7 @@
 #include "sql_utility.hpp"
 #include "system.hpp"
 #include "time.hpp"
+#include "world.hpp"
 #include "world_schema.h"
 
 namespace ecsql {
@@ -44,7 +44,7 @@ static void ecsql_preupdate_hook(
     sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
     sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
 ) {
-	Ecsql *world = (Ecsql *) pCtx;
+	World *world = (World *) pCtx;
 	switch (op) {
 		case SQLITE_INSERT:
 			world->on_insert(zName, iKey1, iKey2);
@@ -60,12 +60,12 @@ static void ecsql_preupdate_hook(
 	}
 }
 
-Ecsql::Ecsql()
-	: Ecsql(DEFAULT_DB_NAME)
+World::World()
+	: World(DEFAULT_DB_NAME)
 {
 }
 
-Ecsql::Ecsql(const char *db_name)
+World::World(const char *db_name)
 	: db(ecsql_create_db(db_name ?: DEFAULT_DB_NAME), sqlite3_close_v2)
 	, begin_stmt(db.get(), "BEGIN", true)
 	, commit_stmt(db.get(), "COMMIT", true)
@@ -77,30 +77,30 @@ Ecsql::Ecsql(const char *db_name)
 	sqlite3_preupdate_hook(db.get(), ecsql_preupdate_hook, this);
 }
 
-Ecsql::~Ecsql() {
+World::~World() {
 	if (LAST_DB_NAME[0]) {
 		backup_into(LAST_DB_NAME);
 	}
 }
 
-void Ecsql::register_component(RawComponent& component) {
+void World::register_component(RawComponent& component) {
 	component.prepare(db.get());
 }
-void Ecsql::register_component(RawComponent&& component) {
+void World::register_component(RawComponent&& component) {
 	component.prepare(db.get());
 }
 
-void Ecsql::register_system(System& system) {
+void World::register_system(System& system) {
 	system.prepare(db.get());
 	systems.push_back(system);
 }
 
-void Ecsql::register_system(System&& system) {
+void World::register_system(System&& system) {
 	system.prepare(db.get());
 	systems.push_back(system);
 }
 
-void Ecsql::register_hook_system(const HookSystem& system) {
+void World::register_hook_system(const HookSystem& system) {
 	switch (system.hook_type) {
 		case HookType::OnInsert:
 			register_prehook(on_insert_systems, system);
@@ -113,7 +113,7 @@ void Ecsql::register_hook_system(const HookSystem& system) {
 			break;
 	}
 }
-void Ecsql::register_hook_system(HookSystem&& system) {
+void World::register_hook_system(HookSystem&& system) {
 	switch (system.hook_type) {
 		case HookType::OnInsert:
 			register_prehook(on_insert_systems, system);
@@ -127,28 +127,28 @@ void Ecsql::register_hook_system(HookSystem&& system) {
 	}
 }
 
-EntityID Ecsql::create_entity() {
+EntityID World::create_entity() {
 	return create_entity_stmt(nullptr).get<EntityID>();
 }
 
-EntityID Ecsql::create_entity(std::string_view name) {
+EntityID World::create_entity(std::string_view name) {
 	return create_entity_stmt(name).get<EntityID>();
 }
 
-EntityID Ecsql::create_entity(std::string_view name, EntityID parent) {
+EntityID World::create_entity(std::string_view name, EntityID parent) {
 	return create_entity_stmt(name, parent).get<EntityID>();
 }
 
-EntityID Ecsql::create_entity(EntityID parent) {
+EntityID World::create_entity(EntityID parent) {
 	return create_entity_stmt(nullptr, parent).get<EntityID>();
 }
 
-bool Ecsql::delete_entity(EntityID id) {
+bool World::delete_entity(EntityID id) {
 	return delete_entity_stmt(id).get<bool>();
 }
 
-void Ecsql::update(float time_delta) {
-	inside_transaction([=](Ecsql& self) {
+void World::update(float time_delta) {
+	inside_transaction([=](World& self) {
 		self.update_delta_time_stmt(time_delta);
 		for (auto& system : self.systems) {
 			system(self);
@@ -156,23 +156,23 @@ void Ecsql::update(float time_delta) {
 	});
 }
 
-void Ecsql::on_insert(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
+void World::on_insert(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
 	execute_prehook(table, old_rowid, new_rowid, on_insert_systems);
 }
 
-void Ecsql::on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
+void World::on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
 	execute_prehook(table, old_rowid, new_rowid, on_delete_systems);
 }
 
-void Ecsql::on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
+void World::on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
 	execute_prehook(table, old_rowid, new_rowid, on_update_systems);
 }
 
-void Ecsql::on_window_resized(int new_width, int new_height) {
+void World::on_window_resized(int new_width, int new_height) {
 	execute_sql(screen_size::update_sql, new_width, new_height);
 }
 
-bool Ecsql::backup_into(const char *db_name) {
+bool World::backup_into(const char *db_name) {
 	sqlite3 *db;
 	if (sqlite3_open_v2(db_name, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr) != SQLITE_OK) {
 		std::cerr << "Error backing up into \"" << db_name << "\": " << sqlite3_errmsg(db) << std::endl;
@@ -183,13 +183,13 @@ bool Ecsql::backup_into(const char *db_name) {
 	return result;
 }
 
-bool Ecsql::backup_into(sqlite3 *db) {
+bool World::backup_into(sqlite3 *db) {
 	sqlite3_backup *backup = sqlite3_backup_init(db, "main", this->db.get(), "main");
 	sqlite3_backup_step(backup, -1);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
 
-bool Ecsql::restore_from(const char *db_name) {
+bool World::restore_from(const char *db_name) {
 	sqlite3 *db;
 	if (sqlite3_open_v2(db_name, &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
 		std::cerr << "Error restoring from \"" << db_name << "\": " << sqlite3_errmsg(db) << std::endl;
@@ -200,29 +200,29 @@ bool Ecsql::restore_from(const char *db_name) {
 	return result;
 }
 
-bool Ecsql::restore_from(sqlite3 *db) {
+bool World::restore_from(sqlite3 *db) {
 	sqlite3_backup *backup = sqlite3_backup_init(this->db.get(), "main", db, "main");
 	sqlite3_backup_step(backup, -1);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
 
-std::shared_ptr<sqlite3> Ecsql::get_db() const {
+std::shared_ptr<sqlite3> World::get_db() const {
 	return db;
 }
 
-void Ecsql::execute_sql_script(const char *sql) {
+void World::execute_sql_script(const char *sql) {
 	ecsql::execute_sql_script(db.get(), sql);
 }
 
 // private methods
-void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system) {
+void World::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system) {
 	auto it = map.find(system.component_name);
 	if (it == map.end()) {
 		it = map.emplace(system.component_name, std::vector<HookSystem>{}).first;
 	}
 	it->second.push_back(system);
 }
-void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, HookSystem&& system) {
+void World::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, HookSystem&& system) {
 	auto it = map.find(system.component_name);
 	if (it == map.end()) {
 		it = map.emplace(system.component_name, std::vector<HookSystem>{}).first;
@@ -230,7 +230,7 @@ void Ecsql::register_prehook(std::unordered_map<std::string, std::vector<HookSys
 	it->second.push_back(system);
 }
 
-void Ecsql::execute_prehook(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid, const std::unordered_map<std::string, std::vector<HookSystem>>& map) {
+void World::execute_prehook(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid, const std::unordered_map<std::string, std::vector<HookSystem>>& map) {
 	auto it = map.find(table);
 	if (it != map.end()) {
 		SQLHookRow old_row { db.get(), old_rowid, false };

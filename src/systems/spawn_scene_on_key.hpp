@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../ecsql/component.hpp"
-#include "../ecsql/ecsql.hpp"
+#include "../ecsql/world.hpp"
 
 inline ecsql::RawComponent SpawnerTag {
 	"SpawnOnKey",
@@ -11,4 +11,4 @@ inline ecsql::RawComponent SpawnerTag {
 	},
 };
 
-void register_spawn_scene_on_key(ecsql::Ecsql& world);
+void register_spawn_scene_on_key(ecsql::World& world);

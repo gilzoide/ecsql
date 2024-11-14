@@ -8,7 +8,7 @@
 #include "../flyweights/model_flyweight.hpp"
 #include "../flyweights/texture_flyweight.hpp"
 
-void register_draw_systems(ecsql::Ecsql& world) {
+void register_draw_systems(ecsql::World& world) {
 	world.register_system({
 		"DrawTextureRect",
 		R"(

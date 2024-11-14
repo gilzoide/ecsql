@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../ecsql/component.hpp"
-#include "../ecsql/ecsql.hpp"
+#include "../ecsql/world.hpp"
 
 inline ecsql::Tag MoveOnArrows { "MoveOnArrows" };
 inline ecsql::RawComponent LinearSpeed {
@@ -11,4 +11,4 @@ inline ecsql::RawComponent LinearSpeed {
 	},
 };
 
-void register_move_on_arrows(ecsql::Ecsql& world);
+void register_move_on_arrows(ecsql::World& world);

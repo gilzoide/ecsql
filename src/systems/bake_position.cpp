@@ -3,7 +3,7 @@
 #include "bake_position.hpp"
 #include "../ecsql/system.hpp"
 
-void register_bake_position_system(ecsql::Ecsql& world) {
+void register_bake_position_system(ecsql::World& world) {
 	world.register_system({
 		"BakeRelativePosition",
 		{

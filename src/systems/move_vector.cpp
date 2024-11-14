@@ -4,7 +4,7 @@
 #include "move_vector.hpp"
 #include "../ecsql/system.hpp"
 
-void register_move_vector(ecsql::Ecsql& world) {
+void register_move_vector(ecsql::World& world) {
 	world.register_system({
 		"MoveVector",
 		R"(
