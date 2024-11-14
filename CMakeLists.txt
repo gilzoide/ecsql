@@ -29,7 +29,10 @@ if (EMSCRIPTEN)
     -sALLOW_MEMORY_GROWTH
     --embed-file assets.zip
   )
-  set_target_properties(ecsql PROPERTIES SUFFIX ".html")
+  set_target_properties(ecsql PROPERTIES
+    OUTPUT_NAME "index"
+    SUFFIX ".html"
+  )
 endif ()
 
 
