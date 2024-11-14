@@ -1,11 +1,7 @@
 """
 Pack assets into a ZIP file, transforming them if necessary.
-
-Usage:
-  pack_assets.py 
 """
 import os
-import sys
 from zipfile import ZipFile
 
 
@@ -22,5 +18,10 @@ def pack_assets(assets_folder: str, zipname: str):
 
 
 if __name__ == "__main__":
-    assets_folder, zipname = sys.argv[1:3]
-    pack_assets(assets_folder, zipname)
+    import argparse
+
+    argparser = argparse.ArgumentParser(description=__doc__)
+    argparser.add_argument("assets_folder", help="Path to the root of the assets folder")
+    argparser.add_argument("zip_name", help="Path to the generated zip file")
+    args = argparser.parse_args()
+    pack_assets(args.assets_folder, args.zip_name)
