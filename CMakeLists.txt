@@ -16,7 +16,7 @@ add_file2c(
   TEXT
 )
 
-file(GLOB_RECURSE src "src/*.cpp")
+file(GLOB_RECURSE src CONFIGURE_DEPENDS "src/*.cpp")
 add_executable(ecsql ${src})
 target_link_libraries(ecsql libs world_schema final_schema)
 target_compile_features(ecsql PUBLIC cxx_std_20)
@@ -39,7 +39,7 @@ endif ()
 # Pack all assets in the assets.zip file
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-file(GLOB_RECURSE asset_files assets/**)
+file(GLOB_RECURSE asset_files CONFIGURE_DEPENDS assets/**)
 set(pack_assets_script "tools/pack_assets.py")
 add_custom_command(
   OUTPUT assets.zip
