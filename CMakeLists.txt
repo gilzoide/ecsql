@@ -28,10 +28,12 @@ if (EMSCRIPTEN)
   target_link_options(ecsql PRIVATE
     -sALLOW_MEMORY_GROWTH
     --embed-file assets.zip
+    --shell-file "${CMAKE_CURRENT_SOURCE_DIR}/src/emscripten_shell.html"
   )
   set_target_properties(ecsql PROPERTIES
     OUTPUT_NAME "index"
     SUFFIX ".html"
+    LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/emscripten_shell.html"
   )
 endif ()
 
