@@ -24,7 +24,7 @@ System::System(std::string_view name, const std::string& sql, std::function<void
 }
 
 System::System(std::string_view name, const std::vector<std::string>& sql, std::function<void(std::vector<PreparedSQL>&)> implementation)
-	: System(name, { sql }, [=](World& world, std::vector<PreparedSQL>& prepared_sqls) { implementation(prepared_sqls); })
+	: System(name, sql, [=](World& world, std::vector<PreparedSQL>& prepared_sqls) { implementation(prepared_sqls); })
 {
 }
 

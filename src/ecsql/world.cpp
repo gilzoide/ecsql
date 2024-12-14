@@ -35,31 +35,6 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 	return db;
 }
 
-static void ecsql_preupdate_hook(
-    void *pCtx,                   /* Copy of third arg to preupdate_hook() */
-    sqlite3 *db,                  /* Database handle */
-    int op,                       /* SQLITE_UPDATE, DELETE or INSERT */
-    char const *zDb,              /* Database name */
-    char const *zName,            /* Table name */
-    sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
-    sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
-) {
-	World *world = (World *) pCtx;
-	switch (op) {
-		case SQLITE_INSERT:
-			world->on_insert(zName, iKey1, iKey2);
-			break;
-
-		case SQLITE_DELETE:
-			world->on_delete(zName, iKey1, iKey2);
-			break;
-
-		case SQLITE_UPDATE:
-			world->on_update(zName, iKey1, iKey2);
-			break;
-	}
-}
-
 World::World()
 	: World(DEFAULT_DB_NAME)
 {
@@ -74,7 +49,7 @@ World::World(const char *db_name)
 	, delete_entity_stmt(db.get(), Entity::delete_sql, true)
 	, update_delta_time_stmt(db.get(), time::update_delta_sql, true)
 {
-	sqlite3_preupdate_hook(db.get(), ecsql_preupdate_hook, this);
+	sqlite3_preupdate_hook(db.get(), preupdate_hook, this);
 }
 
 World::~World() {
@@ -101,30 +76,18 @@ void World::register_system(System&& system) {
 }
 
 void World::register_hook_system(const HookSystem& system) {
-	switch (system.hook_type) {
-		case HookType::OnInsert:
-			register_prehook(on_insert_systems, system);
-			break;
-		case HookType::OnUpdate:
-			register_prehook(on_update_systems, system);
-			break;
-		case HookType::OnDelete:
-			register_prehook(on_delete_systems, system);
-			break;
+	auto it = hook_systems.find(system.component_name);
+	if (it == hook_systems.end()) {
+		it = hook_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
 	}
+	it->second.push_back(system);
 }
 void World::register_hook_system(HookSystem&& system) {
-	switch (system.hook_type) {
-		case HookType::OnInsert:
-			register_prehook(on_insert_systems, system);
-			break;
-		case HookType::OnUpdate:
-			register_prehook(on_update_systems, system);
-			break;
-		case HookType::OnDelete:
-			register_prehook(on_delete_systems, system);
-			break;
+	auto it = hook_systems.find(system.component_name);
+	if (it == hook_systems.end()) {
+		it = hook_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
 	}
+	it->second.push_back(system);
 }
 
 EntityID World::create_entity() {
@@ -154,18 +117,6 @@ void World::update(float time_delta) {
 			system(self);
 		}
 	});
-}
-
-void World::on_insert(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
-	execute_prehook(table, old_rowid, new_rowid, on_insert_systems);
-}
-
-void World::on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
-	execute_prehook(table, old_rowid, new_rowid, on_delete_systems);
-}
-
-void World::on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
-	execute_prehook(table, old_rowid, new_rowid, on_update_systems);
 }
 
 void World::on_window_resized(int new_width, int new_height) {
@@ -215,28 +166,38 @@ void World::execute_sql_script(const char *sql) {
 }
 
 // private methods
-void World::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system) {
-	auto it = map.find(system.component_name);
-	if (it == map.end()) {
-		it = map.emplace(system.component_name, std::vector<HookSystem>{}).first;
+void World::preupdate_hook(
+    void *pCtx,                   /* Copy of third arg to preupdate_hook() */
+    sqlite3 *db,                  /* Database handle */
+    int op,                       /* SQLITE_UPDATE, DELETE or INSERT */
+    char const *zDb,              /* Database name */
+    char const *zName,            /* Table name */
+    sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
+    sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
+) {
+	World *world = (World *) pCtx;
+	switch (op) {
+		case SQLITE_INSERT:
+			world->execute_prehook(zName, HookType::OnInsert, iKey1, iKey2);
+			break;
+
+		case SQLITE_DELETE:
+			world->execute_prehook(zName, HookType::OnDelete, iKey1, iKey2);
+			break;
+
+		case SQLITE_UPDATE:
+			world->execute_prehook(zName, HookType::OnUpdate, iKey1, iKey2);
+			break;
 	}
-	it->second.push_back(system);
-}
-void World::register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, HookSystem&& system) {
-	auto it = map.find(system.component_name);
-	if (it == map.end()) {
-		it = map.emplace(system.component_name, std::vector<HookSystem>{}).first;
-	}
-	it->second.push_back(system);
 }
 
-void World::execute_prehook(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid, const std::unordered_map<std::string, std::vector<HookSystem>>& map) {
-	auto it = map.find(table);
-	if (it != map.end()) {
+void World::execute_prehook(const char *table, HookType hook, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid) {
+	auto it = hook_systems.find(table);
+	if (it != hook_systems.end()) {
 		SQLHookRow old_row { db.get(), old_rowid, false };
 		SQLHookRow new_row { db.get(), new_rowid, true };
 		for (auto& system : it->second) {
-			system(old_row, new_row);
+			system(hook, old_row, new_row);
 		}
 	}
 }

@@ -12,12 +12,12 @@
 
 #include "entity.hpp"
 #include "executed_sql.hpp"
+#include "hook_system.hpp"
 #include "prepared_sql.hpp"
 
 namespace ecsql {
 
 class Component;
-class HookSystem;
 class SQLRow;
 class System;
 
@@ -58,9 +58,6 @@ public:
     }
 
     void update(float time_delta);
-    void on_insert(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
-    void on_delete(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
-    void on_update(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
 
 	void on_window_resized(int new_width, int new_height);
 
@@ -88,13 +85,10 @@ private:
     PreparedSQL update_delta_time_stmt;
 
     std::vector<System> systems;
-    std::unordered_map<std::string, std::vector<HookSystem>> on_insert_systems;
-    std::unordered_map<std::string, std::vector<HookSystem>> on_delete_systems;
-    std::unordered_map<std::string, std::vector<HookSystem>> on_update_systems;
+    std::unordered_map<std::string, std::vector<HookSystem>> hook_systems;
 
-    void register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, const HookSystem& system);
-    void register_prehook(std::unordered_map<std::string, std::vector<HookSystem>>& map, HookSystem&& system);
-    void execute_prehook(const char *table, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid, const std::unordered_map<std::string, std::vector<HookSystem>>& map);
+	static void preupdate_hook(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1, sqlite3_int64 iKey2);
+    void execute_prehook(const char *table, HookType hook, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
 };
 
 }

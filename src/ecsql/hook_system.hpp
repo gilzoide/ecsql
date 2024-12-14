@@ -22,25 +22,23 @@ enum class HookType {
 class HookSystem {
 public:
 	template<typename Fn>
-	HookSystem(HookType hook_type, std::string_view component_name, Fn&& implementation)
+	HookSystem(std::string_view component_name, Fn&& implementation)
 		: component_name(component_name)
-		, implementation([=](SQLHookRow& old_row, SQLHookRow& new_row) { implementation(old_row, new_row); })
-		, hook_type(hook_type)
+		, implementation([=](HookType hook, SQLHookRow& old_row, SQLHookRow& new_row) { implementation(hook, old_row, new_row); })
 	{
 		STATIC_LINKED_LIST_INSERT();
 	}
 
 	template<typename Fn>
-	HookSystem(HookType hook_type, const Component& component, Fn&& implementation)
-		: HookSystem(hook_type, component.get_name(), implementation)
+	HookSystem(const Component& component, Fn&& implementation)
+		: HookSystem(component.get_name(), implementation)
 	{
 	}
 
-	void operator()(SQLHookRow& old_row, SQLHookRow& new_row) const;
+	void operator()(HookType hook, SQLHookRow& old_row, SQLHookRow& new_row) const;
 
 	std::string component_name;
-	std::function<void(SQLHookRow&, SQLHookRow&)> implementation;
-	HookType hook_type;
+	std::function<void(HookType, SQLHookRow&, SQLHookRow&)> implementation;
 
 	STATIC_LINKED_LIST_DEFINE(HookSystem);
 };

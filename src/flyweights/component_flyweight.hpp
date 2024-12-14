@@ -43,27 +43,14 @@ struct ComponentFlyweight {
 	Component component;
 
 	HookSystem on_insert {
-		HookType::OnInsert,
 		component,
-		[this](SQLHookRow&, SQLHookRow& new_row) {
-			flyweight.get(new_row.get<std::string>(component.first_field_index()));
-		}
-	};
-
-	HookSystem on_update {
-		HookType::OnUpdate,
-		component,
-		[this](SQLHookRow& old_row, SQLHookRow& new_row) {
-			flyweight.release(old_row.get<std::string>(component.first_field_index()));
-			flyweight.get(new_row.get<std::string>(component.first_field_index()));
-		}
-	};
-
-	HookSystem on_delete {
-		HookType::OnDelete,
-		component,
-		[this](SQLHookRow& old_row, SQLHookRow&) {
-			flyweight.release(old_row.get<std::string>(component.first_field_index()));
+		[this](HookType hook, SQLHookRow& old_row, SQLHookRow& new_row) {
+			if (hook == ecsql::HookType::OnDelete || hook == ecsql::HookType::OnUpdate) {
+				flyweight.release(old_row.get<std::string>(component.first_field_index()));
+			}
+			if (hook == ecsql::HookType::OnInsert || hook == ecsql::HookType::OnUpdate) {
+				flyweight.get(new_row.get<std::string>(component.first_field_index()));
+			}
 		}
 	};
 };
