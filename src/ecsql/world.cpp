@@ -56,6 +56,7 @@ World::~World() {
 	if (LAST_DB_NAME[0]) {
 		backup_into(LAST_DB_NAME);
 	}
+	execute_all_prehooks(HookType::OnDelete);
 }
 
 void World::register_component(Component& component) {
