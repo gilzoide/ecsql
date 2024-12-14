@@ -33,10 +33,6 @@ int SQLHookRow::column_type(int index) const {
     return column_value(index).get_type();
 }
 
-bool SQLHookRow::column_is_null(int index) const {
-    return column_value(index).is_null();
-}
-
 bool SQLHookRow::column_bool(int index) const {
     return column_value(index).get_bool();
 }
