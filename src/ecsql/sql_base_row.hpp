@@ -45,6 +45,7 @@ protected:
     requires is_optional<T>
     {
         if (column_is_null(index)) {
+			index++;
             return std::nullopt;
         }
         else {
