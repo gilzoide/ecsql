@@ -152,8 +152,10 @@ bool World::restore_from(const char *db_name) {
 }
 
 bool World::restore_from(sqlite3 *db) {
+	execute_all_prehooks(HookType::OnDelete);
 	sqlite3_backup *backup = sqlite3_backup_init(this->db.get(), "main", db, "main");
 	sqlite3_backup_step(backup, -1);
+	execute_all_prehooks(HookType::OnInsert);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
 
@@ -198,6 +200,19 @@ void World::execute_prehook(const char *table, HookType hook, sqlite3_int64 old_
 		SQLHookRow new_row { db.get(), new_rowid, true };
 		for (auto& system : it->second) {
 			system(hook, old_row, new_row);
+		}
+	}
+}
+
+void World::execute_all_prehooks(HookType hook) {
+	for (auto it : hook_systems) {
+		std::string sql = "SELECT * FROM ";
+		sql += it.first;
+		PreparedSQL select_all(db.get(), sql, false);
+		for (SQLRow row : select_all()) {
+			for (auto& system : it.second) {
+				system(hook, row, row);
+			}
 		}
 	}
 }

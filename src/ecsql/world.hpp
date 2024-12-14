@@ -89,6 +89,7 @@ private:
 
 	static void preupdate_hook(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1, sqlite3_int64 iKey2);
     void execute_prehook(const char *table, HookType hook, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
+    void execute_all_prehooks(HookType hook);
 };
 
 }
