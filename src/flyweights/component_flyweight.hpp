@@ -42,14 +42,14 @@ struct ComponentFlyweight {
 	flyweight::flyweight_refcounted<Key, T> flyweight;
 	Component component;
 
-	HookSystem on_insert {
+	HookSystem hook_system {
 		component,
 		[this](HookType hook, SQLHookRow& old_row, SQLHookRow& new_row) {
-			if (hook == ecsql::HookType::OnDelete || hook == ecsql::HookType::OnUpdate) {
-				flyweight.release(old_row.get<std::string>(component.first_field_index()));
-			}
 			if (hook == ecsql::HookType::OnInsert || hook == ecsql::HookType::OnUpdate) {
 				flyweight.get(new_row.get<std::string>(component.first_field_index()));
+			}
+			if (hook == ecsql::HookType::OnDelete || hook == ecsql::HookType::OnUpdate) {
+				flyweight.release(old_row.get<std::string>(component.first_field_index()));
 			}
 		}
 	};
