@@ -100,7 +100,7 @@ Os sistemas em si não são armazenados na base de dados SQLile, mas utilizam SQ
 Vamos usar o sistema "Mover" como exemplo mais uma vez, que é aplicado a entidades que possuem tanto o componente "Posição" quanto o componente "Velocidade" descritos acima.
 Podemos iterar sobre as entidades que possuem ambos os componentes utilizando a seguinte consulta:
 ```sql
-SELECT 
+SELECT
   entity_id,
   position.x, position.y, position.z,
   velocity.value
@@ -115,5 +115,5 @@ Para isso, basta trocarmos o `JOIN` por `LEFT JOIN` ou `RIGHT JOIN`, de modo que
 ## Conclusão
 Vimos uma breve introdução ao padrão de projeto ECS e como mundos ECS podem ser modelados usando bases de dado relacionais e SQL.
 
-No próximo artigo, começaremos a implementar nosso *framework* experimental **ECSQL**.
+No [próximo artigo](02-prototyping-pt.md), começaremos a implementar nosso *framework* experimental **ECSQL**.
 Vejo vocês lá!
