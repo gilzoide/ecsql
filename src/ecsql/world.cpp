@@ -83,10 +83,10 @@ World::~World() {
 	}
 }
 
-void World::register_component(RawComponent& component) {
+void World::register_component(Component& component) {
 	component.prepare(db.get());
 }
-void World::register_component(RawComponent&& component) {
+void World::register_component(Component&& component) {
 	component.prepare(db.get());
 }
 

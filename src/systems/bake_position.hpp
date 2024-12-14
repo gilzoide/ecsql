@@ -3,7 +3,7 @@
 #include "../ecsql/component.hpp"
 #include "../ecsql/world.hpp"
 
-inline ecsql::RawComponent BakePositionComponent {
+inline ecsql::Component BakePositionComponent {
 	"BakePosition",
 	{
 		"parent_id INTEGER REFERENCES entity(id)",

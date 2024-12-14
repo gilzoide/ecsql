@@ -29,9 +29,9 @@ public:
 	{
 		STATIC_LINKED_LIST_INSERT();
 	}
-	
+
 	template<typename Fn>
-	HookSystem(HookType hook_type, const RawComponent& component, Fn&& implementation)
+	HookSystem(HookType hook_type, const Component& component, Fn&& implementation)
 		: HookSystem(hook_type, component.get_name(), implementation)
 	{
 	}

@@ -140,7 +140,7 @@ std::string load_components(const toml::table& toml) {
 			fields.emplace_back(field);
 		}
 
-		sql += RawComponent(component_name, fields).schema_sql();
+		sql += Component(component_name, fields).schema_sql();
 		sql += '\n';
 	}
 	return sql;

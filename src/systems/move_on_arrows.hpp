@@ -4,7 +4,7 @@
 #include "../ecsql/world.hpp"
 
 inline ecsql::Tag MoveOnArrows { "MoveOnArrows" };
-inline ecsql::RawComponent LinearSpeed {
+inline ecsql::Component LinearSpeed {
 	"LinearSpeed",
 	{
 		"value DEFAULT 1"

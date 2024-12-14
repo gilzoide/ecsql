@@ -16,10 +16,10 @@ typedef struct sqlite3 sqlite3;
 
 namespace ecsql {
 
-class RawComponent {
+class Component {
 public:
-	RawComponent(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
-	RawComponent(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
+	Component(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
+	Component(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
 
 	void prepare(sqlite3 *db);
 
@@ -41,32 +41,12 @@ protected:
 	std::string additional_schema;
 	bool allow_duplicate;
 
-	STATIC_LINKED_LIST_DEFINE(RawComponent);
+	STATIC_LINKED_LIST_DEFINE(Component);
 };
 
-template<typename T>
-class Component : public RawComponent {
-	constexpr static std::vector<std::string> get_fields() {
-		std::vector<std::string> fields;
-		if constexpr (std::is_class_v<T>) {
-			reflect::for_each<T>([&](auto I) {
-				fields.emplace_back(reflect::member_name<I, T>());
-			});
-		}
-		else {
-			fields.emplace_back("value");
-		}
-		return fields;
-	}
-	
+class Tag : public Component {
 public:
-	Component() : Component(reflect::type_name<T>()) {}
-	Component(std::string_view name) : RawComponent(name, get_fields()) {}
-};
-
-class Tag : public RawComponent {
-public:
-	Tag(std::string_view name) : RawComponent(name, {}) {}
+	Tag(std::string_view name) : Component(name, {}) {}
 };
 
 }

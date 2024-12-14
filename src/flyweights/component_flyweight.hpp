@@ -40,8 +40,8 @@ struct ComponentFlyweight {
 	}
 
 	flyweight::flyweight_refcounted<Key, T> flyweight;
-	RawComponent component;
-	
+	Component component;
+
 	HookSystem on_insert {
 		HookType::OnInsert,
 		component,

@@ -97,7 +97,7 @@ int main(int argc, const char **argv) {
 	ecsql_world.execute_sql(ecsql::screen_size::update_sql, GetScreenWidth(), GetScreenHeight());
 
 	// Components
-	ecsql::RawComponent::foreach_static_linked_list([&](ecsql::RawComponent *component) {
+	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {
 		ecsql_world.register_component(*component);
 	});
 	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {

@@ -6,7 +6,7 @@
 
 namespace ecsql {
 
-RawComponent::RawComponent(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema, bool allow_duplicate)
+Component::Component(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema, bool allow_duplicate)
 	: name(name)
 	, fields(fields)
 	, allow_duplicate(allow_duplicate)
@@ -15,7 +15,7 @@ RawComponent::RawComponent(std::string_view name, const std::vector<std::string>
 	STATIC_LINKED_LIST_INSERT();
 }
 
-RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema, bool allow_duplicate)
+Component::Component(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema, bool allow_duplicate)
 	: name(name)
 	, fields(fields)
 	, allow_duplicate(allow_duplicate)
@@ -24,19 +24,19 @@ RawComponent::RawComponent(std::string_view name, std::vector<std::string>&& fie
 	STATIC_LINKED_LIST_INSERT();
 }
 
-void RawComponent::prepare(sqlite3 *db) {
+void Component::prepare(sqlite3 *db) {
 	execute_sql_script(db, schema_sql().c_str());
 }
 
-int RawComponent::entity_id_index() const {
+int Component::entity_id_index() const {
 	return allow_duplicate ? 1 : 0;
 }
 
-int RawComponent::first_field_index() const {
+int Component::first_field_index() const {
 	return allow_duplicate ? 2 : 1;
 }
 
-std::string RawComponent::schema_sql() const {
+std::string Component::schema_sql() const {
 	std::string query;
 	query = "CREATE TABLE ";
 	query += name;
@@ -65,7 +65,7 @@ std::string RawComponent::schema_sql() const {
 	return query;
 }
 
-std::string RawComponent::insert_sql(bool or_replace) const {
+std::string Component::insert_sql(bool or_replace) const {
 	std::string query;
 	query = "INSERT ";
 	if (or_replace) {
@@ -86,7 +86,7 @@ std::string RawComponent::insert_sql(bool or_replace) const {
 	return query;
 }
 
-std::string RawComponent::update_sql() const {
+std::string Component::update_sql() const {
 	std::string query;
 	query = "UPDATE ";
 	query += name;
@@ -103,11 +103,11 @@ std::string RawComponent::update_sql() const {
 	return query;
 }
 
-const std::string& RawComponent::get_name() const {
+const std::string& Component::get_name() const {
 	return name;
 }
 
-const std::vector<std::string>& RawComponent::get_fields() const {
+const std::vector<std::string>& Component::get_fields() const {
 	return fields;
 }
 

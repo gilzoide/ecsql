@@ -49,7 +49,7 @@ enum YogaNodeColumn {
 	is_text_dirty,
 };
 
-inline ecsql::RawComponent YogaNode {
+inline ecsql::Component YogaNode {
 	"YogaNode",
 	{
 		"parent_id INTEGER REFERENCES YogaNode(entity_id) ON DELETE CASCADE",

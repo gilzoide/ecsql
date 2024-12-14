@@ -3,7 +3,7 @@
 #include "../ecsql/component.hpp"
 #include "../ecsql/world.hpp"
 
-inline ecsql::RawComponent SpawnerTag {
+inline ecsql::Component SpawnerTag {
 	"SpawnOnKey",
 	{
 		"cooldown DEFAULT 0",

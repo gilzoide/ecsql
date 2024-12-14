@@ -16,7 +16,7 @@
 
 namespace ecsql {
 
-class RawComponent;
+class Component;
 class HookSystem;
 class SQLRow;
 class System;
@@ -27,8 +27,8 @@ public:
     World(const char *db_name);
     ~World();
 
-    void register_component(RawComponent& component);
-    void register_component(RawComponent&& component);
+    void register_component(Component& component);
+    void register_component(Component&& component);
 
     void register_system(System& system);
     void register_system(System&& system);

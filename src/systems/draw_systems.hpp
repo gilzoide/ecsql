@@ -3,7 +3,7 @@
 #include "../ecsql/component.hpp"
 #include "../ecsql/world.hpp"
 
-inline ecsql::RawComponent PositionComponent {
+inline ecsql::Component PositionComponent {
 	"Position",
 	{
 		"x DEFAULT 0",
@@ -11,7 +11,7 @@ inline ecsql::RawComponent PositionComponent {
 		"z DEFAULT 0",
 	}
 };
-inline ecsql::RawComponent RotationComponent {
+inline ecsql::Component RotationComponent {
 	"Rotation",
 	{
 		"x DEFAULT 0",
@@ -19,7 +19,7 @@ inline ecsql::RawComponent RotationComponent {
 		"z DEFAULT 0",
 	}
 };
-inline ecsql::RawComponent ScaleComponent {
+inline ecsql::Component ScaleComponent {
 	"Scale",
 	{
 		"x DEFAULT 1",
@@ -27,7 +27,7 @@ inline ecsql::RawComponent ScaleComponent {
 		"z DEFAULT 1",
 	}
 };
-inline ecsql::RawComponent PivotComponent {
+inline ecsql::Component PivotComponent {
 	"Pivot",
 	{
 		"x DEFAULT 0.5",
@@ -36,7 +36,7 @@ inline ecsql::RawComponent PivotComponent {
 	}
 };
 
-inline ecsql::RawComponent ColorComponent {
+inline ecsql::Component ColorComponent {
 	"Color",
 	{
 		"r DEFAULT 255",
@@ -46,7 +46,7 @@ inline ecsql::RawComponent ColorComponent {
 	}
 };
 
-inline ecsql::RawComponent RectangleComponent {
+inline ecsql::Component RectangleComponent {
 	"Rectangle",
 	{
 		"x DEFAULT 0",
@@ -56,7 +56,7 @@ inline ecsql::RawComponent RectangleComponent {
 	}
 };
 
-inline ecsql::RawComponent TextComponent {
+inline ecsql::Component TextComponent {
 	"Text",
 	{
 		"text TEXT",
