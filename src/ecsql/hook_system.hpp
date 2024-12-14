@@ -11,7 +11,7 @@ struct sqlite3;
 
 namespace ecsql {
 
-class SQLHookRow;
+class SQLBaseRow;
 
 enum class HookType {
 	OnInsert,
@@ -24,7 +24,7 @@ public:
 	template<typename Fn>
 	HookSystem(std::string_view component_name, Fn&& implementation)
 		: component_name(component_name)
-		, implementation([=](HookType hook, SQLHookRow& old_row, SQLHookRow& new_row) { implementation(hook, old_row, new_row); })
+		, implementation([=](HookType hook, SQLBaseRow& old_row, SQLBaseRow& new_row) { implementation(hook, old_row, new_row); })
 	{
 		STATIC_LINKED_LIST_INSERT();
 	}
@@ -35,10 +35,10 @@ public:
 	{
 	}
 
-	void operator()(HookType hook, SQLHookRow& old_row, SQLHookRow& new_row) const;
+	void operator()(HookType hook, SQLBaseRow& old_row, SQLBaseRow& new_row) const;
 
 	std::string component_name;
-	std::function<void(HookType, SQLHookRow&, SQLHookRow&)> implementation;
+	std::function<void(HookType, SQLBaseRow&, SQLBaseRow&)> implementation;
 
 	STATIC_LINKED_LIST_DEFINE(HookSystem);
 };

@@ -274,7 +274,7 @@ static void YGNodeStyleSetGap(YGNodeRef node, YGGutter gutter, YGValue value) {
 	}
 }
 
-static YGValue to_YGValue(ecsql::SQLHookRow& row, int index) {
+static YGValue to_YGValue(ecsql::SQLBaseRow& row, int index) {
 	switch (row.column_type(index)) {
 		case SQLITE_NULL:
 			return YGValueUndefined;
@@ -315,7 +315,7 @@ static void set_enum(YGNodeRef node, std::string_view column, Fn&& func, Value&&
 	}
 }
 
-static void setup_yoga_node(YGNodeRef node, ecsql::SQLHookRow& row) {
+static void setup_yoga_node(YGNodeRef node, ecsql::SQLBaseRow& row) {
 	YGNodeRef old_parent = YGNodeGetParent(node);
 	if (YGNodeRef *parent = YogaNodeFlyweight.peek(row.get<ecsql::EntityID>(YogaNode_parent_id))) {
 		if (old_parent != *parent) {
@@ -438,37 +438,37 @@ static void setup_yoga_node(YGNodeRef node, ecsql::SQLHookRow& row) {
 	YGNodeStyleSetGap(node, YGGutterRow, to_YGValue(row, YogaNode_row_gap));
 }
 
-ecsql::HookSystem OnUpdateYogaNode {
+ecsql::HookSystem YogaNodeHookSystem {
 	YogaNode,
-	[](ecsql::HookType hook, ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
+	[](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
 		switch (hook) {
 			case ecsql::HookType::OnInsert: {
-				YGNodeRef node = YogaNodeFlyweight.get(new_row.get_rowid());
+				YGNodeRef node = YogaNodeFlyweight.get(new_row.get<ecsql::EntityID>());
 				setup_yoga_node(node, new_row);
 				break;
 			}
 
 			case ecsql::HookType::OnUpdate: {
-				auto node = YogaNodeFlyweight.get_autorelease(new_row.get_rowid());
+				auto node = YogaNodeFlyweight.get_autorelease(new_row.get<ecsql::EntityID>());
 				setup_yoga_node(node, new_row);
 				break;
 			}
 
 			case ecsql::HookType::OnDelete: {
-				YogaNodeFlyweight.release(old_row.get_rowid());
+				YogaNodeFlyweight.release(old_row.get<ecsql::EntityID>());
 				break;
 			}
 		}
 	},
 };
 
-ecsql::HookSystem OnDeleteText {
+ecsql::HookSystem TextHookSystem {
 	TextComponent,
-	[](ecsql::HookType hook, ecsql::SQLHookRow& old_row, ecsql::SQLHookRow& new_row) {
+	[](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
 		if (hook != ecsql::HookType::OnDelete) {
 			return;
 		}
-		if (YGNodeRef *node_ptr = YogaNodeFlyweight.peek(old_row.get_rowid())) {
+		if (YGNodeRef *node_ptr = YogaNodeFlyweight.peek(old_row.get<ecsql::EntityID>())) {
 			YGNodeRef node = *node_ptr;
 			YogaNodeContext::get(node)->unset_measured_size(node);
 		}

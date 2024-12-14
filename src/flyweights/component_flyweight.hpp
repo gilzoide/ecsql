@@ -44,7 +44,7 @@ struct ComponentFlyweight {
 
 	HookSystem hook_system {
 		component,
-		[this](HookType hook, SQLHookRow& old_row, SQLHookRow& new_row) {
+		[this](HookType hook, SQLBaseRow& old_row, SQLBaseRow& new_row) {
 			if (hook == ecsql::HookType::OnInsert || hook == ecsql::HookType::OnUpdate) {
 				flyweight.get(new_row.get<std::string>(component.first_field_index()));
 			}
