@@ -21,7 +21,7 @@ public:
 	Component(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
 	Component(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
 
-	void prepare(sqlite3 *db);
+	void prepare(sqlite3 *db) const;
 
 	// If `allow_duplicate`, entity_id is in index 1. Otherwise it's in index 0.
 	int entity_id_index() const;

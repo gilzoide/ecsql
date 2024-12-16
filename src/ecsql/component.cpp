@@ -24,7 +24,7 @@ Component::Component(std::string_view name, std::vector<std::string>&& fields, c
 	STATIC_LINKED_LIST_INSERT();
 }
 
-void Component::prepare(sqlite3 *db) {
+void Component::prepare(sqlite3 *db) const {
 	execute_sql_script(db, schema_sql().c_str());
 }
 

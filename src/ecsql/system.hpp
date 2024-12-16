@@ -25,13 +25,12 @@ public:
 	System(std::string_view name, const std::vector<std::string>& sql, std::function<void(std::vector<PreparedSQL>&)> implementation);
 	System(std::string_view name, const std::vector<std::string>& sql, std::function<void(World&, std::vector<PreparedSQL>&)> implementation);
 
-	void operator()(World& world);
+	void operator()(World& world, std::vector<PreparedSQL>& prepared_sql) const;
 
-	void prepare(sqlite3 *db);
+	void prepare(sqlite3 *db, std::vector<PreparedSQL>& prepared_sql) const;
 
 	std::string name;
 	std::vector<std::string> sql;
-	std::vector<PreparedSQL> prepared_sql;
 	std::function<void(World&, std::vector<PreparedSQL>&)> implementation;
 };
 

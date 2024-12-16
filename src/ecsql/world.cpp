@@ -59,21 +59,23 @@ World::~World() {
 	execute_all_prehooks(HookType::OnDelete);
 }
 
-void World::register_component(Component& component) {
+void World::register_component(const Component& component) {
 	component.prepare(db.get());
 }
 void World::register_component(Component&& component) {
 	component.prepare(db.get());
 }
 
-void World::register_system(System& system) {
-	system.prepare(db.get());
-	systems.push_back(system);
+void World::register_system(const System& system) {
+	std::vector<PreparedSQL> prepared_sql;
+	system.prepare(db.get(), prepared_sql);
+	systems.emplace_back(system, std::move(prepared_sql));
 }
 
 void World::register_system(System&& system) {
-	system.prepare(db.get());
-	systems.push_back(system);
+	std::vector<PreparedSQL> prepared_sql;
+	system.prepare(db.get(), prepared_sql);
+	systems.emplace_back(std::move(system), std::move(prepared_sql));
 }
 
 void World::register_hook_system(const HookSystem& system) {
@@ -114,8 +116,8 @@ bool World::delete_entity(EntityID id) {
 void World::update(float time_delta) {
 	inside_transaction([=](World& self) {
 		self.update_delta_time_stmt(time_delta);
-		for (auto& system : self.systems) {
-			system(self);
+		for (auto [system, prepared_sql] : self.systems) {
+			system(self, prepared_sql);
 		}
 	});
 }

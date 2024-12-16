@@ -27,10 +27,10 @@ public:
     World(const char *db_name);
     ~World();
 
-    void register_component(Component& component);
+    void register_component(const Component& component);
     void register_component(Component&& component);
 
-    void register_system(System& system);
+    void register_system(const System& system);
     void register_system(System&& system);
 
 	void register_hook_system(const HookSystem& system);
@@ -84,7 +84,7 @@ private:
     PreparedSQL delete_entity_stmt;
     PreparedSQL update_delta_time_stmt;
 
-    std::vector<System> systems;
+    std::vector<std::tuple<System, std::vector<PreparedSQL>>> systems;
     std::unordered_map<std::string, std::vector<HookSystem>> hook_systems;
 
 	static void preupdate_hook(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1, sqlite3_int64 iKey2);
