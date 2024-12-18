@@ -6,7 +6,7 @@
 inline ecsql::Component SpawnAtMostComponent {
 	"SpawnAtMost",
 	{
-		"name DEFAULT \"\"",
+		"name DEFAULT ''",
 		"count DEFAULT 1",
 	},
 };
