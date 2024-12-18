@@ -1,5 +1,8 @@
 [Target.Texture]
   path = "textures/target_red2.png"
+[Target.Scale]
+  x = 0.5
+  y = 0.5
 [Target.BakeRandomScreenPosition]
   paddingLeft = 64
   paddingRight = 64

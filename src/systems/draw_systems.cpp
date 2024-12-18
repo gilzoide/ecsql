@@ -41,16 +41,18 @@ void register_draw_systems(ecsql::World& world) {
 				Position.x, Position.y,
 				ifnull(Pivot.x, 0.5), ifnull(Pivot.y, 0.5),
 				Rotation.z,
+				ifnull(Scale.x, 1), ifnull(Scale.y, 1),
 				ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
 			FROM Texture
 			JOIN Position USING(entity_id)
 			LEFT JOIN Pivot USING(entity_id)
 			LEFT JOIN Rotation USING(entity_id)
+			LEFT JOIN Scale USING(entity_id)
 			LEFT JOIN Color USING(entity_id)
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
-				auto [tex_path, position, normalized_pivot, rotation, color] = row.get<std::string_view, Vector2, Vector2, float, Color>();
+				auto [tex_path, position, normalized_pivot, rotation, scale, color] = row.get<std::string_view, Vector2, Vector2, float, Vector2, Color>();
 				auto tex = TextureFlyweight.get(tex_path);
 				Rectangle source {
 					0, 0,
@@ -60,8 +62,8 @@ void register_draw_systems(ecsql::World& world) {
 				Rectangle dest {
 					position.x,
 					position.y,
-					source.width,
-					source.height,
+					source.width * scale.x,
+					source.height * scale.y,
 				};
 				DrawTexturePro(tex, source, dest, pivot, rotation, color);
 			}
