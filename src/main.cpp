@@ -11,6 +11,7 @@
 
 #include "final_schema.h"
 #include "memory.hpp"
+#include "sqlite_functions.hpp"
 #include "ecsql/assetio.hpp"
 #include "ecsql/component.hpp"
 #include "ecsql/hook_system.hpp"
@@ -95,6 +96,7 @@ int main(int argc, const char **argv) {
 
 	ecsql::World ecsql_world(getenv("ECSQL_DB"));
 	ecsql_world.execute_sql(ecsql::screen_size::update_sql, GetScreenWidth(), GetScreenHeight());
+	register_sqlite_functions(ecsql_world);
 
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {

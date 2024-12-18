@@ -10,12 +10,16 @@ void register_move_on_arrows(ecsql::World& world) {
 		"MoveOnArrows",
 		R"(
 			UPDATE Position
-			SET x = x + ? * movement.speed, y = y + ? * movement.speed
+			SET x = clamp(x + ? * movement.speed, 0, screen_width), y = clamp(y + ? * movement.speed, 0, screen_height)
 			FROM (
-				SELECT entity_id, ifnull(LinearSpeed.value, 1) * time.delta AS speed
+				SELECT
+					entity_id,
+					ifnull(LinearSpeed.value, 1) * time.delta AS speed,
+					width AS screen_width, height AS screen_height
 				FROM MoveOnArrows
 				LEFT JOIN LinearSpeed USING(entity_id)
 				JOIN time
+				JOIN screen_size
 			) AS movement
 			WHERE Position.entity_id = movement.entity_id
 		)"_dedent,

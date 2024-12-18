@@ -170,6 +170,10 @@ void World::execute_sql_script(const char *sql) {
 	ecsql::execute_sql_script(db.get(), sql);
 }
 
+void World::create_function(const char *name, int argument_count, void (*fn)(sqlite3_context*, int, sqlite3_value**)) {
+	sqlite3_create_function(db.get(), name, argument_count, SQLITE_UTF8, nullptr, fn, nullptr, nullptr);
+}
+
 // private methods
 void World::preupdate_hook(
     void *pCtx,                   /* Copy of third arg to preupdate_hook() */
