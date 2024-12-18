@@ -38,3 +38,10 @@
 [Teste3.Texture]
 [Teste3.Color]
   g = 0
+
+
+[SpawnTarget.SceneSql]
+  path = "target.toml"
+[SpawnTarget.SpawnAtMost]
+  name = "Target"
+  count = 5

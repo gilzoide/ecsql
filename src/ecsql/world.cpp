@@ -90,7 +90,7 @@ void World::register_hook_system(HookSystem&& system) {
 	if (it == hook_systems.end()) {
 		it = hook_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
 	}
-	it->second.push_back(system);
+	it->second.push_back(std::move(system));
 }
 
 EntityID World::create_entity() {

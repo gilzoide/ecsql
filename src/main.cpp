@@ -19,11 +19,13 @@
 #include "ecsql/serialization.hpp"
 #include "ecsql/world.hpp"
 #include "systems/bake_position.hpp"
+#include "systems/bake_random_screen_position.hpp"
 #include "systems/destroy_on_out_of_screen.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/move_vector.hpp"
 #include "systems/screen_rect.hpp"
+#include "systems/spawn_at_most.hpp"
 #include "systems/spawn_scene_on_key.hpp"
 #include "systems/yoga.hpp"
 
@@ -110,6 +112,8 @@ int main(int argc, const char **argv) {
 	// Systems
 	register_update_screen_rect(ecsql_world);
 	register_spawn_scene_on_key(ecsql_world);
+	register_spawn_at_most(ecsql_world);
+	register_bake_random_screen_position_system(ecsql_world);
 	register_bake_position_system(ecsql_world);
 	register_move_vector(ecsql_world);
 	register_move_on_arrows(ecsql_world);
