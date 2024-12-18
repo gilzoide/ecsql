@@ -96,34 +96,34 @@ int main(int argc, const char **argv) {
 	idbvfs_register(true);
 #endif
 
-	ecsql::World ecsql_world(getenv("ECSQL_DB"));
-	ecsql_world.execute_sql(ecsql::screen_size::update_sql, GetScreenWidth(), GetScreenHeight());
-	register_sqlite_functions(ecsql_world);
+	ecsql::World world(getenv("ECSQL_DB"));
+	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
+	register_sqlite_functions(world);
 
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {
-		ecsql_world.register_component(*component);
+		world.register_component(*component);
 	});
 	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {
-		ecsql_world.register_hook_system(*system);
+		world.register_hook_system(*system);
 	});
-	ecsql_world.execute_sql_script(final_schema);
+	world.execute_sql_script(final_schema);
 
 	// Systems
-	register_update_screen_rect(ecsql_world);
-	register_spawn_scene_on_key(ecsql_world);
-	register_spawn_at_most(ecsql_world);
-	register_bake_random_screen_position_system(ecsql_world);
-	register_bake_position_system(ecsql_world);
-	register_move_vector(ecsql_world);
-	register_move_on_arrows(ecsql_world);
-	register_destroy_on_out_of_screen(ecsql_world);
-	register_update_yoga(ecsql_world);
-	register_draw_systems(ecsql_world);
+	register_update_screen_rect(world);
+	register_spawn_scene_on_key(world);
+	register_spawn_at_most(world);
+	register_bake_random_screen_position_system(world);
+	register_bake_position_system(world);
+	register_move_vector(world);
+	register_move_on_arrows(world);
+	register_destroy_on_out_of_screen(world);
+	register_update_yoga(world);
+	register_draw_systems(world);
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.toml";
-	bool loaded_main_scene = ecsql_world.inside_transaction([main_scene](ecsql::World& world) {
+	bool loaded_main_scene = world.inside_transaction([main_scene](ecsql::World& world) {
 		world.execute_sql_script(ecsql::load_scene_file(main_scene).c_str());
 	});
 	if (!loaded_main_scene) {
@@ -136,7 +136,7 @@ int main(int argc, const char **argv) {
     emscripten_set_main_loop_arg(&game_loop, &ecsql_world, 0, 1);
 #else
     while (!WindowShouldClose()) {
-		game_loop(ecsql_world);
+		game_loop(world);
     }
 #endif
 	CloseWindow();
