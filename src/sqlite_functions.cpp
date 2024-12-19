@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "sqlite_functions.hpp"
 #include "ecsql/sql_value.hpp"
 #include "ecsql/world.hpp"
