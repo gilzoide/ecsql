@@ -15,6 +15,12 @@ if (EMSCRIPTEN)
   target_link_libraries(libs INTERFACE idbvfs)
 endif ()
 
+# Lua
+add_library(lua STATIC "lua/onelua.c")
+target_compile_definitions(lua PRIVATE MAKE_LIB)
+target_include_directories(lua PUBLIC lua)
+target_link_libraries(libs INTERFACE lua)
+
 # PhysFS
 option(PHYSFS_BUILD_SHARED "Build shared library" OFF)
 option(PHYSFS_BUILD_TEST "Build stdio test program." OFF)
@@ -32,6 +38,11 @@ target_link_libraries(libs INTERFACE raylib)
 
 # Reflect
 target_include_directories(libs INTERFACE reflect)
+
+# Sol2 v3.0
+set(SOL2_LUA_VERSION "5.4.7")
+add_subdirectory(sol2)
+target_link_libraries(libs INTERFACE sol2)
 
 # SQLite 3
 add_subdirectory(sqlite-amalgamation)

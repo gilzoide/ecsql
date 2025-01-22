@@ -28,3 +28,9 @@
 [submodule "libs/yoga"]
 	path = libs/yoga
 	url = https://github.com/facebook/yoga.git
+[submodule "libs/sol2"]
+	path = libs/sol2
+	url = https://github.com/ThePhD/sol2.git
+[submodule "libs/lua"]
+	path = libs/lua
+	url = https://github.com/lua/lua.git
