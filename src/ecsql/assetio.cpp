@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include <raylib.h>
 
 #include "assetio.hpp"
@@ -112,12 +114,28 @@ std::string read_asset_text(const char *filename, int buffer_size) {
 
 sol::load_result load(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
 	PHYSFS_LuaReader reader(filename, buffer_size);
-	return L.load(lua_reader, &reader, filename, mode);
+	auto result = L.load(lua_reader, &reader, filename, mode);
+	if (result.valid()) {
+		return result;
+	}
+	else {
+		std::string err_msg = "Lua: ";
+		err_msg += sol::stack_object(L, -1).as<std::string_view>();
+		throw std::runtime_error(err_msg);
+	}
 }
 
 sol::protected_function_result do_lua_script(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
 	PHYSFS_LuaReader reader(filename, buffer_size);
-	return L.do_reader(lua_reader, &reader, filename, mode);
+	auto result = L.do_reader(lua_reader, &reader, filename, mode);
+	if (result.valid()) {
+		return result;
+	}
+	else {
+		std::string err_msg = "Lua: ";
+		err_msg += sol::stack_object(L, -1).as<std::string_view>();
+		throw std::runtime_error(err_msg);
+	}
 }
 
 }
