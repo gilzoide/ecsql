@@ -9,6 +9,7 @@ public:
 	LuaScripting(ecsql::World& world);
 	~LuaScripting();
 
+	operator lua_State *() const;
 	operator sol::state_view() const;
 
 private:

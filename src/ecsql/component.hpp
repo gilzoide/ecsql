@@ -18,8 +18,8 @@ namespace ecsql {
 
 class Component {
 public:
-	Component(std::string_view name, const std::vector<std::string>& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
-	Component(std::string_view name, std::vector<std::string>&& fields, const std::string& additional_schema = "", bool allow_duplicate = false);
+	Component(std::string_view name, const std::vector<std::string>& fields, std::string_view additional_schema = "", bool allow_duplicate = false);
+	Component(std::string_view name, std::vector<std::string>&& fields, std::string_view additional_schema = "", bool allow_duplicate = false);
 
 	void prepare(sqlite3 *db) const;
 

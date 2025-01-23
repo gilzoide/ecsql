@@ -13,13 +13,16 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 		if (auto text = value.get<sol::optional<std::string_view>>()) {
 			sqls.push_back(std::string(text.value()));
 		}
+		else if (lua_function) {
+			luaL_error(L, "Unexpected object at index %d. Only strings and a single function are allowed.", i);
+		}
 		else if (auto f = value.get<sol::optional<sol::function>>()) {
 			lua_function = f.value();
 		}
 	}
 
 	if (!lua_function) {
-		luaL_error(L, "Expected function in system's table definition");
+		luaL_error(L, "Expected function in system's table definition.");
 	}
 
 	std::string prefixed_name = "lua.";
@@ -42,11 +45,31 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 	});
 }
 
+static void lua_register_component(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table, sol::optional<std::string_view> additional_schema) {
+	std::vector<std::string> fields;
+	for (int i = 1; i <= table.size(); i++) {
+		auto value = table[i];
+		if (auto text = value.get<sol::optional<std::string_view>>()) {
+			fields.push_back(std::string(text.value()));
+		}
+		else {
+			sol::state_view state = L;
+			luaL_error(L, "Unexpected object of type %s", lua_typename(L, (int) value.get_type()));
+		}
+	}
+	world.register_component({
+		name,
+		fields,
+		additional_schema.value_or(std::string_view()),
+	});
+}
+
 static void register_usertypes(sol::state_view& lua) {
 	lua.new_usertype<ecsql::World>(
 		"World",
 		sol::no_construction(),
-		"register_system", lua_register_system
+		"register_system", lua_register_system,
+		"register_component", lua_register_component
 	);
 
 	lua.new_usertype<ecsql::PreparedSQL>(
@@ -69,6 +92,10 @@ LuaScripting::LuaScripting(ecsql::World& world)
 
 LuaScripting::~LuaScripting() {
 	world.remove_systems_with_prefix("lua.");
+}
+
+LuaScripting::operator lua_State *() const {
+	return state;
 }
 
 LuaScripting::operator sol::state_view() const {
