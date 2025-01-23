@@ -11,7 +11,7 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 	for (int i = 1; i <= table.size(); i++) {
 		auto value = table[i];
 		if (auto text = value.get<sol::optional<std::string_view>>()) {
-			sqls.push_back(std::string(text.value()));
+			sqls.emplace_back(text.value());
 		}
 		else if (lua_function) {
 			luaL_error(L, "Unexpected object at index %d. Only strings and a single function are allowed.", i);
@@ -45,22 +45,25 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 	});
 }
 
-static void lua_register_component(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table, sol::optional<std::string_view> additional_schema) {
+static void lua_register_component(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table) {
 	std::vector<std::string> fields;
 	for (int i = 1; i <= table.size(); i++) {
 		auto value = table[i];
 		if (auto text = value.get<sol::optional<std::string_view>>()) {
-			fields.push_back(std::string(text.value()));
+			fields.emplace_back(text.value());
 		}
 		else {
 			sol::state_view state = L;
 			luaL_error(L, "Unexpected object of type %s", lua_typename(L, (int) value.get_type()));
 		}
 	}
+	std::string_view additional_schema = table.get<sol::optional<std::string_view>>("additional_schema").value_or(std::string_view());
+	bool allow_duplicate = table.get<sol::optional<bool>>("allow_duplicate").value_or(false);
 	world.register_component({
 		name,
 		fields,
-		additional_schema.value_or(std::string_view()),
+		additional_schema,
+		allow_duplicate,
 	});
 }
 

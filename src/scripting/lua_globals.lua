@@ -22,6 +22,10 @@ component "name" {
     "column1",
     "column2 DEFAULT 0",
     "column3 TEXT",
+
+    -- Optional arguments
+    additional_schema = "CREATE INDEX ...",
+    allow_duplicates = true,
 }
 --]]
 function component(name, t)
