@@ -32,6 +32,9 @@ public:
 
     void register_system(const System& system);
     void register_system(System&& system);
+	void remove_system(std::string_view system_name);
+	void remove_system(const System& system);
+	void remove_systems_with_prefix(std::string_view system_name_prefix);
 
 	void register_hook_system(const HookSystem& system);
     void register_hook_system(HookSystem&& system);

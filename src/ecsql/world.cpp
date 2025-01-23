@@ -78,6 +78,22 @@ void World::register_system(System&& system) {
 	systems.emplace_back(std::move(system), std::move(prepared_sql));
 }
 
+void World::remove_system(std::string_view system_name) {
+	std::erase_if(systems, [system_name](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name == system_name;
+	});
+}
+
+void World::remove_system(const System& system) {
+	remove_system(system.name);
+}
+
+void World::remove_systems_with_prefix(std::string_view system_name_prefix) {
+	std::erase_if(systems, [system_name_prefix](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name.starts_with(system_name_prefix);
+	});
+}
+
 void World::register_hook_system(const HookSystem& system) {
 	auto it = hook_systems.find(system.component_name);
 	if (it == hook_systems.end()) {
