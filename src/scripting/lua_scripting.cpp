@@ -1,8 +1,8 @@
 #include "lua_globals.h"
 #include "lua_scripting.hpp"
-#include "memory.hpp"
-#include "ecsql/prepared_sql.hpp"
-#include "ecsql/system.hpp"
+#include "../memory.hpp"
+#include "../ecsql/prepared_sql.hpp"
+#include "../ecsql/system.hpp"
 
 static void lua_register_system(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table) {
 	sol::function lua_function;
@@ -25,7 +25,7 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 	world.register_system({
 		name,
 		sqls,
-		[=](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sql) {
+		[lua_function](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sql) {
 			lua_function.push();
 			sol::state_view state = lua_function.lua_state();
 			for (auto& it : prepared_sql) {

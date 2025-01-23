@@ -17,7 +17,7 @@ add_file2c(
 )
 add_file2c(
   lua_globals
-  INPUT "src/lua_globals.lua"
+  INPUT "src/scripting/lua_globals.lua"
   TEXT
 )
 

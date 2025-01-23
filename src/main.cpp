@@ -7,10 +7,10 @@
 #include <idbvfs.h>
 #endif
 #include <raylib.h>
+#include <sol/sol.hpp>
 #include <tracy/Tracy.hpp>
 
 #include "final_schema.h"
-#include "lua_scripting.hpp"
 #include "memory.hpp"
 #include "sqlite_functions.hpp"
 #include "ecsql/assetio.hpp"
@@ -19,6 +19,7 @@
 #include "ecsql/screen.hpp"
 #include "ecsql/serialization.hpp"
 #include "ecsql/world.hpp"
+#include "scripting/lua_scripting.hpp"
 #include "systems/bake_position.hpp"
 #include "systems/bake_random_screen_position.hpp"
 #include "systems/destroy_on_out_of_screen.hpp"
