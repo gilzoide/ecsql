@@ -22,8 +22,10 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 		luaL_error(L, "Expected function in system's table definition");
 	}
 
+	std::string prefixed_name = "lua.";
+	prefixed_name += name,
 	world.register_system({
-		name,
+		prefixed_name,
 		sqls,
 		[lua_function](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sql) {
 			lua_function.push();
@@ -53,14 +55,22 @@ static void register_usertypes(sol::state_view& lua) {
 	);
 }
 
-sol::state create_lua_state(ecsql::World& world) {
-	sol::state lua = lua_allocf ? sol::state(sol::default_at_panic, lua_allocf) : sol::state();
-	lua.open_libraries();
+LuaScripting::LuaScripting(ecsql::World& world)
+	: state(lua_allocf ? sol::state(sol::default_at_panic, lua_allocf) : sol::state())
+	, world(world)
+{
+	state.open_libraries();
 
-	register_usertypes(lua);
-	lua["world"] = &world;
+	register_usertypes(state);
+	state["world"] = &world;
 
-	lua.do_string(std::string_view(lua_globals, lua_globals_size), "LuaTeste");
+	state.do_string(std::string_view(lua_globals, lua_globals_size), "LuaTeste");
+}
 
-	return lua;
+LuaScripting::~LuaScripting() {
+	world.remove_systems_with_prefix("lua.");
+}
+
+LuaScripting::operator sol::state_view() const {
+	return state;
 }

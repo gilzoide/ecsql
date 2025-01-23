@@ -4,4 +4,14 @@
 
 #include "../ecsql/world.hpp"
 
-sol::state create_lua_state(ecsql::World& world);
+class LuaScripting {
+public:
+	LuaScripting(ecsql::World& world);
+	~LuaScripting();
+
+	operator sol::state_view() const;
+
+private:
+	ecsql::World& world;
+	sol::state state;
+};

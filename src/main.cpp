@@ -102,7 +102,7 @@ int main(int argc, const char **argv) {
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
 	register_sqlite_functions(world);
 
-	sol::state lua = create_lua_state(world);
+	LuaScripting lua(world);
 
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {
