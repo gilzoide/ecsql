@@ -1,5 +1,7 @@
 #include "memory.hpp"
 
+lua_Alloc lua_allocf = nullptr;
+
 #ifdef TRACY_ENABLE
 #include <physfs.h>
 #include <sqlite3.h>
@@ -15,6 +17,26 @@ void *operator new(std::size_t n) {
 void operator delete(void * p) noexcept {
 	TracyFree(p);
 	free(p);
+}
+
+// Lua memory allocator
+const char *LUA_MEMORY_ZONE_NAME = "lua";
+void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+	if (nsize == 0) {
+		if (ptr) {
+			TracyFreeN(ptr, LUA_MEMORY_ZONE_NAME);
+			free(ptr);
+		}
+		return nullptr;
+	}
+	else {
+		if (ptr) {
+			TracyFreeN(ptr, LUA_MEMORY_ZONE_NAME);
+		}
+		ptr = realloc(ptr, nsize);
+		TracyAllocN(ptr, nsize, LUA_MEMORY_ZONE_NAME);
+		return ptr;
+	}
 }
 
 // SQLite memory allocations
@@ -91,5 +113,6 @@ void configure_memory_hooks() {
 #ifdef TRACY_ENABLE
 	configure_sqlite_memory_methods();
 	configure_physfs_allocator();
+	lua_allocf = lua_alloc;
 #endif
 }

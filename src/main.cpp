@@ -10,6 +10,7 @@
 #include <tracy/Tracy.hpp>
 
 #include "final_schema.h"
+#include "lua_scripting.hpp"
 #include "memory.hpp"
 #include "sqlite_functions.hpp"
 #include "ecsql/assetio.hpp"
@@ -99,6 +100,8 @@ int main(int argc, const char **argv) {
 	ecsql::World world(getenv("ECSQL_DB"));
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
 	register_sqlite_functions(world);
+
+	sol::state lua = create_lua_state(world);
 
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {
