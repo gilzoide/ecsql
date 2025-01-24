@@ -37,3 +37,29 @@ function component(name, t)
         end
     end
 end
+
+--[[ Example:
+entity "name" {
+    component1 = {
+        col1 = "value",
+        col2 = 42,
+        col3 = true,
+    },
+    component2 = {},
+}
+
+entity {
+    -- ...
+}
+--]]
+function entity(name, t)
+    if type(name) == "table" then
+        world:create_entity(t, name)
+    elseif t then
+        world:create_entity(name, t)
+    else
+        return function(t)
+            world:create_entity(name, t)
+        end
+    end
+end

@@ -1,10 +1,21 @@
-system "Teste" {
-    function()
-        print("  OI!")
-    end
-}
+entity "PlayerShip" {
+    Texture = {
+        path = "textures/playerShip1_blue.png",
+    },
+    Position = {
+        x = 400,
+        y = 500,
+    },
+    LinearSpeed = {
+        value = 300,
+    },
+    MoveOnArrows = {},
 
-component "Teste" {
-    "col1 DEFAULT 'oi'",
-    "col2",
+    -- Bullet spawner
+    SceneSql = {
+        path = "bullet.toml",
+    },
+    SpawnOnKey = {
+        cooldown = 0.2,
+    },
 }
