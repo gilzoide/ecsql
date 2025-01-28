@@ -25,7 +25,6 @@
 #include "systems/destroy_on_out_of_screen.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/move_on_arrows.hpp"
-#include "systems/move_vector.hpp"
 #include "systems/screen_rect.hpp"
 #include "systems/spawn_at_most.hpp"
 #include "systems/spawn_scene_on_key.hpp"
@@ -119,7 +118,6 @@ int main(int argc, const char **argv) {
 	register_spawn_at_most(world);
 	register_bake_random_screen_position_system(world);
 	register_bake_position_system(world);
-	register_move_vector(world);
 	register_move_on_arrows(world);
 	register_destroy_on_out_of_screen(world);
 	register_update_yoga(world);

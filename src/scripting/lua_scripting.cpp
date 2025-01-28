@@ -114,6 +114,34 @@ static ecsql::EntityID lua_create_entity(sol::this_state L, ecsql::World& world,
 	return entity_id;
 }
 
+static ecsql::ExecutedSQL::RowIterator lua_prepared_sql_call(sol::this_state L, ecsql::PreparedSQL& prepared_sql, sol::variadic_args args) {
+	int i = 1;
+	for (auto value : args) {
+		switch (value.get_type()) {
+			case sol::type::none:
+			case sol::type::lua_nil:
+				prepared_sql.bind_null(i++);
+				break;
+
+			case sol::type::boolean:
+				prepared_sql.bind_bool(i++, value);
+				break;
+
+			case sol::type::string:
+				prepared_sql.bind_text(i++, value.get<std::string_view>());
+				break;
+
+			case sol::type::number:
+				prepared_sql.bind_double(i++, value);
+				break;
+
+			default:
+				luaL_error(L, "Unsupported type '%s' for SQL call", lua_typename(L, (int) value.get_type()));
+		}
+	}
+	return ecsql::ExecutedSQL(prepared_sql.get_stmt()).begin();
+}
+
 static void register_usertypes(sol::state_view& state) {
 	state.new_usertype<ecsql::World>(
 		"World",
@@ -125,7 +153,8 @@ static void register_usertypes(sol::state_view& state) {
 
 	state.new_usertype<ecsql::PreparedSQL>(
 		"PreparedSQL",
-		sol::no_construction()
+		sol::no_construction(),
+		sol::meta_method::call, lua_prepared_sql_call
 	);
 }
 

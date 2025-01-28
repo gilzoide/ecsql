@@ -9,9 +9,6 @@ public:
     ExecutedSQL(std::shared_ptr<sqlite3_stmt> stmt);
     ~ExecutedSQL();
 
-    ExecutedSQL(const ExecutedSQL& stmt) = delete;
-    ExecutedSQL& operator=(const ExecutedSQL& stmt) = delete;
-
     class RowIterator {
     public:
         using value_type = SQLRow;
@@ -21,7 +18,7 @@ public:
 
         RowIterator& operator++();
         RowIterator operator++(int _);
-        
+
         SQLRow operator*() const;
         SQLRow operator->() const;
 
@@ -41,7 +38,7 @@ public:
         sqlite3_reset(stmt.get());
         return result;
     }
-    
+
 protected:
     std::shared_ptr<sqlite3_stmt> stmt;
     bool executed_once;

@@ -1,3 +1,6 @@
+require "components"
+require "systems"
+
 entity "PlayerShip" {
     Texture = {
         path = "textures/playerShip1_blue.png",
