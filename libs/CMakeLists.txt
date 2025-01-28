@@ -17,6 +17,7 @@ endif ()
 
 # Lua
 add_library(lua STATIC "lua/onelua.c")
+set_source_files_properties("lua/onelua.c" PROPERTIES LANGUAGE CXX)
 target_compile_definitions(lua PRIVATE MAKE_LIB)
 target_include_directories(lua PUBLIC lua)
 target_link_libraries(libs INTERFACE lua)
@@ -42,6 +43,11 @@ target_include_directories(libs INTERFACE reflect)
 # Sol2 v3.0
 set(SOL2_LUA_VERSION "5.4.7")
 add_subdirectory(sol2)
+target_compile_definitions(sol2
+  INTERFACE
+    SOL_USING_CXX_LUA=1
+    SOL_EXCEPTIONS_SAFE_PROPAGATION=1
+)
 target_link_libraries(libs INTERFACE sol2)
 
 # SQLite 3
