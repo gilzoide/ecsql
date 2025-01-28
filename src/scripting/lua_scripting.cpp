@@ -1,6 +1,7 @@
 #include "lua_globals.h"
 #include "lua_scripting.hpp"
 #include "../memory.hpp"
+#include "../ecsql/assetio.hpp"
 #include "../ecsql/prepared_sql.hpp"
 #include "../ecsql/system.hpp"
 
@@ -113,8 +114,8 @@ static ecsql::EntityID lua_create_entity(sol::this_state L, ecsql::World& world,
 	return entity_id;
 }
 
-static void register_usertypes(sol::state_view& lua) {
-	lua.new_usertype<ecsql::World>(
+static void register_usertypes(sol::state_view& state) {
+	state.new_usertype<ecsql::World>(
 		"World",
 		sol::no_construction(),
 		"register_system", lua_register_system,
@@ -122,10 +123,18 @@ static void register_usertypes(sol::state_view& lua) {
 		"create_entity", lua_create_entity
 	);
 
-	lua.new_usertype<ecsql::PreparedSQL>(
+	state.new_usertype<ecsql::PreparedSQL>(
 		"PreparedSQL",
 		sol::no_construction()
 	);
+}
+
+static int string_replace(lua_State *L) {
+    const char *s = luaL_checkstring(L, 1);
+    const char *p = luaL_checkstring(L, 2);
+    const char *r = luaL_checkstring(L, 3);
+    luaL_gsub(L, s, p, r);
+    return 1;
 }
 
 LuaScripting::LuaScripting(ecsql::World& world)
@@ -133,11 +142,34 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	, world(world)
 {
 	state.open_libraries();
+	state["string"]["replace"] = string_replace;
+
+	auto ecsql_namespace = state["ecsql"].get_or_create<sol::table>();
+	ecsql_namespace["file_exists"] = PHYSFS_exists;
+	ecsql_namespace["file_base_dir"] = PHYSFS_getBaseDir;
+	ecsql_namespace["load"] = [](sol::this_state L, const char *filename) -> std::pair<sol::object, sol::object> {
+		auto load_result = ecsql::safe_load_lua_script(L, filename);
+		if (load_result.valid()) {
+			return  {
+				sol::stack_object(L, -1),
+				sol::lua_nil,
+			};
+		}
+		else {
+			return  {
+				sol::lua_nil,
+				sol::stack_object(L, -1),
+			};
+		}
+	};
 
 	register_usertypes(state);
 	state["world"] = &world;
 
-	state.do_string(std::string_view(lua_globals, lua_globals_size), "LuaTeste");
+	auto result = state.do_string(std::string_view(lua_globals, lua_globals_size), "lua_globals.lua");
+	if (!result.valid()) {
+		throw result.get<sol::error>();
+	}
 }
 
 LuaScripting::~LuaScripting() {
