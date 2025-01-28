@@ -32,12 +32,15 @@ public:
         return *this;
     }
 
+	bool busy() const;
     PreparedSQL& reset();
-    
+	ExecutedSQL execute();
+
     template<typename... Types>
     ExecutedSQL operator()(Types&&... values) {
-        reset().bind(1, std::forward<Types>(values)...);
-        return { stmt };
+        return reset()
+			.bind(1, std::forward<Types>(values)...)
+			.execute();
     }
 
     std::shared_ptr<sqlite3_stmt> get_stmt() const;
@@ -72,7 +75,7 @@ private:
     template<> PreparedSQL& bind_advance(int& index, unsigned char value) {
         return bind_int(index++, value);
     }
-    
+
     template<> PreparedSQL& bind_advance(int& index, short value) {
         return bind_int(index++, value);
     }

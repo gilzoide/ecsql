@@ -9,6 +9,9 @@ public:
     ExecutedSQL(std::shared_ptr<sqlite3_stmt> stmt);
     ~ExecutedSQL();
 
+	ExecutedSQL(const ExecutedSQL& stmt) = delete;
+    ExecutedSQL& operator=(const ExecutedSQL& stmt) = delete;
+
     class RowIterator {
     public:
         using value_type = SQLRow;
@@ -20,7 +23,6 @@ public:
         RowIterator operator++(int _);
 
         SQLRow operator*() const;
-        SQLRow operator->() const;
 
         bool operator==(RowIterator other) const;
         bool operator!=(RowIterator other) const;
@@ -34,14 +36,11 @@ public:
 
     template<typename... Types> auto get(int index = 0) {
         auto it = begin();
-        auto result = (*it).get<Types...>(index);
-        sqlite3_reset(stmt.get());
-        return result;
+        return (*it).get<Types...>(index);
     }
 
 protected:
     std::shared_ptr<sqlite3_stmt> stmt;
-    bool executed_once;
 };
 
 }

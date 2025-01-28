@@ -6,23 +6,25 @@ namespace ecsql {
 
 ExecutedSQL::ExecutedSQL(std::shared_ptr<sqlite3_stmt> stmt)
     : stmt(stmt)
-    , executed_once(false)
 {
+	++RowIterator(stmt);
 }
 
 ExecutedSQL::~ExecutedSQL() {
-    if (!executed_once) {
-        begin();
-    }
+	sqlite3_reset(stmt.get());
 }
 
 ExecutedSQL::RowIterator ExecutedSQL::begin() {
-    executed_once = true;
-    return ++ExecutedSQL::RowIterator { stmt };
+	if (sqlite3_stmt_busy(stmt.get())) {
+    	return RowIterator(stmt);
+	}
+	else {
+    	return RowIterator();
+	}
 }
 
 ExecutedSQL::RowIterator ExecutedSQL::end() {
-    return ExecutedSQL::RowIterator {};
+    return RowIterator();
 }
 
 // RowIterator
@@ -53,10 +55,6 @@ ExecutedSQL::RowIterator ExecutedSQL::RowIterator::operator++(int _) {
 }
 
 SQLRow ExecutedSQL::RowIterator::operator*() const {
-    return stmt;
-}
-
-SQLRow ExecutedSQL::RowIterator::operator->() const {
     return stmt;
 }
 
