@@ -31,15 +31,9 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 		prefixed_name,
 		sqls,
 		[lua_function](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sql) {
-			lua_function.push();
-			sol::state_view state = lua_function.lua_state();
-			for (auto& it : prepared_sql) {
-				sol::stack::push(state, it);
-			}
-			if (lua_pcall(state, prepared_sql.size(), 0, 0) != LUA_OK) {
-				sol::stack_object error(state);
-				std::cerr << "Error: " << error.as<const char *>() << std::endl;
-				lua_pop(state, 1);
+			auto result = lua_function(sol::as_args(prepared_sql));
+			if (!result.valid()) {
+				throw result.get<sol::error>();
 			}
 		}
 	});
