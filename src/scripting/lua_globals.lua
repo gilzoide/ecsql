@@ -90,7 +90,7 @@ local function lua_searcher(name)
 	if not filename then
 		return err
 	end
-	return assert(ecsql.load(filename))
+	return assert(ecsql.loadfile(filename))
 end
 
 local searchers = package.searchers or package.loaders

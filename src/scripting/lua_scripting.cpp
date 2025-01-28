@@ -145,9 +145,11 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	state["string"]["replace"] = string_replace;
 
 	auto ecsql_namespace = state["ecsql"].get_or_create<sol::table>();
-	ecsql_namespace["file_exists"] = PHYSFS_exists;
+	ecsql_namespace["file_exists"] = [](const char *filename) -> bool {
+		return PHYSFS_exists(filename);
+	};
 	ecsql_namespace["file_base_dir"] = PHYSFS_getBaseDir;
-	ecsql_namespace["load"] = [](sol::this_state L, const char *filename) -> std::pair<sol::object, sol::object> {
+	ecsql_namespace["loadfile"] = [](sol::this_state L, const char *filename) -> std::pair<sol::object, sol::object> {
 		auto load_result = ecsql::safe_load_lua_script(L, filename);
 		if (load_result.valid()) {
 			return  {
