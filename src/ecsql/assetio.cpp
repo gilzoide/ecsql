@@ -63,7 +63,7 @@ struct PHYSFS_LuaReader {
 	{
 	}
 
-	const char *read(lua_State *L, size_t *size) {
+	const char *read(size_t *size) {
 		if (!file) {
 			return nullptr;
 		}
@@ -75,13 +75,17 @@ struct PHYSFS_LuaReader {
 		return buffer.data();
 	}
 
+	operator bool() const {
+		return file.get();
+	}
+
 	std::unique_ptr<PHYSFS_File, PHYSFS_FileDeleter> file;
 	std::vector<char> buffer;
 	int buffer_size;
 };
 
 static const char *lua_reader(lua_State *L, void *data, size_t *size) {
-	return ((PHYSFS_LuaReader *) data)->read(L, size);
+	return ((PHYSFS_LuaReader *) data)->read(size);
 }
 
 // assetio API
@@ -112,29 +116,41 @@ std::string read_asset_text(const char *filename, int buffer_size) {
 	return read_asset_data<std::string>(filename, buffer_size);
 }
 
-sol::load_result load(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
+sol::load_result safe_load_lua_script(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
 	PHYSFS_LuaReader reader(filename, buffer_size);
-	auto result = L.load(lua_reader, &reader, filename, mode);
+	if (!reader) {
+		lua_pushfstring(L, "Cannot open file %s", filename);
+		return sol::load_result(L, -1, 0, 1, sol::load_status::file);
+	}
+	return L.load(lua_reader, &reader, filename, mode);
+}
+
+sol::load_result load_lua_script(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
+	auto result = safe_load_lua_script(L, filename, buffer_size, mode);
 	if (result.valid()) {
 		return result;
 	}
 	else {
-		std::string err_msg = "Lua: ";
-		err_msg += sol::stack_object(L, -1).as<std::string_view>();
-		throw std::runtime_error(err_msg);
+		throw result.get<sol::error>();
 	}
 }
 
-sol::protected_function_result do_lua_script(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
+sol::protected_function_result safe_do_lua_script(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
 	PHYSFS_LuaReader reader(filename, buffer_size);
-	auto result = L.do_reader(lua_reader, &reader, filename, mode);
+	if (!reader) {
+		lua_pushfstring(L, "Cannot open file %s", filename);
+		return sol::protected_function_result(L, -1, 0, 1, sol::call_status::file);
+	}
+	return L.do_reader(lua_reader, &reader, filename, mode);
+}
+
+sol::protected_function_result do_lua_script(sol::state_view L, const char *filename, int buffer_size, sol::load_mode mode) {
+	auto result = safe_do_lua_script(L, filename, buffer_size, mode);
 	if (result.valid()) {
 		return result;
 	}
 	else {
-		std::string err_msg = "Lua: ";
-		err_msg += sol::stack_object(L, -1).as<std::string_view>();
-		throw std::runtime_error(err_msg);
+		throw result.get<sol::error>();
 	}
 }
 
