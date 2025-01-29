@@ -1,3 +1,10 @@
+component "BakePosition" {
+    "parent_id INTEGER REFERENCES entity(id)",
+    "x DEFAULT 0",
+    "y DEFAULT 0",
+    "z DEFAULT 0",
+}
+
 component "MoveVector" {
     "x DEFAULT 0",
     "y DEFAULT 0",
