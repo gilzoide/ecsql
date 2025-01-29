@@ -24,7 +24,6 @@
 #include "systems/key_handler.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/screen_rect.hpp"
-#include "systems/spawn_at_most.hpp"
 #include "systems/yoga.hpp"
 
 #if defined(DEBUG) && !defined(NDEBUG)
@@ -112,7 +111,6 @@ int main(int argc, const char **argv) {
 	// Systems
 	register_update_screen_rect(world);
 	register_key_handler(world);
-	register_spawn_at_most(world);
 	register_move_on_arrows(world);
 	register_update_yoga(world);
 	register_draw_systems(world);
