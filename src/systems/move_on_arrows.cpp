@@ -17,9 +17,9 @@ void register_move_on_arrows(ecsql::World& world) {
 					ifnull(LinearSpeed.value, 1) * time.delta AS speed,
 					width AS screen_width, height AS screen_height
 				FROM MoveOnArrows
-				LEFT JOIN LinearSpeed USING(entity_id)
-				JOIN time
-				JOIN screen_size
+					LEFT JOIN LinearSpeed USING(entity_id)
+					JOIN time
+					JOIN screen_size
 			) AS movement
 			WHERE Position.entity_id = movement.entity_id
 		)"_dedent,

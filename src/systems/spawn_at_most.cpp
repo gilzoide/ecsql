@@ -14,8 +14,8 @@ void register_spawn_at_most(ecsql::World& world) {
 					SceneSql.path,
 					SpawnAtMost.count - ifnull(count(entity.name), 0)
 				FROM SpawnAtMost
-				JOIN SceneSql USING(entity_id)
-				LEFT JOIN entity ON entity.name = SpawnAtMost.name
+					JOIN SceneSql USING(entity_id)
+					LEFT JOIN entity ON entity.name = SpawnAtMost.name
 				GROUP BY SpawnAtMost.name
 			)"_dedent,
 		},
