@@ -30,3 +30,10 @@ INSERT INTO time(delta, uptime) VALUES(0, 0);
 -- Screen Size singleton
 CREATE TABLE screen_size(width, height);
 INSERT INTO screen_size(width, height) VALUES(0, 0);
+
+-- Keyboard
+CREATE TABLE Keyboard(
+  key INTEGER PRIMARY KEY,
+  name,
+  state  -- one of: NULL, 'pressed', 'hold', 'released'
+);

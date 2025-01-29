@@ -24,6 +24,7 @@
 #include "systems/bake_random_screen_position.hpp"
 #include "systems/destroy_on_out_of_screen.hpp"
 #include "systems/draw_systems.hpp"
+#include "systems/key_handler.hpp"
 #include "systems/move_on_arrows.hpp"
 #include "systems/screen_rect.hpp"
 #include "systems/spawn_at_most.hpp"
@@ -114,6 +115,7 @@ int main(int argc, const char **argv) {
 
 	// Systems
 	register_update_screen_rect(world);
+	register_key_handler(world);
 	register_spawn_scene_on_key(world);
 	register_spawn_at_most(world);
 	register_bake_random_screen_position_system(world);
