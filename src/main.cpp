@@ -21,7 +21,6 @@
 #include "ecsql/world.hpp"
 #include "scripting/lua_scripting.hpp"
 #include "systems/bake_random_screen_position.hpp"
-#include "systems/destroy_on_out_of_screen.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/key_handler.hpp"
 #include "systems/move_on_arrows.hpp"
@@ -117,7 +116,6 @@ int main(int argc, const char **argv) {
 	register_spawn_at_most(world);
 	register_bake_random_screen_position_system(world);
 	register_move_on_arrows(world);
-	register_destroy_on_out_of_screen(world);
 	register_update_yoga(world);
 	register_draw_systems(world);
 

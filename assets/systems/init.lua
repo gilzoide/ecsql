@@ -18,6 +18,23 @@ system "BakeRelativePosition" {
     end,
 }
 
+system "DestroyOnOutOfScreen" {
+    [[
+        DELETE FROM entity
+        WHERE id IN (
+            SELECT entity_id
+            FROM DestroyOnOutOfScreen
+                JOIN Position USING(entity_id)
+                JOIN screen_size
+            WHERE position.x NOT BETWEEN 0 AND screen_size.width
+                OR position.y NOT BETWEEN 0 AND screen_size.height
+        )
+    ]],
+    function(delete_out_of_screen)
+        delete_out_of_screen()
+    end,
+}
+
 system "MoveVector" {
     [[
         UPDATE Position
