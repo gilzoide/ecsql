@@ -28,7 +28,6 @@
 #include "systems/move_on_arrows.hpp"
 #include "systems/screen_rect.hpp"
 #include "systems/spawn_at_most.hpp"
-#include "systems/spawn_scene_on_key.hpp"
 #include "systems/yoga.hpp"
 
 #if defined(DEBUG) && !defined(NDEBUG)
@@ -116,7 +115,6 @@ int main(int argc, const char **argv) {
 	// Systems
 	register_update_screen_rect(world);
 	register_key_handler(world);
-	register_spawn_scene_on_key(world);
 	register_spawn_at_most(world);
 	register_bake_random_screen_position_system(world);
 	register_bake_position_system(world);

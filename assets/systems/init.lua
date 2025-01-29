@@ -12,3 +12,28 @@ system "MoveVector" {
         move_vector()
     end,
 }
+
+system "SpawnOnKey" {
+    [[
+        SELECT entity_id, scene
+        FROM SpawnOnKey
+            JOIN Keyboard ON SpawnOnKey.key = Keyboard.name
+            JOIN time
+        WHERE Keyboard.state IN ('pressed', 'hold')
+            AND (last_spawn_time IS NULL
+                OR last_spawn_time < time.uptime - cooldown)
+    ]],
+    [[
+        UPDATE SpawnOnKey
+        SET last_spawn_time = time.uptime
+        FROM time
+        WHERE entity_id = ?
+    ]],
+    function(get_spawn_info, update_spawn_time)
+        for row in get_spawn_info() do
+            local entity_id, scene_path = row:unpack()
+            require(scene_path)(entity_id)
+            update_spawn_time(entity_id)
+        end
+    end,
+}

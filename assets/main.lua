@@ -19,6 +19,8 @@ entity "PlayerShip" {
         path = "bullet.toml",
     },
     SpawnOnKey = {
+        scene = "bullet",
+        key = "KEY_SPACE",
         cooldown = 0.2,
     },
 }
