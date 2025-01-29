@@ -39,10 +39,7 @@ public:
 	void register_hook_system(const HookSystem& system);
     void register_hook_system(HookSystem&& system);
 
-    EntityID create_entity();
-    EntityID create_entity(std::string_view name);
-    EntityID create_entity(std::string_view name, EntityID parent);
-    EntityID create_entity(EntityID parent);
+    EntityID create_entity(std::optional<std::string_view> name = std::nullopt, std::optional<EntityID> parent = std::nullopt);
     bool delete_entity(EntityID id);
 
     template<typename Fn>

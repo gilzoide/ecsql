@@ -62,9 +62,14 @@ static void lua_register_component(sol::this_state L, ecsql::World& world, std::
 	});
 }
 
-static ecsql::EntityID lua_create_entity(sol::this_state L, ecsql::World& world, sol::optional<std::string_view> name, sol::table table) {
-	ecsql::EntityID entity_id = name ? world.create_entity(name.value()) : world.create_entity();
+static ecsql::EntityID lua_create_entity(sol::this_state L, ecsql::World& world, std::optional<std::string_view> name, sol::table table) {
+	auto parent_id = table.get<std::optional<ecsql::EntityID>>("parent_id");
+	ecsql::EntityID entity_id = world.create_entity(name, parent_id);
 	for (auto [key, value] : table) {
+		if (key.as<std::string_view>() == "parent_id") {
+			continue;
+		}
+
 		sol::table component_values = value;
 
 		std::string sql = "INSERT INTO \"";
