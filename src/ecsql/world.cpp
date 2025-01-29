@@ -186,6 +186,10 @@ std::shared_ptr<sqlite3> World::get_db() const {
 	return db;
 }
 
+PreparedSQL World::prepare_sql(std::string_view sql, bool is_persistent) {
+	return PreparedSQL(db.get(), sql, is_persistent);
+}
+
 void World::execute_sql_script(const char *sql) {
 	ecsql::execute_sql_script(db.get(), sql);
 }

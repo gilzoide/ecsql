@@ -114,7 +114,7 @@ static ecsql::EntityID lua_create_entity(sol::this_state L, ecsql::World& world,
 	return entity_id;
 }
 
-static ecsql::ExecutedSQL::RowIterator lua_prepared_sql_call(sol::this_state L, ecsql::PreparedSQL& prepared_sql, sol::variadic_args args) {
+static ecsql::ExecutedSQL lua_prepared_sql_call(sol::this_state L, ecsql::PreparedSQL& prepared_sql, sol::variadic_args args) {
 	prepared_sql.reset();
 	int i = 1;
 	for (auto value : args) {
@@ -140,7 +140,34 @@ static ecsql::ExecutedSQL::RowIterator lua_prepared_sql_call(sol::this_state L, 
 				luaL_error(L, "Unsupported type '%s' for SQL call", lua_typename(L, (int) value.get_type()));
 		}
 	}
-	return prepared_sql.execute().begin();
+	return prepared_sql.execute();
+}
+
+static sol::object lua_sql_row_get(sol::this_state L, ecsql::ExecutedSQL::RowIterator& it, int index) {
+	ecsql::SQLRow row = *it;
+	index--;
+	if (index < 0 || index >= row.column_count()) {
+		return sol::lua_nil;
+	}
+
+	switch (row.column_type(index)) {
+		case SQLITE_INTEGER:
+			return sol::make_object(L, row.column_int64(index));
+
+		case SQLITE_FLOAT:
+			return sol::make_object(L, row.column_double(index));
+
+		case SQLITE_TEXT:
+			return sol::make_object(L, row.column_text(index));
+
+		case SQLITE_BLOB: {
+			auto blob = row.column_blob(index);
+			return sol::make_object(L, std::string_view((const char *) blob.data(), blob.size()));
+		}
+
+		default:
+			return sol::lua_nil;
+	}
 }
 
 static void register_usertypes(sol::state_view& state) {
@@ -149,13 +176,49 @@ static void register_usertypes(sol::state_view& state) {
 		sol::no_construction(),
 		"register_system", lua_register_system,
 		"register_component", lua_register_component,
-		"create_entity", lua_create_entity
+		"create_entity", lua_create_entity,
+		"prepare_sql", [](ecsql::World& world, std::string_view sql, sol::optional<bool> is_persistent) {
+			return world.prepare_sql(sql, is_persistent.value_or(false));
+		},
+		"execute_sql", [](sol::this_state L, ecsql::World& world, std::string_view sql, sol::variadic_args args) {
+			ecsql::PreparedSQL prepared_sql = world.prepare_sql(sql);
+			return lua_prepared_sql_call(L, prepared_sql, args);
+		}
 	);
 
 	state.new_usertype<ecsql::PreparedSQL>(
 		"PreparedSQL",
 		sol::no_construction(),
 		sol::meta_method::call, lua_prepared_sql_call
+	);
+
+	state.new_usertype<ecsql::ExecutedSQL>(
+		"ExecutedSQL",
+		sol::no_construction(),
+		sol::meta_method::call, [](sol::this_state L, ecsql::ExecutedSQL& executed_sql, sol::variadic_args args) -> sol::object {
+			ecsql::ExecutedSQL::RowIterator it;
+			if (args.size() >= 2 && args[1].is<ecsql::ExecutedSQL::RowIterator>()) {
+				it = args[1].as<ecsql::ExecutedSQL::RowIterator>();
+				++it;
+			}
+			else {
+				it = executed_sql.begin();
+			}
+
+			if (it) {
+				return sol::make_object(L, it);
+			}
+			else {
+				return sol::lua_nil;
+			}
+		}
+	);
+
+	state.new_usertype<ecsql::ExecutedSQL::RowIterator>(
+		"SQLRowIterator",
+		sol::meta_method::index, lua_sql_row_get,
+		sol::meta_method::length, [](ecsql::ExecutedSQL::RowIterator& it) { return (*it).column_count(); },
+		"unpack", state["table"]["unpack"].get<sol::object>()
 	);
 }
 

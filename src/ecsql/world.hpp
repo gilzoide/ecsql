@@ -71,11 +71,12 @@ public:
     bool restore_from(sqlite3 *db);
 
     std::shared_ptr<sqlite3> get_db() const;
+	PreparedSQL prepare_sql(std::string_view sql, bool is_persistent = false);
 	void execute_sql_script(const char *sql);
 
 	template<typename... Args>
 	ExecutedSQL execute_sql(std::string_view sql, Args&&... args) {
-		return PreparedSQL(db.get(), sql, false)(std::forward<Args>(args)...);
+		return prepare_sql(sql)(std::forward<Args>(args)...);
 	}
 
 	void create_function(const char *name, int argument_count, void (*fn)(sqlite3_context*, int, sqlite3_value**));

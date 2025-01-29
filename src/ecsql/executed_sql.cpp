@@ -54,6 +54,10 @@ SQLRow ExecutedSQL::RowIterator::operator*() const {
     return stmt;
 }
 
+ExecutedSQL::RowIterator::operator bool() const {
+	return stmt.get();
+}
+
 bool ExecutedSQL::RowIterator::operator==(RowIterator other) const {
     return stmt == other.stmt;
 }
