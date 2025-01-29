@@ -110,19 +110,23 @@ void World::register_hook_system(HookSystem&& system) {
 }
 
 EntityID World::create_entity() {
-	return create_entity_stmt(nullptr).get<EntityID>();
+	create_entity_stmt(nullptr, nullptr);
+	return sqlite3_last_insert_rowid(db.get());
 }
 
 EntityID World::create_entity(std::string_view name) {
-	return create_entity_stmt(name).get<EntityID>();
+	create_entity_stmt(name, nullptr);
+	return sqlite3_last_insert_rowid(db.get());
 }
 
 EntityID World::create_entity(std::string_view name, EntityID parent) {
-	return create_entity_stmt(name, parent).get<EntityID>();
+	create_entity_stmt(name, parent);
+	return sqlite3_last_insert_rowid(db.get());
 }
 
 EntityID World::create_entity(EntityID parent) {
-	return create_entity_stmt(nullptr, parent).get<EntityID>();
+	create_entity_stmt(nullptr, parent);
+	return sqlite3_last_insert_rowid(db.get());
 }
 
 bool World::delete_entity(EntityID id) {

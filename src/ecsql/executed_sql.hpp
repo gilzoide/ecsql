@@ -7,10 +7,6 @@ namespace ecsql {
 class ExecutedSQL {
 public:
     ExecutedSQL(std::shared_ptr<sqlite3_stmt> stmt);
-    ~ExecutedSQL();
-
-	ExecutedSQL(const ExecutedSQL& stmt) = delete;
-    ExecutedSQL& operator=(const ExecutedSQL& stmt) = delete;
 
     class RowIterator {
     public:

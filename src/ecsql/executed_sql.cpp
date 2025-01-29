@@ -10,10 +10,6 @@ ExecutedSQL::ExecutedSQL(std::shared_ptr<sqlite3_stmt> stmt)
 	++RowIterator(stmt);
 }
 
-ExecutedSQL::~ExecutedSQL() {
-	sqlite3_reset(stmt.get());
-}
-
 ExecutedSQL::RowIterator ExecutedSQL::begin() {
 	if (sqlite3_stmt_busy(stmt.get())) {
     	return RowIterator(stmt);
