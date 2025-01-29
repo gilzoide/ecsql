@@ -137,7 +137,7 @@ int main(int argc, const char **argv) {
 
 	SetTargetFPS(60);
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(&game_loop, &ecsql_world, 0, 1);
+    emscripten_set_main_loop_arg(&game_loop, &world, 0, 1);
 #else
     while (!WindowShouldClose()) {
 		game_loop(world);
