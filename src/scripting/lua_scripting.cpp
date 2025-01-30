@@ -1,3 +1,5 @@
+#include <raymath.h>
+
 #include "lua_globals.h"
 #include "lua_scripting.hpp"
 #include "../memory.hpp"
@@ -188,7 +190,8 @@ static void register_usertypes(sol::state_view& state) {
 		"execute_sql", [](sol::this_state L, ecsql::World& world, std::string_view sql, sol::variadic_args args) {
 			ecsql::PreparedSQL prepared_sql = world.prepare_sql(sql);
 			return lua_prepared_sql_call(L, prepared_sql, args);
-		}
+		},
+		"execute_sql_script", &ecsql::World::execute_sql_script
 	);
 
 	state.new_usertype<ecsql::PreparedSQL>(
@@ -224,6 +227,20 @@ static void register_usertypes(sol::state_view& state) {
 		sol::meta_method::index, lua_sql_row_get,
 		sol::meta_method::length, [](ecsql::ExecutedSQL::RowIterator& it) { return (*it).column_count(); },
 		"unpack", state["table"]["unpack"].get<sol::object>()
+	);
+
+	state.new_usertype<Vector2>(
+		"Vector2",
+		sol::call_constructor, sol::factories(
+			[]() -> Vector2 { return {}; },
+			[](float xy) -> Vector2 { return { .x = xy, .y = xy }; },
+			[](float x, float y) -> Vector2 { return { .x = x, .y = y }; }
+		),
+		"x", &Vector2::x,
+		"y", &Vector2::y,
+		"normalized", Vector2Normalize,
+		"unpack", [](Vector2 v) { return std::make_pair(v.x, v.y); },
+		sol::meta_method::to_string, [](Vector2 v) { return std::format("({}, {})", v.x, v.y); }
 	);
 }
 

@@ -32,8 +32,10 @@ CREATE TABLE screen_size(width, height);
 INSERT INTO screen_size(width, height) VALUES(0, 0);
 
 -- Keyboard
-CREATE TABLE Keyboard(
+CREATE TABLE keyboard(
   key INTEGER PRIMARY KEY,
   name,
-  state  -- one of: NULL, 'pressed', 'hold', 'released'
+  state,  -- one of: NULL, 'pressed', 'hold', 'released'
+  is_down AS (state IN ('pressed', 'hold'))
 );
+CREATE INDEX keyboard_name_state ON keyboard(name, state);

@@ -7,6 +7,12 @@ component "BakePosition" {
 
 component "DestroyOnOutOfScreen" {}
 
+component "LinearSpeed" {
+    "speed DEFAULT 1"
+}
+
+component "MoveOnArrows" {}
+
 component "MoveVector" {
     "x DEFAULT 0",
     "y DEFAULT 0",

@@ -10,14 +10,11 @@ entity "PlayerShip" {
         y = 500,
     },
     LinearSpeed = {
-        value = 300,
+        speed = 300,
     },
     MoveOnArrows = {},
 
     -- Bullet spawner
-    SceneSql = {
-        path = "bullet.toml",
-    },
     SpawnOnKey = {
         scene = "bullet",
         key = "KEY_SPACE",

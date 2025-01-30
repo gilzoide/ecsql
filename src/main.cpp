@@ -22,7 +22,6 @@
 #include "scripting/lua_scripting.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/key_handler.hpp"
-#include "systems/move_on_arrows.hpp"
 #include "systems/screen_rect.hpp"
 #include "systems/yoga.hpp"
 
@@ -111,7 +110,6 @@ int main(int argc, const char **argv) {
 	// Systems
 	register_update_screen_rect(world);
 	register_key_handler(world);
-	register_move_on_arrows(world);
 	register_update_yoga(world);
 	register_draw_systems(world);
 

@@ -35,6 +35,54 @@ system "DestroyOnOutOfScreen" {
     end,
 }
 
+system "MoveOnArrows" {
+    [[
+        WITH up AS (
+            SELECT MAX(is_down) AS up
+            FROM keyboard
+            WHERE name IN ('KEY_UP', 'KEY_W')
+        ),
+        down AS (
+            SELECT MAX(is_down) AS down
+            FROM keyboard
+            WHERE name IN ('KEY_DOWN', 'KEY_S')
+        ),
+        left AS (
+            SELECT MAX(is_down) AS left
+            FROM keyboard
+            WHERE name IN ('KEY_LEFT', 'KEY_A')
+        ),
+        right AS (
+            SELECT MAX(is_down) AS right
+            FROM keyboard
+            WHERE name IN ('KEY_RIGHT', 'KEY_D')
+        )
+        SELECT ifnull(right, 0) - ifnull(left, 0) AS x, ifnull(down, 0) - ifnull(up, 0) AS y
+        FROM up, down, left, right
+    ]],
+    [[
+        UPDATE Position
+        SET x = clamp(x + ? * movement.speed, 0, screen_width), y = clamp(y + ? * movement.speed, 0, screen_height)
+        FROM (
+            SELECT
+                entity_id,
+                ifnull(LinearSpeed.speed, 1) * time.delta AS speed,
+                width AS screen_width, height AS screen_height
+            FROM MoveOnArrows
+                LEFT JOIN LinearSpeed USING(entity_id)
+                JOIN time
+                JOIN screen_size
+        ) AS movement
+        WHERE Position.entity_id = movement.entity_id
+    ]],
+    function(get_movement, update_position)
+        for row in get_movement() do
+            local x, y = row:unpack()
+            update_position(Vector2(x, y):normalized():unpack())
+        end
+    end,
+}
+
 system "MoveVector" {
     [[
         UPDATE Position
@@ -54,9 +102,9 @@ system "SpawnOnKey" {
     [[
         SELECT entity_id, scene
         FROM SpawnOnKey
-            JOIN Keyboard ON SpawnOnKey.key = Keyboard.name
+            JOIN keyboard ON SpawnOnKey.key = keyboard.name
             JOIN time
-        WHERE Keyboard.state IN ('pressed', 'hold')
+        WHERE keyboard.is_down
             AND (last_spawn_time IS NULL
                 OR last_spawn_time < time.uptime - cooldown)
     ]],
