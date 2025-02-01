@@ -17,7 +17,6 @@
 #include "ecsql/component.hpp"
 #include "ecsql/hook_system.hpp"
 #include "ecsql/screen.hpp"
-#include "ecsql/serialization.hpp"
 #include "ecsql/world.hpp"
 #include "scripting/lua_scripting.hpp"
 #include "systems/draw_systems.hpp"

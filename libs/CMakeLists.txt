@@ -54,10 +54,6 @@ target_link_libraries(libs INTERFACE sol2)
 add_subdirectory(sqlite-amalgamation)
 target_link_libraries(libs INTERFACE sqlite3)
 
-# Toml++
-add_subdirectory(tomlplusplus)
-target_link_libraries(libs INTERFACE tomlplusplus::tomlplusplus)
-
 # Tracy
 if (NOT CMAKE_BUILD_TYPE STREQUAL Debug)
   option(TRACY_ENABLE "Enable profiling" OFF)
