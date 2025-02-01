@@ -1,6 +1,8 @@
 require "components"
 require "systems"
 
+require "input_maps"
+
 entity "PlayerShip" {
     Texture = {
         path = "textures/playerShip1_blue.png",
@@ -15,9 +17,9 @@ entity "PlayerShip" {
     MoveOnArrows = {},
 
     -- Bullet spawner
-    SpawnOnKey = {
+    SpawnOnAction = {
         scene = "bullet",
-        key = "KEY_SPACE",
+        action = "shoot",
         cooldown = 0.2,
     },
 }

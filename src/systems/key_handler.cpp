@@ -27,10 +27,10 @@ void register_key_handler(ecsql::World& world) {
 	world.register_system({
 		"KeyboardHandler",
 		{
-			"UPDATE Keyboard SET state = 'pressed' WHERE key = ?",
-			"UPDATE Keyboard SET state = NULL WHERE state = 'released'",
-			"UPDATE Keyboard SET state = 'released' WHERE state IN ('pressed', 'hold') AND IsKeyReleased(key)",
-			"UPDATE Keyboard SET state = 'hold' WHERE state = 'pressed'",
+			"UPDATE keyboard SET state = 'pressed' WHERE key = ?",
+			"UPDATE keyboard SET state = NULL WHERE state = 'released'",
+			"UPDATE keyboard SET state = 'released' WHERE state IN ('pressed', 'hold') AND IsKeyReleased(key)",
+			"UPDATE keyboard SET state = 'hold' WHERE state = 'pressed'",
 		},
 		[](std::vector<ecsql::PreparedSQL>& sqls) {
 			auto set_pressed = sqls[0];

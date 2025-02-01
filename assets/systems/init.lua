@@ -38,26 +38,26 @@ system "DestroyOnOutOfScreen" {
 system "MoveOnArrows" {
     [[
         WITH up AS (
-            SELECT MAX(is_down) AS up
-            FROM keyboard
-            WHERE name IN ('KEY_UP', 'KEY_W')
+            SELECT is_down AS up
+            FROM input_action
+            WHERE action = 'up'
         ),
         down AS (
-            SELECT MAX(is_down) AS down
-            FROM keyboard
-            WHERE name IN ('KEY_DOWN', 'KEY_S')
+            SELECT is_down AS down
+            FROM input_action
+            WHERE action = 'down'
         ),
         left AS (
-            SELECT MAX(is_down) AS left
-            FROM keyboard
-            WHERE name IN ('KEY_LEFT', 'KEY_A')
+            SELECT is_down AS left
+            FROM input_action
+            WHERE action = 'left'
         ),
         right AS (
-            SELECT MAX(is_down) AS right
-            FROM keyboard
-            WHERE name IN ('KEY_RIGHT', 'KEY_D')
+            SELECT is_down AS right
+            FROM input_action
+            WHERE action = 'right'
         )
-        SELECT ifnull(right, 0) - ifnull(left, 0) AS x, ifnull(down, 0) - ifnull(up, 0) AS y
+        SELECT right - left AS x, down - up AS y
         FROM up, down, left, right
     ]],
     [[
@@ -78,7 +78,9 @@ system "MoveOnArrows" {
     function(get_movement, update_position)
         for row in get_movement() do
             local x, y = row:unpack()
-            update_position(Vector2(x, y):normalized():unpack())
+            if x ~= 0 or y ~= 0 then
+                update_position(Vector2(x, y):normalized():unpack())
+            end
         end
     end,
 }
@@ -98,18 +100,18 @@ system "MoveVector" {
     end,
 }
 
-system "SpawnOnKey" {
+system "SpawnOnAction" {
     [[
         SELECT entity_id, scene
-        FROM SpawnOnKey
-            JOIN keyboard ON SpawnOnKey.key = keyboard.name
+        FROM SpawnOnAction
+            JOIN input_action ON SpawnOnAction.action = input_action.action
             JOIN time
-        WHERE keyboard.is_down
+        WHERE input_action.is_down
             AND (last_spawn_time IS NULL
                 OR last_spawn_time < time.uptime - cooldown)
     ]],
     [[
-        UPDATE SpawnOnKey
+        UPDATE SpawnOnAction
         SET last_spawn_time = time.uptime
         FROM time
         WHERE entity_id = ?

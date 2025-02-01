@@ -18,9 +18,9 @@ component "MoveVector" {
     "y DEFAULT 0",
 }
 
-component "SpawnOnKey" {
+component "SpawnOnAction" {
     "scene",
     "cooldown DEFAULT 0",
-    "key",
+    "action",
     "last_spawn_time",
 }

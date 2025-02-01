@@ -31,11 +31,24 @@ INSERT INTO time(delta, uptime) VALUES(0, 0);
 CREATE TABLE screen_size(width, height);
 INSERT INTO screen_size(width, height) VALUES(0, 0);
 
--- Keyboard
+-- Input (for now, only keyboard is supported)
 CREATE TABLE keyboard(
   key INTEGER PRIMARY KEY,
   name,
   state,  -- one of: NULL, 'pressed', 'hold', 'released'
   is_down AS (state IN ('pressed', 'hold'))
 );
+CREATE INDEX keyboard_state ON keyboard(state);
 CREATE INDEX keyboard_name_state ON keyboard(name, state);
+
+CREATE TABLE input_map(
+  action,
+  input
+);
+CREATE INDEX input_map_action ON input_map(action);
+
+CREATE VIEW input_action AS
+  SELECT action, MIN(state) AS state, ifnull(state IN ('pressed', 'hold'), 0) AS is_down
+  FROM input_map
+    JOIN keyboard ON input = name
+  GROUP BY action;
