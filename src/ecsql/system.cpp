@@ -1,3 +1,5 @@
+#include <tracy/Tracy.hpp>
+
 #include "prepared_sql.hpp"
 #include "system.hpp"
 

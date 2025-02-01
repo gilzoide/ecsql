@@ -4,8 +4,6 @@
 #include <string>
 #include <string_view>
 
-#include <tracy/Tracy.hpp>
-
 #include "prepared_sql.hpp"
 
 struct sqlite3;

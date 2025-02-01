@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <sqlite3.h>
+#include <tracy/Tracy.hpp>
 
 #include "entity.hpp"
 #include "executed_sql.hpp"
@@ -44,15 +45,25 @@ public:
 
     template<typename Fn>
     bool inside_transaction(Fn&& f) {
-        begin_stmt();
+		ZoneScoped;
+		{
+			ZoneScopedN("BEGIN");
+        	begin_stmt();
+		}
         try {
             f(*this);
-            commit_stmt();
+			{
+				ZoneScopedN("COMMIT");
+            	commit_stmt();
+			}
 			return true;
         }
         catch (std::runtime_error& err) {
             std::cerr << "Runtime error: " << err.what() << std::endl;
-            rollback_stmt();
+			{
+				ZoneScopedN("ROLLBACK");
+            	rollback_stmt();
+			}
 			return false;
         }
     }

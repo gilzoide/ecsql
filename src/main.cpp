@@ -50,8 +50,14 @@ void run_debug_functionality(ecsql::World& world) {
 
 void game_loop(ecsql::World& world) {
 	ZoneScoped;
-	BeginDrawing();
-	ClearBackground(RAYWHITE);
+	{
+		ZoneScopedN("BeginDrawing");
+		BeginDrawing();
+	}
+	{
+		ZoneScopedN("ClearBackground");
+		ClearBackground(RAYWHITE);
+	}
 
 	if (IsWindowResized()) {
 		world.on_window_resized(GetScreenWidth(), GetScreenHeight());
@@ -64,7 +70,10 @@ void game_loop(ecsql::World& world) {
 	run_debug_functionality(world);
 #endif
 
-	EndDrawing();
+	{
+		ZoneScopedN("EndDrawing");
+		EndDrawing();
+	}
 	FrameMark;
 }
 
