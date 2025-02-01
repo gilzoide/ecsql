@@ -32,12 +32,15 @@ public:
         return *this;
     }
 
+	bool busy() const;
     PreparedSQL& reset();
-    
+	ExecutedSQL execute();
+
     template<typename... Types>
     ExecutedSQL operator()(Types&&... values) {
-        reset().bind(1, std::forward<Types>(values)...);
-        return { stmt };
+        return reset()
+			.bind(1, std::forward<Types>(values)...)
+			.execute();
     }
 
     std::shared_ptr<sqlite3_stmt> get_stmt() const;
@@ -45,7 +48,20 @@ public:
 private:
     std::shared_ptr<sqlite3_stmt> stmt;
 
-    template<typename T> PreparedSQL& bind_advance(int& index, T value) {
+    template<typename T> PreparedSQL& bind_advance(int& index, T value)
+	requires is_optional<T>
+	{
+		if (value) {
+			return bind_advance(index, value.value());
+		}
+		else {
+			return bind_advance(index, nullptr);
+		}
+	}
+
+    template<typename T> PreparedSQL& bind_advance(int& index, T value)
+	requires (not is_optional<T>)
+	{
 		if constexpr (is_span<T>) {
 			bind_blob(index++, value);
 		}
@@ -72,7 +88,7 @@ private:
     template<> PreparedSQL& bind_advance(int& index, unsigned char value) {
         return bind_int(index++, value);
     }
-    
+
     template<> PreparedSQL& bind_advance(int& index, short value) {
         return bind_int(index++, value);
     }

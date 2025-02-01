@@ -14,9 +14,9 @@ void register_draw_systems(ecsql::World& world) {
 		R"(
 			SELECT path, Rectangle.x, Rectangle.y, width, height, Rotation.z, r, g, b, a
 			FROM Texture
-			JOIN Rectangle USING(entity_id)
-			LEFT JOIN Rotation USING(entity_id)
-			LEFT JOIN Color USING(entity_id)
+				JOIN Rectangle USING(entity_id)
+				LEFT JOIN Rotation USING(entity_id)
+				LEFT JOIN Color USING(entity_id)
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
@@ -44,11 +44,11 @@ void register_draw_systems(ecsql::World& world) {
 				ifnull(Scale.x, 1), ifnull(Scale.y, 1),
 				ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
 			FROM Texture
-			JOIN Position USING(entity_id)
-			LEFT JOIN Pivot USING(entity_id)
-			LEFT JOIN Rotation USING(entity_id)
-			LEFT JOIN Scale USING(entity_id)
-			LEFT JOIN Color USING(entity_id)
+				JOIN Position USING(entity_id)
+				LEFT JOIN Pivot USING(entity_id)
+				LEFT JOIN Rotation USING(entity_id)
+				LEFT JOIN Scale USING(entity_id)
+				LEFT JOIN Color USING(entity_id)
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
@@ -77,8 +77,8 @@ void register_draw_systems(ecsql::World& world) {
 				x, y, width, height,
 				ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
 			FROM Text
-			JOIN Rectangle USING(entity_id)
-			LEFT JOIN Color USING(entity_id)
+				JOIN Rectangle USING(entity_id)
+				LEFT JOIN Color USING(entity_id)
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {

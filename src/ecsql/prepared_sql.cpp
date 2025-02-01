@@ -69,9 +69,17 @@ PreparedSQL& PreparedSQL::bind_blob(int index, void *data, int length, void(*dto
 	return *this;
 }
 
+bool PreparedSQL::busy() const {
+	return sqlite3_stmt_busy(stmt.get());
+}
+
 PreparedSQL& PreparedSQL::reset() {
     sqlite3_reset(stmt.get());
     return *this;
+}
+
+ExecutedSQL PreparedSQL::execute() {
+	return ExecutedSQL(stmt);
 }
 
 std::shared_ptr<sqlite3_stmt> PreparedSQL::get_stmt() const {

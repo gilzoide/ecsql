@@ -32,14 +32,14 @@ public:
 
     void register_system(const System& system);
     void register_system(System&& system);
+	void remove_system(std::string_view system_name);
+	void remove_system(const System& system);
+	void remove_systems_with_prefix(std::string_view system_name_prefix);
 
 	void register_hook_system(const HookSystem& system);
     void register_hook_system(HookSystem&& system);
 
-    EntityID create_entity();
-    EntityID create_entity(std::string_view name);
-    EntityID create_entity(std::string_view name, EntityID parent);
-    EntityID create_entity(EntityID parent);
+    EntityID create_entity(std::optional<std::string_view> name = std::nullopt, std::optional<EntityID> parent = std::nullopt);
     bool delete_entity(EntityID id);
 
     template<typename Fn>
@@ -68,11 +68,12 @@ public:
     bool restore_from(sqlite3 *db);
 
     std::shared_ptr<sqlite3> get_db() const;
+	PreparedSQL prepare_sql(std::string_view sql, bool is_persistent = false);
 	void execute_sql_script(const char *sql);
 
 	template<typename... Args>
 	ExecutedSQL execute_sql(std::string_view sql, Args&&... args) {
-		return PreparedSQL(db.get(), sql, false)(std::forward<Args>(args)...);
+		return prepare_sql(sql)(std::forward<Args>(args)...);
 	}
 
 	void create_function(const char *name, int argument_count, void (*fn)(sqlite3_context*, int, sqlite3_value**));

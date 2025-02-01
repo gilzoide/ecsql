@@ -1,8 +1,0 @@
-[Bullet.Texture]
-  path = "textures/laserBlue01.png"
-[Bullet.MoveVector]
-  x = 0
-  y = -500
-[Bullet.BakePosition]
-  y = -50
-[Bullet.DestroyOnOutOfScreen]

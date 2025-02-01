@@ -78,6 +78,22 @@ void World::register_system(System&& system) {
 	systems.emplace_back(std::move(system), std::move(prepared_sql));
 }
 
+void World::remove_system(std::string_view system_name) {
+	std::erase_if(systems, [system_name](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name == system_name;
+	});
+}
+
+void World::remove_system(const System& system) {
+	remove_system(system.name);
+}
+
+void World::remove_systems_with_prefix(std::string_view system_name_prefix) {
+	std::erase_if(systems, [system_name_prefix](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name.starts_with(system_name_prefix);
+	});
+}
+
 void World::register_hook_system(const HookSystem& system) {
 	auto it = hook_systems.find(system.component_name);
 	if (it == hook_systems.end()) {
@@ -93,20 +109,9 @@ void World::register_hook_system(HookSystem&& system) {
 	it->second.push_back(std::move(system));
 }
 
-EntityID World::create_entity() {
-	return create_entity_stmt(nullptr).get<EntityID>();
-}
-
-EntityID World::create_entity(std::string_view name) {
-	return create_entity_stmt(name).get<EntityID>();
-}
-
-EntityID World::create_entity(std::string_view name, EntityID parent) {
-	return create_entity_stmt(name, parent).get<EntityID>();
-}
-
-EntityID World::create_entity(EntityID parent) {
-	return create_entity_stmt(nullptr, parent).get<EntityID>();
+EntityID World::create_entity(std::optional<std::string_view> name, std::optional<EntityID> parent) {
+	create_entity_stmt(name, parent);
+	return sqlite3_last_insert_rowid(db.get());
 }
 
 bool World::delete_entity(EntityID id) {
@@ -164,6 +169,10 @@ bool World::restore_from(sqlite3 *db) {
 
 std::shared_ptr<sqlite3> World::get_db() const {
 	return db;
+}
+
+PreparedSQL World::prepare_sql(std::string_view sql, bool is_persistent) {
+	return PreparedSQL(db.get(), sql, is_persistent);
 }
 
 void World::execute_sql_script(const char *sql) {

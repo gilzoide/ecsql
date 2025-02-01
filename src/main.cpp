@@ -7,6 +7,7 @@
 #include <idbvfs.h>
 #endif
 #include <raylib.h>
+#include <sol/sol.hpp>
 #include <tracy/Tracy.hpp>
 
 #include "final_schema.h"
@@ -18,15 +19,10 @@
 #include "ecsql/screen.hpp"
 #include "ecsql/serialization.hpp"
 #include "ecsql/world.hpp"
-#include "systems/bake_position.hpp"
-#include "systems/bake_random_screen_position.hpp"
-#include "systems/destroy_on_out_of_screen.hpp"
+#include "scripting/lua_scripting.hpp"
 #include "systems/draw_systems.hpp"
-#include "systems/move_on_arrows.hpp"
-#include "systems/move_vector.hpp"
+#include "systems/key_handler.hpp"
 #include "systems/screen_rect.hpp"
-#include "systems/spawn_at_most.hpp"
-#include "systems/spawn_scene_on_key.hpp"
 #include "systems/yoga.hpp"
 
 #if defined(DEBUG) && !defined(NDEBUG)
@@ -100,6 +96,8 @@ int main(int argc, const char **argv) {
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
 	register_sqlite_functions(world);
 
+	LuaScripting lua(world);
+
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {
 		world.register_component(*component);
@@ -111,20 +109,14 @@ int main(int argc, const char **argv) {
 
 	// Systems
 	register_update_screen_rect(world);
-	register_spawn_scene_on_key(world);
-	register_spawn_at_most(world);
-	register_bake_random_screen_position_system(world);
-	register_bake_position_system(world);
-	register_move_vector(world);
-	register_move_on_arrows(world);
-	register_destroy_on_out_of_screen(world);
+	register_key_handler(world);
 	register_update_yoga(world);
 	register_draw_systems(world);
 
 	// Scene
-	const char *main_scene = argc >= 2 ? argv[1] : "main.toml";
-	bool loaded_main_scene = world.inside_transaction([main_scene](ecsql::World& world) {
-		world.execute_sql_script(ecsql::load_scene_file(main_scene).c_str());
+	const char *main_scene = argc >= 2 ? argv[1] : "main.lua";
+	bool loaded_main_scene = world.inside_transaction([&](ecsql::World& world) {
+		ecsql::do_lua_script(lua, main_scene);
 	});
 	if (!loaded_main_scene) {
 		std::cerr << "Could not load main scene '" << main_scene << "'. Bailing out." << std::endl;
@@ -133,7 +125,7 @@ int main(int argc, const char **argv) {
 
 	SetTargetFPS(60);
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(&game_loop, &ecsql_world, 0, 1);
+    emscripten_set_main_loop_arg(&game_loop, &world, 0, 1);
 #else
     while (!WindowShouldClose()) {
 		game_loop(world);

@@ -9,7 +9,7 @@ void register_update_screen_rect(ecsql::World& world) {
 			INSERT OR REPLACE INTO Rectangle(entity_id, width, height)
 			SELECT entity_id, width, height
 			FROM ScreenRect
-			JOIN screen_size
+				JOIN screen_size
 		)",
 		[](auto& sql) {
 			static bool first_time = true;
