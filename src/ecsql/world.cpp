@@ -121,7 +121,7 @@ bool World::delete_entity(EntityID id) {
 void World::update(float time_delta) {
 	inside_transaction([=](World& self) {
 		self.update_delta_time_stmt(time_delta);
-		for (auto [system, prepared_sql] : self.systems) {
+		for (auto&& [system, prepared_sql] : self.systems) {
 			system(self, prepared_sql);
 		}
 	});
