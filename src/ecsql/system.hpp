@@ -18,8 +18,10 @@ class System {
 public:
 	System(std::string_view name, std::function<void()> implementation);
 	System(std::string_view name, std::function<void(World&)> implementation);
+	System(std::string_view name, const std::string& sql);
 	System(std::string_view name, const std::string& sql, std::function<void(PreparedSQL&)> implementation);
 	System(std::string_view name, const std::string& sql, std::function<void(World&, PreparedSQL&)> implementation);
+	System(std::string_view name, const std::vector<std::string>& sql);
 	System(std::string_view name, const std::vector<std::string>& sql, std::function<void(std::vector<PreparedSQL>&)> implementation);
 	System(std::string_view name, const std::vector<std::string>& sql, std::function<void(World&, std::vector<PreparedSQL>&)> implementation);
 

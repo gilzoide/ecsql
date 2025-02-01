@@ -15,6 +15,11 @@ System::System(std::string_view name, std::function<void(World&)> implementation
 {
 }
 
+System::System(std::string_view name, const std::string& sql)
+	: System(name, sql, [](PreparedSQL& prepared_sql) { prepared_sql(); })
+{
+}
+
 System::System(std::string_view name, const std::string& sql, std::function<void(PreparedSQL&)> implementation)
 	: System(name, { sql }, [=](World& world, std::vector<PreparedSQL>& prepared_sqls) { implementation(prepared_sqls[0]); })
 {
@@ -22,6 +27,11 @@ System::System(std::string_view name, const std::string& sql, std::function<void
 
 System::System(std::string_view name, const std::string& sql, std::function<void(World&, PreparedSQL&)> implementation)
 	: System(name, { sql }, [=](World& world, std::vector<PreparedSQL>& prepared_sqls) { implementation(world, prepared_sqls[0]); })
+{
+}
+
+System::System(std::string_view name, const std::vector<std::string>& sql)
+	: System(name, sql, [](std::vector<PreparedSQL>& prepared_sqls) { for (auto& prepared_sql : prepared_sqls) prepared_sql(); })
 {
 }
 

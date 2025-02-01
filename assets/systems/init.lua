@@ -12,10 +12,6 @@ system "BakeRelativePosition" {
     [[
         DELETE FROM BakePosition
     ]],
-    function(bake_position, delete_bake_position)
-        bake_position()
-        delete_bake_position()
-    end,
 }
 
 system "DestroyOnOutOfScreen" {
@@ -30,9 +26,6 @@ system "DestroyOnOutOfScreen" {
                 OR position.y NOT BETWEEN 0 AND screen_size.height
         )
     ]],
-    function(delete_out_of_screen)
-        delete_out_of_screen()
-    end,
 }
 
 system "MoveOnArrows" {
@@ -95,9 +88,6 @@ system "MoveVector" {
         ) AS movement
         WHERE Position.entity_id = movement.entity_id
     ]],
-    function(move_vector)
-        move_vector()
-    end,
 }
 
 system "SpawnOnAction" {

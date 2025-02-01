@@ -24,22 +24,23 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 		}
 	}
 
-	if (!lua_function) {
-		luaL_error(L, "Expected function in system's table definition.");
-	}
-
 	std::string prefixed_name = "lua.";
-	prefixed_name += name,
-	world.register_system({
-		prefixed_name,
-		sqls,
-		[lua_function](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sql) {
-			auto result = lua_function(sol::as_args(prepared_sql));
-			if (!result.valid()) {
-				throw result.get<sol::error>();
+	prefixed_name += name;
+	if (lua_function) {
+		world.register_system({
+			prefixed_name,
+			sqls,
+			[lua_function](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sql) {
+				auto result = lua_function(sol::as_args(prepared_sql));
+				if (!result.valid()) {
+					throw result.get<sol::error>();
+				}
 			}
-		}
-	});
+		});
+	}
+	else {
+		world.register_system({ prefixed_name, sqls });
+	}
 }
 
 static void lua_register_component(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table) {
