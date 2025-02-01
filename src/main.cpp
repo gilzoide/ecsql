@@ -85,7 +85,7 @@ int main(int argc, const char **argv) {
 
 	const char *exe_file_name = GetFileName(argv[0]);
 	TracySetProgramName(exe_file_name);
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, exe_file_name);
 
 #if __EMSCRIPTEN__
@@ -123,7 +123,6 @@ int main(int argc, const char **argv) {
 		return 1;
 	}
 
-	SetTargetFPS(60);
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop_arg(&game_loop, &world, 0, 1);
 #else
