@@ -59,8 +59,8 @@ ecsql::System SistemaDesenhaPonto {
         x, y, z,
         r, g, b, a
       FROM PointTag
-      JOIN Position USING(entity_id)
-      JOIN Color USING(entity_id)
+        JOIN Position USING(entity_id)
+        JOIN Color USING(entity_id)
     )",
   },
   // implementação
