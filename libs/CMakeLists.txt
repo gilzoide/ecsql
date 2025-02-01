@@ -31,7 +31,7 @@ target_link_libraries(libs INTERFACE PhysFS::PhysFS-static)
 
 # Raylib
 if (EMSCRIPTEN)
-  set(PLATFORM Web)
+  set(PLATFORM Web CACHE STRING "")
 endif ()
 add_subdirectory(raylib)
 target_compile_options(raylib PRIVATE "-w")  # disable warnings
