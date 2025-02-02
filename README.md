@@ -3,9 +3,9 @@ Experimental [ECS](https://www.flecs.dev/ecs-faq/) framework powered by [SQLite]
 
 
 ## Articles
-- [ECS meets SQL: the world as a relational database](docs/01-ecs-databases-en.md)
-- [Starting the prototype: a world with entities, components and systems](docs/02-prototyping-en.md)
-- [Automatically registering components](docs/03-autoregister-components-en.md)
+- [ECS meets SQL: the world as a relational database](articles/01-ecs-databases-en.md)
+- [Starting the prototype: a world with entities, components and systems](articles/02-prototyping-en.md)
+- [Automatically registering components](articles/03-autoregister-components-en.md)
 
 
 ## Credits
