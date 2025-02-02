@@ -2,6 +2,7 @@
 
 #include <raymath.h>
 
+#include "colors.hpp"
 #include "lua_globals.h"
 #include "lua_scripting.hpp"
 #include "../memory.hpp"
@@ -291,6 +292,7 @@ LuaScripting::LuaScripting(ecsql::World& world)
 
 	register_usertypes(state);
 	state["world"] = &world;
+	register_colors(state);
 
 	auto result = state.do_string(std::string_view(lua_globals, lua_globals_size), "lua_globals.lua");
 	if (!result.valid()) {
