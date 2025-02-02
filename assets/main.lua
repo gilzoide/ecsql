@@ -23,3 +23,20 @@ entity "PlayerShip" {
         cooldown = 0.2,
     },
 }
+
+local screen_rect = entity "FullScreenRect" {
+    YogaNode = {},
+    ScreenRect = {},
+}
+entity "Title" {
+    Text = {
+        text = "[SPACE] to shoot, [WASD] to move",
+        size = 20,
+    },
+    Color = BLACK,
+    YogaNode = {
+        parent_id = screen_rect,
+        top = 20,
+        align_self = "center",
+    },
+}
