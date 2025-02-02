@@ -64,6 +64,10 @@ function entity(name, t)
     end
 end
 
+function sql(script)
+    world:execute_sql_script(script)
+end
+
 -- Patch package Lua loader using PhysFS
 local execdir_repl = ecsql.file_base_dir()
 local function searchpath(name, path, sep, rep)

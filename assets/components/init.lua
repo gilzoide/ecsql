@@ -18,6 +18,29 @@ component "MoveVector" {
     "y DEFAULT 0",
 }
 
+component "ScreenRect" {}
+sql [[
+CREATE TRIGGER ScreenRect_inserted
+AFTER INSERT ON ScreenRect
+BEGIN
+    INSERT OR REPLACE INTO Rectangle(entity_id, width, height)
+    SELECT new.entity_id, width, height
+    FROM screen_size;
+END;
+
+CREATE TRIGGER ScreenRect_screen_size_updated
+AFTER UPDATE ON screen_size
+BEGIN
+    UPDATE Rectangle
+    SET width = s.width, height = s.height
+    FROM (
+        SELECT entity_id, width, height
+        FROM ScreenRect, screen_size
+    ) AS s
+    WHERE Rectangle.entity_id = s.entity_id;
+END;
+]]
+
 component "SpawnOnAction" {
     "scene",
     "cooldown DEFAULT 0",
