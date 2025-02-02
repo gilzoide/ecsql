@@ -54,12 +54,12 @@ entity {
 --]]
 function entity(name, t)
     if type(name) == "table" then
-        world:create_entity(t, name)
+        return world:create_entity(t, name)
     elseif t then
-        world:create_entity(name, t)
+        return world:create_entity(name, t)
     else
         return function(t)
-            world:create_entity(name, t)
+            return world:create_entity(name, t)
         end
     end
 end
