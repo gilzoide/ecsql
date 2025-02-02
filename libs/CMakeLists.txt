@@ -16,8 +16,7 @@ if (EMSCRIPTEN)
 endif ()
 
 # Lua
-add_library(lua STATIC "lua/onelua.c")
-set_source_files_properties("lua/onelua.c" PROPERTIES LANGUAGE CXX)
+add_library(lua STATIC "onelua.cpp")
 target_compile_definitions(lua PRIVATE MAKE_LIB)
 target_include_directories(lua PUBLIC lua)
 target_link_libraries(libs INTERFACE lua)
