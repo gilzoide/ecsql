@@ -47,6 +47,12 @@ void run_debug_functionality(ecsql::World& world) {
 }
 #endif
 
+static void log_function(void *, int error, const char *message) {
+	if (error != SQLITE_SCHEMA) {
+		std::cerr << "[sqlite3] (" << error << ") " << message << std::endl;
+	}
+}
+
 void game_loop(ecsql::World& world) {
 	ZoneScoped;
 	{
@@ -82,6 +88,7 @@ void game_loop(void *world) {
 
 int main(int argc, const char **argv) {
 	configure_memory_hooks();
+	sqlite3_config(SQLITE_CONFIG_LOG, log_function, nullptr);
 
 	const char *exe_dir_path = GetDirectoryPath(argv[0]);
 	if (exe_dir_path && exe_dir_path[0]) {
