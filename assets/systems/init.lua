@@ -59,7 +59,7 @@ system "MoveOnArrows" {
         FROM (
             SELECT
                 entity_id,
-                ifnull(LinearSpeed.speed, 1) * time.delta AS speed,
+                LinearSpeed.speed * time.delta AS speed,
                 width AS screen_width, height AS screen_height
             FROM MoveOnArrows
                 LEFT JOIN LinearSpeed USING(entity_id)
@@ -82,12 +82,12 @@ system "MoveOnArrows" {
 system "MoveVector" {
     [[
         UPDATE Position
-        SET x = Position.x + movement.x, y = Position.y + movement.y
-        FROM (
-            SELECT entity_id, ifnull(MoveVector.x, 0) * time.delta AS x, ifnull(MoveVector.y, 0) * time.delta AS y
-            FROM MoveVector, time
-        ) AS movement
-        WHERE Position.entity_id = movement.entity_id
+        SET
+            x = Position.x + MoveVector.x * time.delta,
+            y = Position.y + MoveVector.y * time.delta,
+            z = Position.z + MoveVector.z * time.delta
+        FROM MoveVector, time
+        WHERE Position.entity_id = MoveVector.entity_id
     ]],
 }
 

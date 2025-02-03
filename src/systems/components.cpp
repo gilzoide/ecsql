@@ -5,46 +5,46 @@
 ecsql::Component PositionComponent {
 	"Position",
 	{
-		"x DEFAULT 0",
-		"y DEFAULT 0",
-		"z DEFAULT 0",
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"z NOT NULL DEFAULT 0",
 	}
 };
 
 ecsql::Component RotationComponent {
 	"Rotation",
 	{
-		"x DEFAULT 0",
-		"y DEFAULT 0",
-		"z DEFAULT 0",
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"z NOT NULL DEFAULT 0",
 	}
 };
 
 ecsql::Component ScaleComponent {
 	"Scale",
 	{
-		"x DEFAULT 1",
-		"y DEFAULT 1",
-		"z DEFAULT 1",
+		"x NOT NULL DEFAULT 1",
+		"y NOT NULL DEFAULT 1",
+		"z NOT NULL DEFAULT 1",
 	}
 };
 
 ecsql::Component PivotComponent {
 	"Pivot",
 	{
-		"x DEFAULT 0.5",
-		"y DEFAULT 0.5",
-		"z DEFAULT 0.5",
+		"x NOT NULL DEFAULT 0.5",
+		"y NOT NULL DEFAULT 0.5",
+		"z NOT NULL DEFAULT 0.5",
 	}
 };
 
 ecsql::Component RectangleComponent {
 	"Rectangle",
 	{
-		"x DEFAULT 0",
-		"y DEFAULT 0",
-		"width DEFAULT 1",
-		"height DEFAULT 1",
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"width NOT NULL DEFAULT 1",
+		"height NOT NULL DEFAULT 1",
 	}
 };
 
@@ -52,10 +52,10 @@ ecsql::Component RectangleComponent {
 ecsql::Component ColorComponent {
 	"Color",
 	{
-		"r DEFAULT 255",
-		"g DEFAULT 255",
-		"b DEFAULT 255",
-		"a DEFAULT 255",
+		"r NOT NULL DEFAULT 255",
+		"g NOT NULL DEFAULT 255",
+		"b NOT NULL DEFAULT 255",
+		"a NOT NULL DEFAULT 255",
 	}
 };
 
@@ -63,7 +63,7 @@ ecsql::Component TextComponent {
 	"Text",
 	{
 		"text TEXT",
-		"size DEFAULT 12",
+		"size NOT NULL DEFAULT 12",
 	}
 };
 
