@@ -28,7 +28,10 @@ CREATE TABLE time(delta, uptime);
 INSERT INTO time(delta, uptime) VALUES(0, 0);
 
 -- Screen singleton
-CREATE TABLE screen(width, height);
+CREATE TABLE screen(
+  width, height,  -- screen size
+  r, g, b, a  -- screen clear color
+);
 INSERT INTO screen(width, height) VALUES(0, 0);
 
 -- Input (for now, only keyboard is supported)

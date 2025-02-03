@@ -10,6 +10,19 @@
 
 void register_draw_systems(ecsql::World& world) {
 	world.register_system({
+		"ClearScreen",
+		R"(
+			SELECT ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
+			FROM screen
+		)"_dedent,
+		[](auto& get_clear_color) {
+			for (ecsql::SQLRow row : get_clear_color()) {
+				auto color = row.get<Color>();
+				ClearBackground(color);
+			}
+		},
+	});
+	world.register_system({
 		"DrawTextureRect",
 		R"(
 			SELECT path, Rectangle.x, Rectangle.y, width, height, Rotation.z, r, g, b, a

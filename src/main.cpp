@@ -59,10 +59,6 @@ void game_loop(ecsql::World& world) {
 		ZoneScopedN("BeginDrawing");
 		BeginDrawing();
 	}
-	{
-		ZoneScopedN("ClearBackground");
-		ClearBackground(RAYWHITE);
-	}
 
 	if (IsWindowResized()) {
 		world.on_window_resized(GetScreenWidth(), GetScreenHeight());
