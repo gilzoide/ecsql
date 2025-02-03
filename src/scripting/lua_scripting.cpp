@@ -223,7 +223,16 @@ static void register_usertypes(sol::state_view& state) {
 			else {
 				return sol::lua_nil;
 			}
-		}
+		},
+		sol::meta_method::index, [](sol::this_state L, ecsql::ExecutedSQL& executed_sql, int index) {
+			auto it = executed_sql.begin();
+			return lua_sql_row_get(L, it, index);
+		},
+		sol::meta_method::length, [](ecsql::ExecutedSQL& executed_sql) {
+			auto it = executed_sql.begin();
+			return (*it).column_count();
+		},
+		"unpack", state["table"]["unpack"].get<sol::object>()
 	);
 
 	state.new_usertype<ecsql::ExecutedSQL::RowIterator>(
