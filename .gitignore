@@ -1,2 +1,5 @@
 .cache
 build*/
+
+# Web build for GitHub pages
+docs/
