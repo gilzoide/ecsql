@@ -518,10 +518,10 @@ void register_update_yoga(ecsql::World& world) {
 			R"(
 				SELECT
 					entity_id,
-					ifnull(Rectangle.width, screen_size.width), ifnull(Rectangle.height, screen_size.height)
+					ifnull(Rectangle.width, screen.width), ifnull(Rectangle.height, screen.height)
 				FROM YogaNode
 				LEFT JOIN Rectangle USING(entity_id)
-				JOIN screen_size
+				JOIN screen
 				WHERE parent_id IS NULL
 			)"_dedent,
 			RectangleComponent.insert_sql(true),

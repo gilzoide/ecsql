@@ -2,13 +2,13 @@
 
 namespace ecsql {
 
-struct screen_size {
+struct screen {
 	// Schema
 	int width;
 	int height;
 
 	// SQL statements
-	inline static const char update_sql[] = "UPDATE screen_size SET width = ?, height = ?";
+	inline static const char update_sql[] = "UPDATE screen SET width = ?, height = ?";
 };
 
 }

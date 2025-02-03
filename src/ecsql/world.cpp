@@ -131,7 +131,7 @@ void World::update(float time_delta) {
 }
 
 void World::on_window_resized(int new_width, int new_height) {
-	execute_sql(screen_size::update_sql, new_width, new_height);
+	execute_sql(screen::update_sql, new_width, new_height);
 }
 
 bool World::backup_into(const char *db_name) {

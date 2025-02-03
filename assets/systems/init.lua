@@ -21,9 +21,9 @@ system "DestroyOnOutOfScreen" {
             SELECT entity_id
             FROM DestroyOnOutOfScreen
                 JOIN Position USING(entity_id)
-                JOIN screen_size
-            WHERE position.x NOT BETWEEN 0 AND screen_size.width
-                OR position.y NOT BETWEEN 0 AND screen_size.height
+                JOIN screen
+            WHERE position.x NOT BETWEEN 0 AND screen.width
+                OR position.y NOT BETWEEN 0 AND screen.height
         )
     ]],
 }
@@ -64,7 +64,7 @@ system "MoveOnArrows" {
             FROM MoveOnArrows
                 LEFT JOIN LinearSpeed USING(entity_id)
                 JOIN time
-                JOIN screen_size
+                JOIN screen
         ) AS movement
         WHERE Position.entity_id = movement.entity_id
     ]],

@@ -27,9 +27,9 @@ CREATE VIEW entity_parents AS
 CREATE TABLE time(delta, uptime);
 INSERT INTO time(delta, uptime) VALUES(0, 0);
 
--- Screen Size singleton
-CREATE TABLE screen_size(width, height);
-INSERT INTO screen_size(width, height) VALUES(0, 0);
+-- Screen singleton
+CREATE TABLE screen(width, height);
+INSERT INTO screen(width, height) VALUES(0, 0);
 
 -- Input (for now, only keyboard is supported)
 CREATE TABLE keyboard(
