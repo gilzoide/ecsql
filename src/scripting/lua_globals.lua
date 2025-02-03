@@ -64,8 +64,12 @@ function entity(name, t)
     end
 end
 
-function sql(script)
-    world:execute_sql_script(script)
+function sql(script, ...)
+    if select('#', ...) > 0 then
+        return world:execute_sql(script, ...)
+    else
+        world:execute_sql_script(script)
+    end
 end
 
 -- Patch package Lua loader using PhysFS
