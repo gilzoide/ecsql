@@ -72,7 +72,8 @@ system "MoveOnArrows" {
         for row in get_movement() do
             local x, y = row:unpack()
             if x ~= 0 or y ~= 0 then
-                update_position(Vector2(x, y):normalized():unpack())
+                local v = Vector2(x, y)
+                update_position(v:normalized():unpack())
             end
         end
     end,

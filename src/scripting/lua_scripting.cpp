@@ -249,14 +249,8 @@ static void register_usertypes(sol::state_view& state) {
 			[](float xy) -> Vector2 { return { .x = xy, .y = xy }; },
 			[](float x, float y) -> Vector2 { return { .x = x, .y = y }; }
 		),
-		"x", sol::property(
-			[](const Vector2& v) { return v.x; },
-			[](Vector2& v, float x) { v.x = x; }
-		),
-		"y", sol::property(
-			[](const Vector2& v) { return v.y; },
-			[](Vector2& v, float y) { v.y = y; }
-		),
+		"x", sol::property(&Vector2::x),
+		"y", sol::property(&Vector2::y),
 		"normalized", Vector2Normalize,
 		"unpack", [](const Vector2& v) { return std::make_pair(v.x, v.y); },
 		sol::meta_method::to_string, [](const Vector2& v) { return std::format("({}, {})", v.x, v.y); }
