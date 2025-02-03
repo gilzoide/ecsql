@@ -11,11 +11,6 @@ add_file2c(
   TEXT
 )
 add_file2c(
-  final_schema
-  INPUT "src/final_schema.sql"
-  TEXT
-)
-add_file2c(
   lua_globals
   INPUT "src/scripting/lua_globals.lua"
   TEXT
@@ -23,7 +18,7 @@ add_file2c(
 
 file(GLOB_RECURSE src CONFIGURE_DEPENDS "src/*.cpp")
 add_executable(ecsql ${src})
-target_link_libraries(ecsql libs world_schema final_schema lua_globals)
+target_link_libraries(ecsql libs world_schema lua_globals)
 target_compile_features(ecsql PUBLIC cxx_std_20)
 # define `DEBUG` symbol on CMake Debug builds
 target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:Debug>:DEBUG>")

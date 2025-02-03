@@ -12,6 +12,52 @@
 #include "../ecsql/sql_hook_row.hpp"
 #include "../ecsql/system.hpp"
 
+enum YogaNodeColumn {
+	YogaNode_entity_id,
+	YogaNode_parent_id,
+	// Position
+	YogaNode_position,
+	YogaNode_left,
+	YogaNode_top,
+	YogaNode_right,
+	YogaNode_bottom,
+	// Flex
+	YogaNode_direction,
+	YogaNode_flex_direction,
+	YogaNode_flex_wrap,
+	YogaNode_flex_basis,
+	YogaNode_flex_grow,
+	YogaNode_flex_shrink,
+	// Alignment
+	YogaNode_justify_content,
+	YogaNode_align_content,
+	YogaNode_align_items,
+	YogaNode_align_self,
+	// Size
+	YogaNode_width,
+	YogaNode_height,
+	YogaNode_min_width,
+	YogaNode_min_height,
+	YogaNode_max_width,
+	YogaNode_max_height,
+	YogaNode_aspect_ratio,
+	// Margin
+	YogaNode_margin_left,
+	YogaNode_margin_top,
+	YogaNode_margin_right,
+	YogaNode_margin_bottom,
+	// Padding
+	YogaNode_padding_left,
+	YogaNode_padding_top,
+	YogaNode_padding_right,
+	YogaNode_padding_bottom,
+	// Gap
+	YogaNode_column_gap,
+	YogaNode_row_gap,
+	// Did text change? Used for setting up measurement function
+	is_text_dirty,
+};
+
 struct YogaNodeContext {
 	ecsql::EntityID entity_id;
 	float measured_width = -1;
@@ -439,7 +485,7 @@ static void setup_yoga_node(YGNodeRef node, ecsql::SQLBaseRow& row) {
 }
 
 ecsql::HookSystem YogaNodeHookSystem {
-	YogaNode,
+	"YogaNode",
 	[](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
 		switch (hook) {
 			case ecsql::HookType::OnInsert: {
@@ -463,7 +509,7 @@ ecsql::HookSystem YogaNodeHookSystem {
 };
 
 ecsql::HookSystem TextHookSystem {
-	TextComponent,
+	"Text",
 	[](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
 		if (hook != ecsql::HookType::OnDelete) {
 			return;
@@ -489,7 +535,7 @@ void register_update_yoga(ecsql::World& world) {
 			R"(
 				SELECT entity_id, text, size
 				FROM Text
-				JOIN YogaNode USING(entity_id)
+					JOIN YogaNode USING(entity_id)
 				WHERE is_text_dirty
 			)"_dedent,
 			R"(
@@ -524,7 +570,10 @@ void register_update_yoga(ecsql::World& world) {
 				JOIN screen
 				WHERE parent_id IS NULL
 			)"_dedent,
-			RectangleComponent.insert_sql(true),
+			R"(
+				REPLACE INTO Rectangle(entity_id, x, y, width, height)
+				VALUES(?, ?, ?, ?, ?)
+			)",
 		},
 		[](auto& sqls) {
 			auto get_root_yoga_entities = sqls[0];

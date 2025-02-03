@@ -1,3 +1,6 @@
+#include <raylib.h>
+#include <rlgl.h>
+
 #include "image_flyweight.hpp"
 #include "texture_flyweight.hpp"
 

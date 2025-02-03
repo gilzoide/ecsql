@@ -10,9 +10,9 @@
 #include <sol/sol.hpp>
 #include <tracy/Tracy.hpp>
 
-#include "final_schema.h"
 #include "memory.hpp"
 #include "sqlite_functions.hpp"
+#include "ecsql/additional_sql.hpp"
 #include "ecsql/assetio.hpp"
 #include "ecsql/component.hpp"
 #include "ecsql/hook_system.hpp"
@@ -115,7 +115,9 @@ int main(int argc, const char **argv) {
 	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {
 		world.register_hook_system(*system);
 	});
-	world.execute_sql_script(final_schema);
+	ecsql::AdditionalSQL::foreach_static_linked_list([&](ecsql::AdditionalSQL *additional_sql) {
+		world.execute_sql_script(additional_sql->get_sql().c_str());
+	});
 
 	// Systems
 	register_key_handler(world);
