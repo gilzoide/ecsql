@@ -42,7 +42,8 @@ public:
 
     EntityID create_entity(std::optional<std::string_view> name = std::nullopt, std::optional<EntityID> parent = std::nullopt);
 	std::optional<EntityID> find_entity(std::string_view name);
-    bool delete_entity(EntityID id);
+    int delete_entity(EntityID id);
+    int delete_entity(std::string_view name);
 
     template<typename Fn>
     bool inside_transaction(Fn&& f) {
@@ -97,6 +98,7 @@ private:
     PreparedSQL rollback_stmt;
     PreparedSQL create_entity_stmt;
     PreparedSQL delete_entity_stmt;
+    PreparedSQL delete_entity_by_name_stmt;
     PreparedSQL find_entity_stmt;
     PreparedSQL update_delta_time_stmt;
 

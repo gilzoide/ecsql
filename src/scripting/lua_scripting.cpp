@@ -188,6 +188,10 @@ static void register_usertypes(sol::state_view& state) {
 		"register_system", lua_register_system,
 		"register_component", lua_register_component,
 		"create_entity", lua_create_entity,
+		"delete_entity", sol::overload(
+			sol::resolve<int(ecsql::EntityID)>(&ecsql::World::delete_entity),
+			sol::resolve<int(std::string_view)>(&ecsql::World::delete_entity)
+		),
 		"find_entity", &ecsql::World::find_entity,
 		"prepare_sql", [](ecsql::World& world, std::string_view sql, sol::optional<bool> is_persistent) {
 			return world.prepare_sql(sql, is_persistent.value_or(false));

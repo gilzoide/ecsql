@@ -24,7 +24,7 @@ entity "PlayerShip" {
     },
 }
 
-local screen_rect = entity "FullScreenRect" {
+local FullScreenRect = entity "FullScreenRect" {
     YogaNode = {},
     ScreenRect = {},
 }
@@ -35,7 +35,7 @@ entity "Title" {
     },
     Color = BLACK,
     YogaNode = {
-        parent_id = screen_rect,
+        parent_id = FullScreenRect,
         top = 20,
         align_self = "center",
     },

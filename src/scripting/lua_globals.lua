@@ -20,6 +20,9 @@ end
 
 _G.entity = setmetatable({}, {
     __index = {
+        delete = function(id)
+            return world:delete_entity(id)
+        end,
         find = function(name)
             return world:find_entity(name)
         end,
