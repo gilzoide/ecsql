@@ -50,6 +50,10 @@ ExecutedSQL::RowIterator ExecutedSQL::RowIterator::operator++(int _) {
     return retval;
 }
 
+SQLRow ExecutedSQL::RowIterator::row() const {
+	return stmt;
+}
+
 SQLRow ExecutedSQL::RowIterator::operator*() const {
     return stmt;
 }

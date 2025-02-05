@@ -47,6 +47,7 @@ World::World(const char *db_name)
 	, rollback_stmt(db.get(), "ROLLBACK", true)
 	, create_entity_stmt(db.get(), Entity::insert_sql, true)
 	, delete_entity_stmt(db.get(), Entity::delete_sql, true)
+	, find_entity_stmt(db.get(), Entity::find_by_name_sql, true)
 	, update_delta_time_stmt(db.get(), time::update_delta_sql, true)
 {
 	sqlite3_preupdate_hook(db.get(), preupdate_hook, this);
@@ -116,6 +117,15 @@ EntityID World::create_entity(std::optional<std::string_view> name, std::optiona
 
 bool World::delete_entity(EntityID id) {
 	return delete_entity_stmt(id).get<bool>();
+}
+
+std::optional<EntityID> World::find_entity(std::string_view name) {
+	if (auto it = find_entity_stmt(name).begin()) {
+		return it.row().get<EntityID>();
+	}
+	else {
+		return std::nullopt;
+	}
 }
 
 void World::update(float time_delta) {

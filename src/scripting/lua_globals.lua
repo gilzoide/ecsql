@@ -1,12 +1,3 @@
---[[ Example:
-system "name" {
-    "SELECT 'sql1'",
-    "SELECT 'sql2'",
-    function(sql1, sql2)
-        -- ...
-    end
-}
---]]
 function system(name, t)
     if t then
         world:register_system(name, t)
@@ -17,17 +8,6 @@ function system(name, t)
     end
 end
 
---[[ Example:
-component "name" {
-    "column1",
-    "column2 DEFAULT 0",
-    "column3 TEXT",
-
-    -- Optional arguments
-    additional_schema = "CREATE INDEX ...",
-    allow_duplicates = true,
-}
---]]
 function component(name, t)
     if t then
         world:register_component(name, t)
@@ -38,31 +18,24 @@ function component(name, t)
     end
 end
 
---[[ Example:
-entity "name" {
-    component1 = {
-        col1 = "value",
-        col2 = 42,
-        col3 = true,
+_G.entity = setmetatable({}, {
+    __index = {
+        find = function(name)
+            return world:find_entity(name)
+        end,
     },
-    component2 = {},
-}
-
-entity {
-    -- ...
-}
---]]
-function entity(name, t)
-    if type(name) == "table" then
-        return world:create_entity(t, name)
-    elseif t then
-        return world:create_entity(name, t)
-    else
-        return function(t)
+    __call = function(self, name, t)
+        if type(name) == "table" then
+            return world:create_entity(t, name)
+        elseif t then
             return world:create_entity(name, t)
+        else
+            return function(t)
+                return world:create_entity(name, t)
+            end
         end
-    end
-end
+    end,
+})
 
 function sql(script, ...)
     if select('#', ...) > 0 then

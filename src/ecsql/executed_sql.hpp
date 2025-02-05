@@ -18,6 +18,7 @@ public:
         RowIterator& operator++();
         RowIterator operator++(int _);
 
+		SQLRow row() const;
         SQLRow operator*() const;
 		operator bool() const;
 

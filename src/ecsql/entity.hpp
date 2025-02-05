@@ -15,6 +15,7 @@ struct Entity {
 
 	inline static const char insert_sql[] = "INSERT INTO entity(name, parent_id) VALUES(?, ?)";
 	inline static const char delete_sql[] = "DELETE FROM entity WHERE id = ?";
+	inline static const char find_by_name_sql[] = "SELECT id FROM entity WHERE name = ?";
 };
 
 }
