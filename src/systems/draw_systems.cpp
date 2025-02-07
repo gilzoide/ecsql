@@ -107,12 +107,13 @@ void register_draw_systems(ecsql::World& world) {
 			R"(
 				SELECT
 					Position.x, Position.y, Position.z,
-					Rotation.x, Rotation.y, Rotation.z,
+					LookAt.target_x, LookAt.target_y, LookAt.target_z,
+					LookAt.up_x, coalesce(LookAt.up_y, 1), LookAt.up_z,
 					fov_y,
 					projection = 'orthographic'
 				FROM Camera
 					LEFT JOIN Position USING(entity_id)
-					LEFT JOIN Rotation USING(entity_id)
+					LEFT JOIN LookAt USING(entity_id)
 			)",
 			R"(
 				SELECT
@@ -129,11 +130,7 @@ void register_draw_systems(ecsql::World& world) {
 			auto get_models = sqls[1];
 
 			for (ecsql::SQLRow row : get_cameras()) {
-				auto [position, rotation_euler, fov, projection] = row.get<Vector3, Vector3, float, int>();
-
-				Quaternion rotation = QuaternionFromEuler(rotation_euler.x, rotation_euler.y, rotation_euler.z);
-				Vector3 target = Vector3RotateByQuaternion(Vector3(0, 0, -1), rotation);
-				Vector3 up = Vector3RotateByQuaternion(Vector3(0, 1, 0), rotation);
+				auto [position, target, up, fov, projection] = row.get<Vector3, Vector3, Vector3, float, int>();
 				Camera3D camera = {
 					.position = position,
 					.target = target,
@@ -149,6 +146,75 @@ void register_draw_systems(ecsql::World& world) {
 					DrawModel(model, position, 1, color.value_or(WHITE));
 				}
 				EndMode3D();
+			}
+		},
+	});
+	world.register_system({
+		"UpdateCamera",
+		{
+			R"(
+				SELECT
+					entity_id,
+					mode,
+					Position.x, Position.y, Position.z,
+					LookAt.target_x, LookAt.target_y, LookAt.target_z,
+					LookAt.up_x, coalesce(LookAt.up_y, 1), LookAt.up_z,
+					fov_y,
+					projection = 'orthographic'
+				FROM UpdateCamera
+					JOIN Camera USING(entity_id)
+					LEFT JOIN Position USING(entity_id)
+					LEFT JOIN LookAt USING(entity_id)
+			)"_dedent,
+			R"(
+				REPLACE INTO Position
+				VALUES(?, ?, ?, ?)
+			)",
+			R"(
+				REPLACE INTO LookAt
+				VALUES(?, ?, ?, ?, ?, ?, ?)
+			)",
+		},
+		[](auto& sqls) {
+			auto get_cameras = sqls[0];
+			auto set_position = sqls[1];
+			auto set_look_at = sqls[2];
+
+			for (ecsql::SQLRow row : get_cameras()) {
+				auto [entity_id, update_mode, position, target, up, fov, projection] = row.get<ecsql::EntityID, std::string_view, Vector3, Vector3, Vector3, float, int>();
+				Camera3D camera = {
+					.position = position,
+					.target = target,
+					.up = up,
+					.fovy = fov,
+					.projection = projection,
+				};
+				if (update_mode == "free") {
+					UpdateCamera(&camera, CAMERA_FREE);
+				}
+				else if (update_mode == "orbital") {
+					UpdateCamera(&camera, CAMERA_ORBITAL);
+				}
+				else if (update_mode == "first_person") {
+					UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+				}
+				else if (update_mode == "third_person") {
+					UpdateCamera(&camera, CAMERA_THIRD_PERSON);
+				}
+				else {
+					continue;
+				}
+
+				Vector3 final_position = camera.position;
+				Vector3 final_target = camera.target;
+				Vector3 final_up = camera.up;
+
+				if (final_position != position) {
+					set_position(entity_id, final_position);
+				}
+				if (final_target != target || final_up != up) {
+					set_look_at(entity_id, final_target, final_up);
+				}
 			}
 		},
 	});

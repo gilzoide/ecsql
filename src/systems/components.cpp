@@ -20,6 +20,18 @@ ecsql::Component RotationComponent {
 	}
 };
 
+ecsql::Component LookAtComponent {
+	"LookAt",
+	{
+		"target_x NOT NULL DEFAULT 0",
+		"target_y NOT NULL DEFAULT 0",
+		"target_z NOT NULL DEFAULT 0",
+		"up_x NOT NULL DEFAULT 0",
+		"up_y NOT NULL DEFAULT 1",
+		"up_z NOT NULL DEFAULT 0",
+	}
+};
+
 ecsql::Component ScaleComponent {
 	"Scale",
 	{
@@ -73,6 +85,12 @@ ecsql::Component CameraComponent {
 	{
 		 "fov_y NOT NULL DEFAULT 45",
 		 "projection DEFAULT 'perspective'",
+	}
+};
+ecsql::Component CameraUpdate {
+	"UpdateCamera",
+	{
+		"mode",
 	}
 };
 
