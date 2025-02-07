@@ -67,6 +67,15 @@ ecsql::Component TextComponent {
 	}
 };
 
+// Camera
+ecsql::Component CameraComponent {
+	"Camera",
+	{
+		 "fov_y NOT NULL DEFAULT 45",
+		 "projection DEFAULT 'perspective'",
+	}
+};
+
 // UI Layout
 ecsql::Component YogaNode {
 	"YogaNode",

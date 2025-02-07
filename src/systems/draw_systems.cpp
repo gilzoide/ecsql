@@ -2,6 +2,7 @@
 
 #include <cdedent.hpp>
 #include <raylib.h>
+#include <raymath.h>
 
 #include "draw_systems.hpp"
 #include "../ecsql/system.hpp"
@@ -102,27 +103,53 @@ void register_draw_systems(ecsql::World& world) {
 	});
 	world.register_system({
 		"DrawModel",
-		R"(
-			SELECT path, Position.x, Position.y, Position.z, r, g, b, a
-			FROM Model
-				JOIN Position USING(entity_id)
-				LEFT JOIN Color USING(entity_id)
-		)"_dedent,
-		[](auto& sql) {
-			Camera3D camera {
-				{ 10, 10, 10 },
-				{ 0, 0, 0 },
-				{ 0, 1, 0 },
-				45,
-				CAMERA_PERSPECTIVE,
-			};
-			BeginMode3D(camera);
-			for (ecsql::SQLRow row : sql()) {
-				auto [model_path, position, color] = row.get<std::string_view, Vector3, std::optional<Color>>();
-				auto model = ModelFlyweight.get(model_path);
-				DrawModel(model, position, 1, color.value_or(WHITE));
+		{
+			R"(
+				SELECT
+					Position.x, Position.y, Position.z,
+					Rotation.x, Rotation.y, Rotation.z,
+					fov_y,
+					projection = 'orthographic'
+				FROM Camera
+					LEFT JOIN Position USING(entity_id)
+					LEFT JOIN Rotation USING(entity_id)
+			)",
+			R"(
+				SELECT
+					path,
+					x, y, z,
+					r, g, b, a
+				FROM Model
+					JOIN Position USING(entity_id)
+					LEFT JOIN Color USING(entity_id)
+			)"_dedent,
+		},
+		[](auto& sqls) {
+			auto get_cameras = sqls[0];
+			auto get_models = sqls[1];
+
+			for (ecsql::SQLRow row : get_cameras()) {
+				auto [position, rotation_euler, fov, projection] = row.get<Vector3, Vector3, float, int>();
+
+				Quaternion rotation = QuaternionFromEuler(rotation_euler.x, rotation_euler.y, rotation_euler.z);
+				Vector3 target = Vector3RotateByQuaternion(Vector3(0, 0, -1), rotation);
+				Vector3 up = Vector3RotateByQuaternion(Vector3(0, 1, 0), rotation);
+				Camera3D camera = {
+					.position = position,
+					.target = target,
+					.up = up,
+					.fovy = fov,
+					.projection = projection,
+				};
+
+				BeginMode3D(camera);
+				for (ecsql::SQLRow row : get_models()) {
+					auto [model_path, position, color] = row.get<std::string_view, Vector3, std::optional<Color>>();
+					auto model = ModelFlyweight.get(model_path);
+					DrawModel(model, position, 1, color.value_or(WHITE));
+				}
+				EndMode3D();
 			}
-			EndMode3D();
 		},
 	});
 }
