@@ -41,7 +41,7 @@ _G.entity = setmetatable({}, {
 })
 
 function sql(script, ...)
-    if select('#', ...) > 0 then
+    if select('#', ...) > 0 or not script:match(";") then
         return world:execute_sql(script, ...)
     else
         world:execute_sql_script(script)

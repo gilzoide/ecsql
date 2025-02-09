@@ -3,7 +3,6 @@
 #include "entity.hpp"
 #include "executed_sql.hpp"
 #include "is_span.hpp"
-#include "sql_row.hpp"
 
 namespace ecsql {
 
