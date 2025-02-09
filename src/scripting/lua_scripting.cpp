@@ -68,63 +68,6 @@ static void lua_register_component(sol::this_state L, ecsql::World& world, std::
 	});
 }
 
-static ecsql::EntityID lua_create_entity(sol::this_state L, ecsql::World& world, std::optional<std::string_view> name, sol::table table) {
-	auto parent_id = table.get<std::optional<ecsql::EntityID>>("parent_id");
-	ecsql::EntityID entity_id = world.create_entity(name, parent_id);
-	for (auto [key, value] : table) {
-		if (key.as<std::string_view>() == "parent_id") {
-			continue;
-		}
-
-		sol::table component_values = value;
-
-		std::string sql = "INSERT INTO \"";
-		sql += key.as<std::string_view>();
-		sql += "\"(entity_id";
-		int value_count = 0;
-		for (auto [key, _] : component_values) {
-			sql += ", ";
-			sql += key.as<std::string_view>();
-			value_count++;
-		}
-		sql += ") VALUES(?";
-		for (int i = 0; i < value_count; i++) {
-			sql += ", ?";
-		}
-		sql += ")";
-
-		ecsql::PreparedSQL preparedSql(world.get_db().get(), sql);
-		preparedSql.bind(1, entity_id);
-
-		int i = 2;
-		for (auto [_, value] : component_values) {
-			switch (value.get_type()) {
-				case sol::type::none:
-				case sol::type::lua_nil:
-					preparedSql.bind_null(i++);
-					break;
-
-				case sol::type::string:
-					preparedSql.bind_text(i++, value.as<std::string_view>());
-					break;
-
-				case sol::type::number:
-					preparedSql.bind_double(i++, value.as<lua_Number>());
-					break;
-
-				case sol::type::boolean:
-					preparedSql.bind_bool(i++, value.as<bool>());
-					break;
-
-				default:
-					luaL_error(L, "Unsupported type '%s' for component data", lua_typename(L, (int) value.get_type()));
-			}
-		}
-		preparedSql();
-	}
-	return entity_id;
-}
-
 static ecsql::ExecutedSQL lua_prepared_sql_call(sol::this_state L, ecsql::PreparedSQL& prepared_sql, sol::variadic_args args) {
 	prepared_sql.reset();
 	int i = 1;
@@ -187,7 +130,7 @@ static void register_usertypes(sol::state_view& state) {
 		sol::no_construction(),
 		"register_system", lua_register_system,
 		"register_component", lua_register_component,
-		"create_entity", lua_create_entity,
+		"create_entity", &ecsql::World::create_entity,
 		"delete_entity", sol::overload(
 			sol::resolve<int(ecsql::EntityID)>(&ecsql::World::delete_entity),
 			sol::resolve<int(std::string_view)>(&ecsql::World::delete_entity)

@@ -1,3 +1,6 @@
+local assert, pairs, select, setmetatable, type = assert, pairs, select, setmetatable, type
+local table_insert, table_concat, table_unpack = table.insert, table.concat, table.unpack
+
 function system(name, t)
     if t then
         world:register_system(name, t)
@@ -18,6 +21,37 @@ function component(name, t)
     end
 end
 
+local function create_entity_internal(name, t)
+    local entity_id = world:create_entity(name, t.parent_id)
+    for component_name, fields in pairs(t) do
+        if component_name == "parent_id" then
+            goto continue
+        end
+
+        local sql = {
+            "INSERT INTO ",
+            component_name,
+            "(entity_id",
+        }
+        local values = {}
+        for field, value in pairs(fields) do
+            sql[#sql + 1] = ", "
+            sql[#sql + 1] = field
+            values[#values + 1] = value
+        end
+
+        sql[#sql + 1] = ") VALUES(?"
+        for i = 1, #values do
+            sql[#sql + 1] = ", ?"
+        end
+        sql[#sql + 1] = ")"
+
+        world:execute_sql(table_concat(sql), entity_id, table_unpack(values))
+        ::continue::
+    end
+    return entity_id
+end
+
 _G.entity = setmetatable({}, {
     __index = {
         delete = function(id)
@@ -29,12 +63,12 @@ _G.entity = setmetatable({}, {
     },
     __call = function(self, name, t)
         if type(name) == "table" then
-            return world:create_entity(t, name)
+            return create_entity_internal(t, name)
         elseif t then
-            return world:create_entity(name, t)
+            return create_entity_internal(name, t)
         else
             return function(t)
-                return world:create_entity(name, t)
+                return create_entity_internal(name, t)
             end
         end
     end,
@@ -62,10 +96,10 @@ local function searchpath(name, path, sep, rep)
         if ecsql.file_exists(filename) then
 			return filename
 		else
-			table.insert(notfound, ("\n\tno file %q"):format(filename))
+			table_insert(notfound, ("\n\tno file %q"):format(filename))
 		end
 	end
-	return nil, table.concat(notfound)
+	return nil, table_concat(notfound)
 end
 package.searchpath = searchpath
 
