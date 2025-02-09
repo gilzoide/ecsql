@@ -1,6 +1,8 @@
 # ECSQL
 Experimental [ECS](https://www.flecs.dev/ecs-faq/) framework powered by [SQLite](https://sqlite.org).
 
+Play the current demo state: https://gilzoide.github.io/ecsql/
+
 
 ## Articles
 - [ECS meets SQL: the world as a relational database](articles/01-ecs-databases-en.md)
