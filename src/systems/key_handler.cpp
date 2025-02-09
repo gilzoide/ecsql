@@ -39,17 +39,29 @@ void register_key_handler(ecsql::World& world) {
 			auto update_hold = sqls[3];
 
 			// 1. reset all previously released keys
-			reset_released();
+			{
+				ZoneScopedN("reset_released");
+				reset_released();
+			}
 
 			// 2. mark released keys
-			update_released();
+			{
+				ZoneScopedN("update_released");
+				update_released();
+			}
 
 			// 3. pressed keys that weren't released are now on hold
-			update_hold();
+			{
+				ZoneScopedN("update_hold");
+				update_hold();
+			}
 
 			// 4. add newly pressed keys
-			while (int key = GetKeyPressed()) {
-				set_pressed(key);
+			{
+				ZoneScopedN("set_pressed");
+				while (int key = GetKeyPressed()) {
+					set_pressed(key);
+				}
 			}
 		}
 	});

@@ -586,8 +586,14 @@ void register_update_yoga(ecsql::World& world) {
 				}
 
 				auto [width, height] = row.get<float, float>(1);
-				YGNodeCalculateLayout(node, width, height, YGDirectionInherit);
-				recurse_update_rect(node, upsert_rectangle);
+				{
+					ZoneScopedN("YGNodeCalculateLayout");
+					YGNodeCalculateLayout(node, width, height, YGDirectionInherit);
+				}
+				{
+					ZoneScopedN("recurse_update_rect");
+					recurse_update_rect(node, upsert_rectangle);
+				}
 			}
 		},
 	});

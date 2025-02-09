@@ -13,13 +13,16 @@ void register_draw_systems(ecsql::World& world) {
 	world.register_system({
 		"ClearScreen",
 		R"(
-			SELECT ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
+			SELECT r, g, b, a
 			FROM screen
 		)"_dedent,
 		[](auto& get_clear_color) {
 			for (ecsql::SQLRow row : get_clear_color()) {
-				auto color = row.get<Color>();
-				ClearBackground(color);
+				auto color = row.get<std::optional<Color>>();
+				{
+					ZoneScopedN("ClearBackground");
+					ClearBackground(color.value_or(WHITE));
+				}
 			}
 		},
 	});
@@ -43,7 +46,10 @@ void register_draw_systems(ecsql::World& world) {
 				Vector2 center { rectangle.width * 0.5f, rectangle.height * 0.5f };
 				rectangle.x += center.x;
 				rectangle.y += center.y;
-				DrawTexturePro(tex, source, rectangle, center, rotation, color.value_or(WHITE));
+				{
+					ZoneScopedN("DrawTexturePro");
+					DrawTexturePro(tex, source, rectangle, center, rotation, color.value_or(WHITE));
+				}
 			}
 		},
 	});
@@ -79,7 +85,10 @@ void register_draw_systems(ecsql::World& world) {
 					source.width * scale.x,
 					source.height * scale.y,
 				};
-				DrawTexturePro(tex, source, dest, pivot, rotation, color);
+				{
+					ZoneScopedN("DrawTexturePro");
+					DrawTexturePro(tex, source, dest, pivot, rotation, color);
+				}
 			}
 		},
 	});
@@ -97,7 +106,10 @@ void register_draw_systems(ecsql::World& world) {
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
 				auto [text, size, rect, color] = row.get<const char *, int, Rectangle, Color>();
-				DrawText(text, rect.x, rect.y, size, color);
+				{
+					ZoneScopedN("DrawText");
+					DrawText(text, rect.x, rect.y, size, color);
+				}
 			}
 		}
 	});
@@ -139,13 +151,22 @@ void register_draw_systems(ecsql::World& world) {
 					.projection = projection,
 				};
 
-				BeginMode3D(camera);
+				{
+					ZoneScopedN("BeginMode3D");
+					BeginMode3D(camera);
+				}
 				for (ecsql::SQLRow row : get_models()) {
 					auto [model_path, position, color] = row.get<std::string_view, Vector3, std::optional<Color>>();
 					auto model = ModelFlyweight.get(model_path);
-					DrawModel(model, position, 1, color.value_or(WHITE));
+					{
+						ZoneScopedN("DrawModel");
+						DrawModel(model, position, 1, color.value_or(WHITE));
+					}
 				}
-				EndMode3D();
+				{
+					ZoneScopedN("EndMode3D");
+					EndMode3D();
+				}
 			}
 		},
 	});
