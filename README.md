@@ -9,6 +9,7 @@ Play the current demo state: https://gilzoide.github.io/ecsql/
 - [Starting the prototype: a world with entities, components and systems](articles/02-prototyping-en.md)
 - [Automatically registering components](articles/03-autoregister-components-en.md)
 - [Tracking time](articles/04-tracking-time-en.md)
+- [External resources and the Flyweight pattern](articles/05-flyweight-resources-en.md)
 
 
 ## Credits
