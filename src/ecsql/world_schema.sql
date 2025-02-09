@@ -1,4 +1,5 @@
 PRAGMA foreign_keys = ON;
+PRAGMA synchronous = OFF;
 
 -- Entity
 CREATE TABLE entity(
