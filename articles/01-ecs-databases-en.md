@@ -1,3 +1,6 @@
+# ECS meets SQL: the world as a relational database
+> 2024-05-31 | `#ECS #SQL #SQLite` | [*Versão em Português*](01-ecs-databases-pt.md)
+
 > Note: this document assumes you have basic knowledge of SQL
 
 ## Primer on ECS

@@ -1,3 +1,6 @@
+# ECS encontra SQL: o mundo como base de dados relacional
+> 2024-05-31 | `#ECS #SQL #SQLite` | [*English version*](01-ecs-databases-en.md)
+
 > Nota: esse documento assume que você tenha conhecimentos básicos de SQL
 
 ## ECS: o básico

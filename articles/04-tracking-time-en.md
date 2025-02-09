@@ -1,4 +1,6 @@
 # Tracking time
+> 2025-02-04 | `#ECS #SQL #SQLite #C++ #GameLoop #DeltaTime` | [*Versão em Português*](04-tracking-time-pt.md)
+
 One thing you'll see in pretty much any game engine is that they all have a way to get the time elapsed since the last frame, the so called "delta time".
 This is used to convert between frames and real world time, making games run in the same speed independently of how many frames are processed per second.
 

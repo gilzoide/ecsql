@@ -1,4 +1,6 @@
 # Registrando componentes automaticamente
+> 2025-02-01 | `#ECS #C++ #GlobalVariables #LinkedList` | [*English version*](03-autoregister-components-en.md)
+
 Depois de prototipar um pouco, percebi que registrar componentes manualmente é uma tarefa muito entediante.
 Eu estava criando todos os componentes como variáveis globais no C++, daí registrado elas uma a uma usando `mundo.register_component(componente)` na função `main` da aplicação.
 

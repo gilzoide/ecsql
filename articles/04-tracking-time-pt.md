@@ -1,4 +1,6 @@
 # Acompanhando o tempo
+> 2025-02-04 | `#ECS #SQL #SQLite #C++ #GameLoop #DeltaTime` | [*English version*](04-tracking-time-en.md)
+
 Uma coisa que você vai ver em basicamente qualquer motor de jogos é que eles sempre disponibilizam o tempo que passou desde o último quadro (em inglês, *frame*), o famoso *"delta time"*.
 Ele é usado para converter entre *frames* e tempo real, possibilitando que jogos executem na mesma velocidade independente de quantos *frames* são processados por segundo.
 
