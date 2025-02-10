@@ -5,49 +5,49 @@
 namespace ecsql {
 
 ExecutedSQL::ExecutedSQL(std::shared_ptr<sqlite3_stmt> stmt)
-    : stmt(stmt)
+	: stmt(stmt)
 {
 	++RowIterator(stmt);
 }
 
 ExecutedSQL::RowIterator ExecutedSQL::begin() {
 	if (sqlite3_stmt_busy(stmt.get())) {
-    	return RowIterator(stmt);
+		return RowIterator(stmt);
 	}
 	else {
-    	return RowIterator();
+		return RowIterator();
 	}
 }
 
 ExecutedSQL::RowIterator ExecutedSQL::end() {
-    return RowIterator();
+	return RowIterator();
 }
 
 // RowIterator
 ExecutedSQL::RowIterator::RowIterator(std::shared_ptr<sqlite3_stmt> stmt)
-    : stmt(stmt)
+	: stmt(stmt)
 {
 }
 
 ExecutedSQL::RowIterator& ExecutedSQL::RowIterator::operator++() {
-    switch (sqlite3_step(stmt.get())) {
-        case SQLITE_ROW:
-            break;
+	switch (sqlite3_step(stmt.get())) {
+		case SQLITE_ROW:
+			break;
 
-        default:
-            std::cerr << sqlite3_errmsg(sqlite3_db_handle(stmt.get())) << std::endl;
-            // fallthrough
-        case SQLITE_DONE:
-            stmt = nullptr;
-            break;
-    }
-    return *this;
+		default:
+			std::cerr << sqlite3_errmsg(sqlite3_db_handle(stmt.get())) << std::endl;
+			// fallthrough
+		case SQLITE_DONE:
+			stmt = nullptr;
+			break;
+	}
+	return *this;
 }
 
 ExecutedSQL::RowIterator ExecutedSQL::RowIterator::operator++(int _) {
-    auto retval = *this;
-    ++(*this);
-    return retval;
+	auto retval = *this;
+	++(*this);
+	return retval;
 }
 
 SQLRow ExecutedSQL::RowIterator::row() const {
@@ -55,7 +55,7 @@ SQLRow ExecutedSQL::RowIterator::row() const {
 }
 
 SQLRow ExecutedSQL::RowIterator::operator*() const {
-    return stmt;
+	return stmt;
 }
 
 ExecutedSQL::RowIterator::operator bool() const {
@@ -63,11 +63,11 @@ ExecutedSQL::RowIterator::operator bool() const {
 }
 
 bool ExecutedSQL::RowIterator::operator==(RowIterator other) const {
-    return stmt == other.stmt;
+	return stmt == other.stmt;
 }
 
 bool ExecutedSQL::RowIterator::operator!=(RowIterator other) const {
-    return stmt != other.stmt;
+	return stmt != other.stmt;
 }
 
 }

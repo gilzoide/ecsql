@@ -206,11 +206,11 @@ static void register_usertypes(sol::state_view& state) {
 }
 
 static int string_replace(lua_State *L) {
-    const char *s = luaL_checkstring(L, 1);
-    const char *p = luaL_checkstring(L, 2);
-    const char *r = luaL_checkstring(L, 3);
-    luaL_gsub(L, s, p, r);
-    return 1;
+	const char *s = luaL_checkstring(L, 1);
+	const char *p = luaL_checkstring(L, 2);
+	const char *r = luaL_checkstring(L, 3);
+	luaL_gsub(L, s, p, r);
+	return 1;
 }
 
 LuaScripting::LuaScripting(ecsql::World& world)

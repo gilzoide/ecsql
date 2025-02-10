@@ -205,13 +205,13 @@ void World::create_function(const char *name, int argument_count, void (*fn)(sql
 
 // private methods
 void World::preupdate_hook(
-    void *pCtx,                   /* Copy of third arg to preupdate_hook() */
-    sqlite3 *db,                  /* Database handle */
-    int op,                       /* SQLITE_UPDATE, DELETE or INSERT */
-    char const *zDb,              /* Database name */
-    char const *zName,            /* Table name */
-    sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
-    sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
+	void *pCtx,                   /* Copy of third arg to preupdate_hook() */
+	sqlite3 *db,                  /* Database handle */
+	int op,                       /* SQLITE_UPDATE, DELETE or INSERT */
+	char const *zDb,              /* Database name */
+	char const *zName,            /* Table name */
+	sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
+	sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
 ) {
 	World *world = (World *) pCtx;
 	switch (op) {
