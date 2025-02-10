@@ -44,12 +44,13 @@ protected:
     template<typename T> T get_advance(int& index) const
     requires is_optional<T>
     {
-        if (column_is_null(index)) {
-			index++;
-            return std::nullopt;
+		if (column_is_null(index)) {
+			// make sure to advance the correct amount of columns
+			get_advance<typename T::value_type>(index);
+			return std::nullopt;
         }
         else {
-            return get_advance<typename T::value_type>(index);
+			return get_advance<typename T::value_type>(index);
         }
     }
 
