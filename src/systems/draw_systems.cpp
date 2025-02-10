@@ -9,6 +9,9 @@
 #include "../flyweights/model_flyweight.hpp"
 #include "../flyweights/texture_flyweight.hpp"
 
+#define DEFAULT_CLEAR_COLOR WHITE
+#define DEFAULT_TEXT_COLOR BLACK
+
 void register_draw_systems(ecsql::World& world) {
 	world.register_system({
 		"ClearScreen",
@@ -21,7 +24,7 @@ void register_draw_systems(ecsql::World& world) {
 				auto color = row.get<std::optional<Color>>();
 				{
 					ZoneScopedN("ClearBackground");
-					ClearBackground(color.value_or(WHITE));
+					ClearBackground(color.value_or(DEFAULT_CLEAR_COLOR));
 				}
 			}
 		},
@@ -29,7 +32,11 @@ void register_draw_systems(ecsql::World& world) {
 	world.register_system({
 		"DrawTextureRect",
 		R"(
-			SELECT path, Rectangle.x, Rectangle.y, width, height, Rotation.z, r, g, b, a
+			SELECT
+				path,
+				Rectangle.x, Rectangle.y, width, height,
+				Rotation.z,
+				r, g, b, a
 			FROM Texture
 				JOIN Rectangle USING(entity_id)
 				LEFT JOIN Rotation USING(entity_id)
@@ -59,10 +66,10 @@ void register_draw_systems(ecsql::World& world) {
 			SELECT
 				path,
 				Position.x, Position.y,
-				ifnull(Pivot.x, 0.5), ifnull(Pivot.y, 0.5),
+				Pivot.x, Pivot.y,
 				Rotation.z,
-				ifnull(Scale.x, 1), ifnull(Scale.y, 1),
-				ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
+				Scale.x, Scale.y,
+				r, g, b, a
 			FROM Texture
 				JOIN Position USING(entity_id)
 				LEFT JOIN Pivot USING(entity_id)
@@ -72,22 +79,25 @@ void register_draw_systems(ecsql::World& world) {
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
-				auto [tex_path, position, normalized_pivot, rotation, scale, color] = row.get<std::string_view, Vector2, Vector2, float, Vector2, Color>();
+				auto [tex_path, position, normalized_pivot, rotation, scale, color] = row.get<std::string_view, Vector2, std::optional<Vector2>, float, std::optional<Vector2>, std::optional<Color>>();
+				if (!normalized_pivot) normalized_pivot.emplace(0.5, 0.5);
+				if (!scale) scale.emplace(1, 1);
+
 				auto tex = TextureFlyweight.get(tex_path);
 				Rectangle source {
 					0, 0,
 					(float) tex.value.width, (float) tex.value.height,
 				};
-				Vector2 pivot { source.width * normalized_pivot.x, source.height * normalized_pivot.y };
 				Rectangle dest {
 					position.x,
 					position.y,
-					source.width * scale.x,
-					source.height * scale.y,
+					source.width * scale->x,
+					source.height * scale->y,
 				};
+				Vector2 pivot { dest.width * normalized_pivot->x, dest.height * normalized_pivot->y };
 				{
 					ZoneScopedN("DrawTexturePro");
-					DrawTexturePro(tex, source, dest, pivot, rotation, color);
+					DrawTexturePro(tex, source, dest, pivot, rotation, color.value_or(WHITE));
 				}
 			}
 		},
@@ -98,17 +108,17 @@ void register_draw_systems(ecsql::World& world) {
 			SELECT
 				text, size,
 				x, y, width, height,
-				ifnull(r, 255), ifnull(g, 255), ifnull(b, 255), ifnull(a, 255)
+				r, g, b, a
 			FROM Text
 				JOIN Rectangle USING(entity_id)
 				LEFT JOIN Color USING(entity_id)
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
-				auto [text, size, rect, color] = row.get<const char *, int, Rectangle, Color>();
+				auto [text, size, rect, color] = row.get<const char *, int, Rectangle, std::optional<Color>>();
 				{
 					ZoneScopedN("DrawText");
-					DrawText(text, rect.x, rect.y, size, color);
+					DrawText(text, rect.x, rect.y, size, color.value_or(DEFAULT_TEXT_COLOR));
 				}
 			}
 		}
