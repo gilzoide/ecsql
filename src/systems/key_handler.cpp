@@ -1,3 +1,4 @@
+#include <cdedent.hpp>
 #include <config.h>
 #include <raylib.h>
 #include <reflect>
@@ -64,5 +65,18 @@ void register_key_handler(ecsql::World& world) {
 				}
 			}
 		}
+	});
+
+	// TODO: handle mouse and gamepad inputs before updating input_action
+
+	world.register_system({
+		"UpdateInputActions",
+		R"(
+			REPLACE INTO input_action(action, state)
+			SELECT action, MIN(state) as state
+			FROM input_map
+				JOIN keyboard ON input = name
+			GROUP BY action
+		)"_dedent,
 	});
 }
