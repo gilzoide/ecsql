@@ -150,7 +150,7 @@ void World::commit_transaction(bool async) {
 		commit_or_rollback_result.get();
 	}
 	if (async) {
-		commit_or_rollback_result = std::async(std::launch::async, [this]() {
+		commit_or_rollback_result = std::async([this]() {
 			ZoneScopedN("commit_transaction.async");
 			commit_stmt();
 		});
@@ -166,7 +166,7 @@ void World::rollback_transaction(bool async) {
 		commit_or_rollback_result.get();
 	}
 	if (async) {
-		commit_or_rollback_result = std::async(std::launch::async, [this]() {
+		commit_or_rollback_result = std::async([this]() {
 			ZoneScoped;
 			commit_stmt();
 		});

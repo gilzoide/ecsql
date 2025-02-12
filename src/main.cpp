@@ -22,6 +22,12 @@
 #include "systems/key_handler.hpp"
 #include "systems/yoga.hpp"
 
+#ifdef __EMSCRIPTEN__
+static const bool commit_async = false;
+#else
+static const bool commit_async = true;
+#endif
+
 #if defined(DEBUG) && !defined(NDEBUG)
 void run_debug_functionality(ecsql::World& world) {
 	ZoneScoped;
@@ -64,7 +70,7 @@ void game_loop(ecsql::World& world) {
 	}
 
 	float time_delta = GetFrameTime();
-	world.update(time_delta, true);
+	world.update(time_delta, commit_async);
 
 #if defined(DEBUG) && !defined(NDEBUG)
 	run_debug_functionality(world);
