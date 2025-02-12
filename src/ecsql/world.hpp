@@ -1,7 +1,7 @@
 #pragma once
 
+#include <future>
 #include <iostream>
-#include <istream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -46,31 +46,27 @@ public:
 	int delete_entity(std::string_view name);
 
 	template<typename Fn>
-	bool inside_transaction(Fn&& f) {
+	bool inside_transaction(Fn&& f, bool commit_async = false) {
 		ZoneScoped;
-		{
-			ZoneScopedN("BEGIN");
-			begin_stmt();
-		}
+		begin_transaction();
 		try {
 			f(*this);
-			{
-				ZoneScopedN("COMMIT");
-				commit_stmt();
-			}
+			commit_transaction(commit_async);
 			return true;
 		}
 		catch (std::runtime_error& err) {
 			std::cerr << "Runtime error: " << err.what() << std::endl;
-			{
-				ZoneScopedN("ROLLBACK");
-				rollback_stmt();
-			}
+			rollback_transaction(commit_async);
+
 			return false;
 		}
 	}
 
-	void update(float time_delta);
+	void begin_transaction();
+	void commit_transaction(bool async = false);
+	void rollback_transaction(bool async = false);
+
+	void update(float time_delta, bool commit_async = false);
 
 	void on_window_resized(int new_width, int new_height);
 
@@ -104,6 +100,8 @@ private:
 
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> systems;
 	std::unordered_map<std::string, std::vector<HookSystem>> hook_systems;
+
+	std::future<void> commit_or_rollback_result;
 
 	static void preupdate_hook(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1, sqlite3_int64 iKey2);
 	void execute_prehook(const char *table, HookType hook, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);

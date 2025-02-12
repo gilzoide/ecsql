@@ -16,7 +16,6 @@
 #include "ecsql/assetio.hpp"
 #include "ecsql/component.hpp"
 #include "ecsql/hook_system.hpp"
-#include "ecsql/screen.hpp"
 #include "ecsql/world.hpp"
 #include "scripting/lua_scripting.hpp"
 #include "systems/draw_systems.hpp"
@@ -65,7 +64,7 @@ void game_loop(ecsql::World& world) {
 	}
 
 	float time_delta = GetFrameTime();
-	world.update(time_delta);
+	world.update(time_delta, true);
 
 #if defined(DEBUG) && !defined(NDEBUG)
 	run_debug_functionality(world);
