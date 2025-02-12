@@ -25,8 +25,12 @@ target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Emscripten / Web build support
 if (EMSCRIPTEN)
+  if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    set(assertionsopt "-sASSERTIONS")
+  endif ()
   target_link_options(ecsql PRIVATE
     -sALLOW_MEMORY_GROWTH
+    ${assertionsopt}
     --embed-file assets.zip
     --shell-file "${CMAKE_CURRENT_SOURCE_DIR}/src/emscripten_shell.html"
   )
