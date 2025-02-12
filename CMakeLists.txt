@@ -20,6 +20,7 @@ file(GLOB_RECURSE src CONFIGURE_DEPENDS "src/*.cpp")
 add_executable(ecsql ${src})
 target_link_libraries(ecsql libs world_schema lua_globals)
 target_compile_features(ecsql PUBLIC cxx_std_20)
+target_compile_options(ecsql PRIVATE "-fbracket-depth=512")
 # define `DEBUG` symbol on CMake Debug builds
 target_compile_definitions(ecsql PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
