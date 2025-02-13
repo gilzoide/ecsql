@@ -31,3 +31,6 @@
 [submodule "libs/lua"]
 	path = libs/lua
 	url = https://github.com/lua/lua.git
+[submodule "libs/dispatch-queue"]
+	path = libs/dispatch-queue
+	url = https://github.com/gilzoide/cpp-dispatch-queue.git

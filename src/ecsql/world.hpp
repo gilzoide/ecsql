@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <dispatch_queue.hpp>
 #include <sqlite3.h>
 #include <tracy/Tracy.hpp>
 
@@ -46,27 +47,27 @@ public:
 	int delete_entity(std::string_view name);
 
 	template<typename Fn>
-	bool inside_transaction(Fn&& f, bool commit_async = false) {
+	bool inside_transaction(Fn&& f) {
 		ZoneScoped;
 		begin_transaction();
 		try {
 			f(*this);
-			commit_transaction(commit_async);
+			commit_transaction();
 			return true;
 		}
 		catch (std::runtime_error& err) {
 			std::cerr << "Runtime error: " << err.what() << std::endl;
-			rollback_transaction(commit_async);
+			rollback_transaction();
 
 			return false;
 		}
 	}
 
 	void begin_transaction();
-	void commit_transaction(bool async = false);
-	void rollback_transaction(bool async = false);
+	void commit_transaction();
+	void rollback_transaction();
 
-	void update(float time_delta, bool commit_async = false);
+	void update(float time_delta);
 
 	void on_window_resized(int new_width, int new_height);
 
@@ -101,6 +102,7 @@ private:
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> systems;
 	std::unordered_map<std::string, std::vector<HookSystem>> hook_systems;
 
+	dispatch_queue::dispatch_queue dispatch_queue;
 	std::future<void> commit_or_rollback_result;
 
 	static void preupdate_hook(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1, sqlite3_int64 iKey2);

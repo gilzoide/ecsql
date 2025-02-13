@@ -5,6 +5,10 @@ add_subdirectory(cdedent)
 target_link_libraries(libs INTERFACE cdedent)
 target_compile_features(cdedent PRIVATE cxx_std_17)
 
+# Dispatch Queue
+add_subdirectory(dispatch-queue)
+target_link_libraries(libs INTERFACE dispatch_queue)
+
 # Flyweight.hpp
 add_subdirectory(flyweight.hpp)
 target_link_libraries(libs INTERFACE flyweight.hpp)

@@ -50,6 +50,11 @@ World::World(const char *db_name)
 	, delete_entity_by_name_stmt(db.get(), Entity::delete_by_name_sql, true)
 	, find_entity_stmt(db.get(), Entity::find_by_name_sql, true)
 	, update_delta_time_stmt(db.get(), time::update_delta_sql, true)
+#ifdef __EMSCRIPTEN__
+	, dispatch_queue(0)
+#else
+	, dispatch_queue(1)
+#endif
 {
 	sqlite3_preupdate_hook(db.get(), preupdate_hook, this);
 }
@@ -144,39 +149,29 @@ void World::begin_transaction() {
 	begin_stmt();
 }
 
-void World::commit_transaction(bool async) {
+void World::commit_transaction() {
 	ZoneScoped;
 	if (commit_or_rollback_result.valid()) {
 		commit_or_rollback_result.get();
 	}
-	if (async) {
-		commit_or_rollback_result = std::async([this]() {
-			ZoneScopedN("commit_transaction.async");
-			commit_stmt();
-		});
-	}
-	else {
+	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
+		ZoneScopedN("commit_transaction.async");
 		commit_stmt();
-	}
+	});
 }
 
-void World::rollback_transaction(bool async) {
+void World::rollback_transaction() {
 	ZoneScoped;
 	if (commit_or_rollback_result.valid()) {
 		commit_or_rollback_result.get();
 	}
-	if (async) {
-		commit_or_rollback_result = std::async([this]() {
-			ZoneScoped;
-			commit_stmt();
-		});
-	}
-	else {
+	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
+		ZoneScoped;
 		commit_stmt();
-	}
+	});
 }
 
-void World::update(float time_delta, bool commit_async) {
+void World::update(float time_delta) {
 	inside_transaction([=](World& self) {
 		{
 			ZoneScopedN("update_delta_time");
@@ -185,7 +180,7 @@ void World::update(float time_delta, bool commit_async) {
 		for (auto&& [system, prepared_sql] : self.systems) {
 			system(self, prepared_sql);
 		}
-	}, commit_async);
+	});
 }
 
 void World::on_window_resized(int new_width, int new_height) {
