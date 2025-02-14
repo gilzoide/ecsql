@@ -56,6 +56,13 @@ World::World(const char *db_name)
 	, dispatch_queue(1)
 #endif
 {
+#ifdef TRACY_ENABLE
+	for (int i = 0; i < dispatch_queue.thread_count(); i++) {
+		dispatch_queue.dispatch_forget([=]() {
+			tracy::SetThreadName(std::format("ecsql-{}", i).c_str());
+		});
+	}
+#endif
 	sqlite3_preupdate_hook(db.get(), preupdate_hook, this);
 }
 
