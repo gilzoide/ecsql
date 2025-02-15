@@ -51,7 +51,12 @@ public:
 		ZoneScoped;
 		begin_transaction();
 		try {
-			f(*this);
+			if constexpr (std::is_invocable_v<Fn>) {
+				f();
+			}
+			else {
+				f(*this);
+			}
 			commit_transaction();
 			return true;
 		}
