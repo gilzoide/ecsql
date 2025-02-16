@@ -17,6 +17,7 @@
 #include "ecsql/component.hpp"
 #include "ecsql/hook_system.hpp"
 #include "ecsql/world.hpp"
+#include "physics/physics.hpp"
 #include "scripting/lua_scripting.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/key_handler.hpp"
@@ -105,8 +106,6 @@ int main(int argc, const char **argv) {
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
 	register_sqlite_functions(world);
 
-	LuaScripting lua(world);
-
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {
 		world.register_component(*component);
@@ -122,6 +121,10 @@ int main(int argc, const char **argv) {
 	register_key_handler(world);
 	register_update_yoga(world);
 	register_draw_systems(world);
+
+	// Other engine features, must be created after world components are registered
+	LuaScripting lua(world);
+	Physics physics(world);
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.lua";
