@@ -9,6 +9,10 @@ std::unordered_map<ecsql::EntityID, b2WorldId> world_map;
 std::unordered_map<ecsql::EntityID, b2BodyId> body_map;
 std::vector<ecsql::EntityID> pending_create_body;
 
+struct BodyUserData {
+	ecsql::EntityID entity_id;
+};
+
 ecsql::Component WorldComponent {
 	"World",
 	{
@@ -146,6 +150,7 @@ ecsql::HookSystem BodyHookSystem {
 				auto it = body_map.find(old_row.get<ecsql::EntityID>(0));
 				if (it != body_map.end()) {
 					if (b2Body_IsValid(it->second)) {
+						delete reinterpret_cast<BodyUserData *>(b2Body_GetUserData(it->second));
 						b2DestroyBody(it->second);
 					}
 					body_map.erase(it);
@@ -238,6 +243,9 @@ Physics::Physics(ecsql::World& world)
 				}
 
 				b2BodyDef bodydef = b2DefaultBodyDef();
+				bodydef.userData = new BodyUserData {
+					.entity_id = entity_id,
+				};
 				if (name) {
 					bodydef.name = *name;
 				}
