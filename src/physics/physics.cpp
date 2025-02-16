@@ -28,6 +28,8 @@ ecsql::Component WorldComponent {
 		// Simulation options
 		"timestep NOT NULL DEFAULT (1.0 / 60.0)",
 		"substep_count NOT NULL DEFAULT 4",
+		// Internal variables
+		"time_accumulator"
 	}
 };
 
@@ -294,17 +296,37 @@ Physics::Physics(ecsql::World& world)
 			R"(
 				SELECT
 					entity_id,
-					timestep, substep_count
+					timestep, substep_count,
+					delta, time_accumulator
 				FROM World
+					JOIN time
 			)"_dedent,
-			R"()"_dedent,
+			R"(
+				UPDATE World
+				SET time_accumulator = ?2
+				WHERE entity_id = ?1
+			)"_dedent,
 		},
 		[this](std::vector<ecsql::PreparedSQL>& sqls) {
 			auto get_worlds = sqls[0];
+			auto update_time_accumulator = sqls[1];
 			for (auto row : get_worlds()) {
-				auto [world_entity_id, timestep, substep_count] = row.get<ecsql::EntityID, float, int>();
+				auto [
+					world_entity_id,
+					timestep, substep_count,
+					delta, time_accumulator
+				] = row.get<
+					ecsql::EntityID,
+					float, int,
+					float, float
+				>();
 				b2WorldId world_id = world_map.at(world_entity_id);
-				b2World_Step(world_id, timestep, substep_count);
+				time_accumulator += delta;
+				while (time_accumulator >= timestep) {
+					b2World_Step(world_id, timestep, substep_count);
+					time_accumulator -= timestep;
+				}
+				update_time_accumulator(world_entity_id, time_accumulator);
 			}
 		},
 	});
