@@ -34,3 +34,6 @@
 [submodule "libs/dispatch-queue"]
 	path = libs/dispatch-queue
 	url = https://github.com/gilzoide/cpp-dispatch-queue.git
+[submodule "libs/box2d"]
+	path = libs/box2d
+	url = https://github.com/erincatto/box2d.git

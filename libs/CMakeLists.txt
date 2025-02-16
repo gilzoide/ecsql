@@ -1,5 +1,9 @@
 add_library(libs INTERFACE)
 
+# box2d
+add_subdirectory(box2d)
+target_link_libraries(libs INTERFACE box2d)
+
 # cdedent
 add_subdirectory(cdedent)
 target_link_libraries(libs INTERFACE cdedent)
