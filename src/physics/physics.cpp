@@ -316,10 +316,20 @@ Physics::Physics(ecsql::World& world)
 				SET time_accumulator = ?2
 				WHERE entity_id = ?1
 			)"_dedent,
+			R"(
+				REPLACE INTO Position(entity_id, x, y)
+				VALUES(?, ?, ?)
+			)"_dedent,
+			R"(
+				REPLACE INTO Rotation(entity_id, z)
+				VALUES(?, ?)
+			)"_dedent,
 		},
 		[this](std::vector<ecsql::PreparedSQL>& sqls) {
 			auto get_worlds = sqls[0];
 			auto update_time_accumulator = sqls[1];
+			auto update_position = sqls[2];
+			auto update_rotation = sqls[3];
 			for (auto row : get_worlds()) {
 				auto [
 					world_entity_id,
@@ -330,6 +340,7 @@ Physics::Physics(ecsql::World& world)
 					float, int,
 					float, float
 				>();
+				// Simulate world
 				b2WorldId world_id = world_map.at(world_entity_id);
 				time_accumulator += delta;
 				while (time_accumulator >= timestep) {
@@ -337,7 +348,20 @@ Physics::Physics(ecsql::World& world)
 					time_accumulator -= timestep;
 				}
 				update_time_accumulator(world_entity_id, time_accumulator);
+
+				// Update body data
+				b2BodyEvents body_events = b2World_GetBodyEvents(world_id);
+				for (auto move_event : std::span<b2BodyMoveEvent>(body_events.moveEvents, body_events.moveCount)) {
+					BodyUserData *user_data = reinterpret_cast<BodyUserData *>(b2Body_GetUserData(move_event.bodyId));
+
+					b2Vec2 position = move_event.transform.p;
+					update_position(user_data->entity_id, position);
+
+					float rotation = b2Rot_GetAngle(move_event.transform.q);
+					update_rotation(user_data->entity_id, rotation);
+				}
 			}
+
 		},
 	});
 }
