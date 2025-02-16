@@ -219,16 +219,18 @@ Physics::Physics(ecsql::World& world)
 					std::optional<float>
 				>();
 
-				b2WorldId world_id;
+				b2WorldId world_id = b2_nullWorldId;
 				if (world_entity_id) {
-					world_id = world_map[*world_entity_id];
+					world_id = world_map.at(*world_entity_id);
 				}
 				else if (b2World_IsValid(default_world)) {
 					world_id = default_world;
 				}
 				else {
 					auto world_entity_id = get_default_world().get<ecsql::EntityID>();
-					world_id = world_map[world_entity_id];
+					if (world_entity_id) {
+						world_id = default_world = world_map.at(world_entity_id);
+					}
 				}
 
 				if (!b2World_IsValid(world_id)) {
