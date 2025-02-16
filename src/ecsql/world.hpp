@@ -19,6 +19,7 @@
 
 namespace ecsql {
 
+class BackgroundSystem;
 class Component;
 class SQLRow;
 class System;
@@ -40,6 +41,12 @@ public:
 
 	void register_hook_system(const HookSystem& system);
 	void register_hook_system(HookSystem&& system);
+
+	void register_background_system(const BackgroundSystem& system);
+	void register_background_system(BackgroundSystem&& system);
+	void remove_background_system(std::string_view system_name);
+	void remove_background_system(const BackgroundSystem& system);
+	void remove_background_systems_with_prefix(std::string_view system_name_prefix);
 
 	EntityID create_entity(std::optional<std::string_view> name = std::nullopt, std::optional<EntityID> parent = std::nullopt);
 	std::optional<EntityID> find_entity(std::string_view name);
@@ -106,6 +113,7 @@ private:
 
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> systems;
 	std::unordered_map<std::string, std::vector<HookSystem>> hook_systems;
+	std::vector<std::pair<BackgroundSystem, std::future<void>>> background_systems;
 
 	dispatch_queue::dispatch_queue dispatch_queue;
 	std::future<void> commit_or_rollback_result;

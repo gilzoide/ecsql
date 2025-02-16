@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include "background_system.hpp"
 #include "component.hpp"
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
@@ -53,7 +54,7 @@ World::World(const char *db_name)
 #ifdef __EMSCRIPTEN__
 	, dispatch_queue(0)
 #else
-	, dispatch_queue(1)
+	, dispatch_queue(2)
 #endif
 {
 #ifdef TRACY_ENABLE
@@ -115,12 +116,37 @@ void World::register_hook_system(const HookSystem& system) {
 	}
 	it->second.push_back(system);
 }
+
 void World::register_hook_system(HookSystem&& system) {
 	auto it = hook_systems.find(system.component_name);
 	if (it == hook_systems.end()) {
 		it = hook_systems.emplace(system.component_name, std::vector<HookSystem>{}).first;
 	}
 	it->second.push_back(std::move(system));
+}
+
+void World::register_background_system(const BackgroundSystem& system) {
+	background_systems.emplace_back(system, std::future<void>());
+}
+
+void World::register_background_system(BackgroundSystem&& system) {
+	background_systems.emplace_back(std::move(system), std::future<void>());
+}
+
+void World::remove_background_system(std::string_view system_name) {
+	std::erase_if(background_systems, [system_name](std::pair<BackgroundSystem, std::future<void>>& t) {
+		return t.first.get_name() == system_name;
+	});
+}
+
+void World::remove_background_system(const BackgroundSystem& system) {
+	remove_background_system(system.get_name());
+}
+
+void World::remove_background_systems_with_prefix(std::string_view system_name_prefix) {
+	std::erase_if(background_systems, [system_name_prefix](std::pair<BackgroundSystem, std::future<void>>& t) {
+		return t.first.get_name().starts_with(system_name_prefix);
+	});
 }
 
 EntityID World::create_entity(std::optional<std::string_view> name, std::optional<EntityID> parent) {
@@ -186,6 +212,12 @@ void World::update(float time_delta) {
 		}
 		for (auto&& [system, prepared_sql] : self.systems) {
 			system(self, prepared_sql);
+		}
+		for (auto&& [system, future] : self.background_systems) {
+			if (future.valid()) {
+				future.get();
+			}
+			future = self.dispatch_queue.dispatch([&]() { system(); });
 		}
 	});
 }

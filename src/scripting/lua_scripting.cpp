@@ -7,6 +7,7 @@
 #include "lua_scripting.hpp"
 #include "../memory.hpp"
 #include "../ecsql/assetio.hpp"
+#include "../ecsql/background_system.hpp"
 #include "../ecsql/prepared_sql.hpp"
 #include "../ecsql/system.hpp"
 
@@ -249,10 +250,18 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	if (!result.valid()) {
 		throw result.get<sol::error>();
 	}
+
+	world.register_background_system({
+		"lua.gc",
+		[this]() {
+			lua_gc(state, LUA_GCCOLLECT);
+		},
+	});
 }
 
 LuaScripting::~LuaScripting() {
 	world.remove_systems_with_prefix("lua.");
+	world.remove_background_systems_with_prefix("lua.");
 }
 
 LuaScripting::operator lua_State *() const {
