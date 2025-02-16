@@ -52,6 +52,23 @@ ecsql::HookSystem BodyHookSystem {
 	},
 };
 
+BodyUserData *BodyUserData::from(b2BodyId body_id) {
+	return (BodyUserData *) b2Body_GetUserData(body_id);
+}
+
+void BodyUserData::update_transform(b2Transform transform) {
+	previous_transform = latest_transform;
+	latest_transform = transform;
+}
+
+b2Transform BodyUserData::interpolated_transform(float alpha) const {
+	b2Transform interpolated = {
+		.p = b2Lerp(previous_transform.p, latest_transform.p, alpha),
+		.q = b2NLerp(previous_transform.q, latest_transform.q, alpha),
+	};
+	return interpolated;
+}
+
 void register_physics_body(ecsql::World& world) {
 	world.register_system({
 		"physics.CreateBody",
@@ -185,6 +202,7 @@ void register_physics_body(ecsql::World& world) {
 				}
 				b2BodyId body_id = b2CreateBody(world_id, &bodydef);
 				body_map[entity_id] = body_id;
+				BodyUserData::from(body_id)->update_transform(b2Body_GetTransform(body_id));
 			}
 			pending_create_body.clear();
 		},

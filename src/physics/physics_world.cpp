@@ -1,3 +1,5 @@
+#include <unordered_set>
+
 #include <box2d/box2d.h>
 #include <cdedent.hpp>
 
@@ -152,24 +154,36 @@ void register_physics_world(ecsql::World& world) {
 					float, int,
 					float, float
 				>();
+
+				if (timestep <= 0) {
+					continue;
+				}
+
 				// Simulate world
+				static std::unordered_set<BodyUserData *> moved_bodies;
+				moved_bodies.clear();
+
 				b2WorldId world_id = world_map.at(world_entity_id);
 				time_accumulator += delta;
 				while (time_accumulator >= timestep) {
 					b2World_Step(world_id, timestep, substep_count);
 					time_accumulator -= timestep;
+
+					b2BodyEvents body_events = b2World_GetBodyEvents(world_id);
+					for (auto move_event : std::span<b2BodyMoveEvent>(body_events.moveEvents, body_events.moveCount)) {
+						BodyUserData *user_data = BodyUserData::from(move_event.bodyId);
+						user_data->update_transform(move_event.transform);
+						moved_bodies.insert(user_data);
+					}
 				}
 				update_time_accumulator(world_entity_id, time_accumulator);
 
 				// Update body data
-				b2BodyEvents body_events = b2World_GetBodyEvents(world_id);
-				for (auto move_event : std::span<b2BodyMoveEvent>(body_events.moveEvents, body_events.moveCount)) {
-					BodyUserData *user_data = reinterpret_cast<BodyUserData *>(b2Body_GetUserData(move_event.bodyId));
-
-					b2Vec2 position = move_event.transform.p;
-					update_position(user_data->entity_id, position);
-
-					float rotation = b2Rot_GetAngle(move_event.transform.q);
+				float alpha = time_accumulator / timestep;
+				for (auto user_data : moved_bodies) {
+					b2Transform interpolated_transform = user_data->interpolated_transform(alpha);
+					update_position(user_data->entity_id, interpolated_transform.p);
+					float rotation = b2Rot_GetAngle(interpolated_transform.q);
 					update_rotation(user_data->entity_id, rotation);
 				}
 			}
