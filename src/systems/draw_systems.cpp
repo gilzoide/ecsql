@@ -66,22 +66,55 @@ void register_draw_systems(ecsql::World& world) {
 			SELECT
 				path,
 				Position.x, Position.y,
+				PreviousPosition.x, PreviousPosition.y,
 				Pivot.x, Pivot.y,
 				Rotation.z,
+				PreviousRotation.z,
 				Scale.x, Scale.y,
-				r, g, b, a
+				r, g, b, a,
+				fixed_delta_progress
 			FROM Texture
 				JOIN Position USING(entity_id)
+				LEFT JOIN PreviousPosition USING(entity_id)
 				LEFT JOIN Pivot USING(entity_id)
 				LEFT JOIN Rotation USING(entity_id)
+				LEFT JOIN PreviousRotation USING(entity_id)
 				LEFT JOIN Scale USING(entity_id)
 				LEFT JOIN Color USING(entity_id)
+				JOIN time
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
-				auto [tex_path, position, normalized_pivot, rotation, scale, color] = row.get<std::string_view, Vector2, std::optional<Vector2>, float, std::optional<Vector2>, std::optional<Color>>();
+				auto [
+					tex_path,
+					position,
+					previous_position,
+					normalized_pivot,
+					rotation,
+					previous_rotation,
+					scale,
+					color,
+					fixed_delta_progress
+				] = row.get<
+					std::string_view,
+					Vector2,
+					std::optional<Vector2>,
+					std::optional<Vector2>,
+					float,
+					std::optional<float>,
+					std::optional<Vector2>,
+					std::optional<Color>,
+					float
+				>();
 				if (!normalized_pivot) normalized_pivot.emplace(0.5, 0.5);
 				if (!scale) scale.emplace(1, 1);
+
+				if (previous_position) {
+					position = Vector2Lerp(*previous_position, position, fixed_delta_progress);
+				}
+				if (previous_rotation) {
+					rotation = Lerp(*previous_rotation, rotation, fixed_delta_progress);
+				}
 
 				auto tex = TextureFlyweight.get(tex_path);
 				Rectangle source {

@@ -10,9 +10,25 @@ ecsql::Component PositionComponent {
 		"z NOT NULL DEFAULT 0",
 	}
 };
+ecsql::Component PreviousPositionComponent {
+	"PreviousPosition",
+	{
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"z NOT NULL DEFAULT 0",
+	}
+};
 
 ecsql::Component RotationComponent {
 	"Rotation",
+	{
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"z NOT NULL DEFAULT 0",
+	}
+};
+ecsql::Component PreviousRotationComponent {
+	"PreviousRotation",
 	{
 		"x NOT NULL DEFAULT 0",
 		"y NOT NULL DEFAULT 0",

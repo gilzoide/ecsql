@@ -1,5 +1,6 @@
 #include <box2d/box2d.h>
 #include <cdedent.hpp>
+#include <raylib.h>
 
 #include "physics_body.hpp"
 #include "physics_world.hpp"
@@ -124,14 +125,24 @@ void register_physics_world(ecsql::World& world) {
 				VALUES(?, ?, ?)
 			)"_dedent,
 			R"(
+				REPLACE INTO PreviousPosition(entity_id, x, y)
+				VALUES(?, ?, ?)
+			)"_dedent,
+			R"(
 				REPLACE INTO Rotation(entity_id, z)
+				VALUES(?, ?)
+			)"_dedent,
+			R"(
+				REPLACE INTO PreviousRotation(entity_id, z)
 				VALUES(?, ?)
 			)"_dedent,
 		},
 		[](std::vector<ecsql::PreparedSQL>& sqls) {
 			auto get_worlds = sqls[0];
 			auto update_position = sqls[1];
-			auto update_rotation = sqls[2];
+			auto update_previous_position = sqls[2];
+			auto update_rotation = sqls[3];
+			auto update_previous_rotation = sqls[4];
 			for (auto row : get_worlds()) {
 				auto [
 					world_entity_id,
@@ -151,9 +162,11 @@ void register_physics_world(ecsql::World& world) {
 					BodyUserData *user_data = BodyUserData::from(move_event.bodyId);
 					user_data->update_transform(move_event.transform);
 
-					update_position(user_data->entity_id, move_event.transform.p);
-					float rotation = b2Rot_GetAngle(move_event.transform.q);
-					update_rotation(user_data->entity_id, rotation);
+					update_previous_position(user_data->entity_id, user_data->previous_transform.p);
+					update_previous_rotation(user_data->entity_id, b2Rot_GetAngle(user_data->previous_transform.q) * RAD2DEG);
+
+					update_position(user_data->entity_id, user_data->latest_transform.p);
+					update_rotation(user_data->entity_id, b2Rot_GetAngle(user_data->latest_transform.q) * RAD2DEG);
 				}
 			}
 		},
