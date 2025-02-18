@@ -25,8 +25,13 @@ CREATE VIEW entity_parents AS
   SELECT * FROM parents;
 
 -- Time singleton
-CREATE TABLE time(delta, uptime, fixed_delta);
-INSERT INTO time(delta, uptime, fixed_delta) VALUES(0, 0, 1.0 / 60.0);
+CREATE TABLE time(
+  delta DEFAULT 0,
+  uptime DEFAULT 0,
+  fixed_delta DEFAULT (1.0 / 60.0),
+  fixed_delta_progress DEFAULT 0
+);
+INSERT INTO time DEFAULT VALUES;
 
 -- Screen singleton
 CREATE TABLE screen(

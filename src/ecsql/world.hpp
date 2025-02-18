@@ -112,6 +112,7 @@ private:
 	PreparedSQL find_entity_stmt;
 	PreparedSQL update_delta_time_stmt;
 	PreparedSQL select_fixed_delta_time_stmt;
+	PreparedSQL update_fixed_delta_progress_stmt;
 
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> systems;
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> fixed_systems;

@@ -52,6 +52,7 @@ World::World(const char *db_name)
 	, find_entity_stmt(db.get(), Entity::find_by_name_sql, true)
 	, update_delta_time_stmt(db.get(), time::update_delta_sql, true)
 	, select_fixed_delta_time_stmt(db.get(), time::select_fixed_delta_time_sql, true)
+	, update_fixed_delta_progress_stmt(db.get(), time::update_fixed_delta_progress_sql, true)
 #ifdef __EMSCRIPTEN__
 	, dispatch_queue(0)
 #else
@@ -214,11 +215,12 @@ void World::update(float delta_time) {
 
 		// fixed update
 		float fixed_delta_time = self.select_fixed_delta_time_stmt().get<float>();
-		self.fixed_delta_executor.execute(delta_time, fixed_delta_time, [&]() {
+		float fixed_delta_progress = self.fixed_delta_executor.execute(delta_time, fixed_delta_time, [&]() {
 			for (auto&& [system, prepared_sql] : self.fixed_systems) {
 				system(self, prepared_sql);
 			}
 		});
+		self.update_fixed_delta_progress_stmt(fixed_delta_progress);
 
 		// regular update
 		for (auto&& [system, prepared_sql] : self.systems) {

@@ -3,7 +3,7 @@ namespace ecsql {
 class fixed_delta_executor {
 public:
 	template<typename Fn>
-	void execute(float delta_time, float fixed_delta_time, Fn&& f) {
+	float execute(float delta_time, float fixed_delta_time, Fn&& f) {
 		// Trick to reduce jitter
 		// Reference: https://github.com/zmanuel/godot/commit/90a11efc0b27c1128d8203a9be8562fcde006867
 		int iterations = 0;
@@ -19,6 +19,8 @@ public:
 		else {
 			target_iterations = iterations - 1;
 		}
+
+		return time_accumulator / fixed_delta_time;
 	}
 
 private:
