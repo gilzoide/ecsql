@@ -1,5 +1,3 @@
-#include <unordered_set>
-
 #include <box2d/box2d.h>
 #include <cdedent.hpp>
 
@@ -26,10 +24,7 @@ ecsql::Component WorldComponent {
 		"enable_sleep",
 		"enable_continuous",
 		// Simulation options
-		"timestep NOT NULL DEFAULT (1.0 / 60.0)",
 		"substep_count NOT NULL DEFAULT 4",
-		// Internal variables
-		"time_accumulator"
 	}
 };
 
@@ -120,15 +115,9 @@ void register_physics_world(ecsql::World& world) {
 			R"(
 				SELECT
 					entity_id,
-					timestep, substep_count,
-					delta, time_accumulator
+					fixed_delta, substep_count
 				FROM World
 					JOIN time
-			)"_dedent,
-			R"(
-				UPDATE World
-				SET time_accumulator = ?2
-				WHERE entity_id = ?1
 			)"_dedent,
 			R"(
 				REPLACE INTO Position(entity_id, x, y)
@@ -141,52 +130,32 @@ void register_physics_world(ecsql::World& world) {
 		},
 		[](std::vector<ecsql::PreparedSQL>& sqls) {
 			auto get_worlds = sqls[0];
-			auto update_time_accumulator = sqls[1];
-			auto update_position = sqls[2];
-			auto update_rotation = sqls[3];
+			auto update_position = sqls[1];
+			auto update_rotation = sqls[2];
 			for (auto row : get_worlds()) {
 				auto [
 					world_entity_id,
-					timestep, substep_count,
-					delta, time_accumulator
+					timestep, substep_count
 				] = row.get<
 					ecsql::EntityID,
-					float, int,
-					float, float
+					float, int
 				>();
 
-				if (timestep <= 0) {
-					continue;
-				}
-
 				// Simulate world
-				static std::unordered_set<BodyUserData *> moved_bodies;
-				moved_bodies.clear();
-
 				b2WorldId world_id = world_map.at(world_entity_id);
-				time_accumulator += delta;
-				while (time_accumulator >= timestep) {
-					b2World_Step(world_id, timestep, substep_count);
-					time_accumulator -= timestep;
+				b2World_Step(world_id, timestep, substep_count);
 
-					b2BodyEvents body_events = b2World_GetBodyEvents(world_id);
-					for (auto move_event : std::span<b2BodyMoveEvent>(body_events.moveEvents, body_events.moveCount)) {
-						BodyUserData *user_data = BodyUserData::from(move_event.bodyId);
-						user_data->update_transform(move_event.transform);
-						moved_bodies.insert(user_data);
-					}
-				}
-				update_time_accumulator(world_entity_id, time_accumulator);
+				// Update body positions
+				b2BodyEvents body_events = b2World_GetBodyEvents(world_id);
+				for (auto move_event : std::span<b2BodyMoveEvent>(body_events.moveEvents, body_events.moveCount)) {
+					BodyUserData *user_data = BodyUserData::from(move_event.bodyId);
+					user_data->update_transform(move_event.transform);
 
-				// Update body data
-				float alpha = time_accumulator / timestep;
-				for (auto user_data : moved_bodies) {
-					b2Transform interpolated_transform = user_data->interpolated_transform(alpha);
-					update_position(user_data->entity_id, interpolated_transform.p);
-					float rotation = b2Rot_GetAngle(interpolated_transform.q);
+					update_position(user_data->entity_id, move_event.transform.p);
+					float rotation = b2Rot_GetAngle(move_event.transform.q);
 					update_rotation(user_data->entity_id, rotation);
 				}
 			}
 		},
-	});
+	}, true);
 }

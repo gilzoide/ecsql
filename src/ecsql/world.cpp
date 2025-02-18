@@ -51,6 +51,7 @@ World::World(const char *db_name)
 	, delete_entity_by_name_stmt(db.get(), Entity::delete_by_name_sql, true)
 	, find_entity_stmt(db.get(), Entity::find_by_name_sql, true)
 	, update_delta_time_stmt(db.get(), time::update_delta_sql, true)
+	, select_fixed_delta_time_stmt(db.get(), time::select_fixed_delta_time_sql, true)
 #ifdef __EMSCRIPTEN__
 	, dispatch_queue(0)
 #else
@@ -81,16 +82,16 @@ void World::register_component(Component&& component) {
 	component.prepare(db.get());
 }
 
-void World::register_system(const System& system) {
+void World::register_system(const System& system, bool use_fixed_delta) {
 	std::vector<PreparedSQL> prepared_sql;
 	system.prepare(db.get(), prepared_sql);
-	systems.emplace_back(system, std::move(prepared_sql));
+	(use_fixed_delta ? fixed_systems : systems).emplace_back(system, std::move(prepared_sql));
 }
 
-void World::register_system(System&& system) {
+void World::register_system(System&& system, bool use_fixed_delta) {
 	std::vector<PreparedSQL> prepared_sql;
 	system.prepare(db.get(), prepared_sql);
-	systems.emplace_back(std::move(system), std::move(prepared_sql));
+	(use_fixed_delta ? fixed_systems : systems).emplace_back(std::move(system), std::move(prepared_sql));
 }
 
 void World::remove_system(std::string_view system_name) {
@@ -204,15 +205,27 @@ void World::rollback_transaction() {
 	});
 }
 
-void World::update(float time_delta) {
+void World::update(float delta_time) {
 	inside_transaction([=](World& self) {
 		{
 			ZoneScopedN("update_delta_time");
-			self.update_delta_time_stmt(time_delta);
+			self.update_delta_time_stmt(delta_time);
 		}
+
+		// fixed update
+		float fixed_delta_time = self.select_fixed_delta_time_stmt().get<float>();
+		self.fixed_delta_executor.execute(delta_time, fixed_delta_time, [&]() {
+			for (auto&& [system, prepared_sql] : self.fixed_systems) {
+				system(self, prepared_sql);
+			}
+		});
+
+		// regular update
 		for (auto&& [system, prepared_sql] : self.systems) {
 			system(self, prepared_sql);
 		}
+
+		// lastly, dispatch background systems
 		for (auto&& [system, future] : self.background_systems) {
 			if (future.valid()) {
 				future.get();

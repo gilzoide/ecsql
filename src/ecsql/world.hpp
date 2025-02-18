@@ -14,6 +14,7 @@
 
 #include "entity.hpp"
 #include "executed_sql.hpp"
+#include "fixed_delta_executor.hpp"
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
 
@@ -33,8 +34,8 @@ public:
 	void register_component(const Component& component);
 	void register_component(Component&& component);
 
-	void register_system(const System& system);
-	void register_system(System&& system);
+	void register_system(const System& system, bool use_fixed_delta = false);
+	void register_system(System&& system, bool use_fixed_delta = false);
 	void remove_system(std::string_view system_name);
 	void remove_system(const System& system);
 	void remove_systems_with_prefix(std::string_view system_name_prefix);
@@ -110,13 +111,17 @@ private:
 	PreparedSQL delete_entity_by_name_stmt;
 	PreparedSQL find_entity_stmt;
 	PreparedSQL update_delta_time_stmt;
+	PreparedSQL select_fixed_delta_time_stmt;
 
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> systems;
+	std::vector<std::tuple<System, std::vector<PreparedSQL>>> fixed_systems;
 	std::unordered_map<std::string, std::vector<HookSystem>> hook_systems;
 	std::vector<std::pair<BackgroundSystem, std::future<void>>> background_systems;
 
 	dispatch_queue::dispatch_queue dispatch_queue;
 	std::future<void> commit_or_rollback_result;
+
+	fixed_delta_executor fixed_delta_executor;
 
 	static void preupdate_hook(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1, sqlite3_int64 iKey2);
 	void execute_prehook(const char *table, HookType hook, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
