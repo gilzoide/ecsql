@@ -70,6 +70,7 @@ void register_draw_systems(ecsql::World& world) {
 				Pivot.x, Pivot.y,
 				Rotation.z,
 				PreviousRotation.z,
+				Size.width, Size.height,
 				Scale.x, Scale.y,
 				r, g, b, a,
 				fixed_delta_progress
@@ -79,6 +80,7 @@ void register_draw_systems(ecsql::World& world) {
 				LEFT JOIN Pivot USING(entity_id)
 				LEFT JOIN Rotation USING(entity_id)
 				LEFT JOIN PreviousRotation USING(entity_id)
+				LEFT JOIN Size USING(entity_id)
 				LEFT JOIN Scale USING(entity_id)
 				LEFT JOIN Color USING(entity_id)
 				JOIN time
@@ -92,6 +94,7 @@ void register_draw_systems(ecsql::World& world) {
 					normalized_pivot,
 					rotation,
 					previous_rotation,
+					size,
 					scale,
 					color,
 					fixed_delta_progress
@@ -103,12 +106,10 @@ void register_draw_systems(ecsql::World& world) {
 					float,
 					std::optional<float>,
 					std::optional<Vector2>,
+					std::optional<Vector2>,
 					std::optional<Color>,
 					float
 				>();
-				if (!normalized_pivot) normalized_pivot.emplace(0.5, 0.5);
-				if (!scale) scale.emplace(1, 1);
-
 				if (previous_position) {
 					position = Vector2Lerp(*previous_position, position, fixed_delta_progress);
 				}
@@ -117,6 +118,11 @@ void register_draw_systems(ecsql::World& world) {
 				}
 
 				auto tex = TextureFlyweight.get(tex_path);
+
+				if (!normalized_pivot) normalized_pivot.emplace(0.5, 0.5);
+				if (!size) size.emplace(tex.value.width, tex.value.height);
+				if (!scale) scale.emplace(1, 1);
+
 				Rectangle source {
 					0, 0,
 					(float) tex.value.width, (float) tex.value.height,
@@ -124,8 +130,8 @@ void register_draw_systems(ecsql::World& world) {
 				Rectangle dest {
 					position.x,
 					position.y,
-					source.width * scale->x,
-					source.height * scale->y,
+					size->x * scale->x,
+					size->y * scale->y,
 				};
 				Vector2 pivot { dest.width * normalized_pivot->x, dest.height * normalized_pivot->y };
 				{

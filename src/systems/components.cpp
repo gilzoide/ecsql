@@ -57,6 +57,14 @@ ecsql::Component ScaleComponent {
 	}
 };
 
+ecsql::Component SizeComponent {
+	"Size",
+	{
+		"width DEFAULT 1",
+		"height DEFAULT 1",
+	}
+};
+
 ecsql::Component PivotComponent {
 	"Pivot",
 	{
