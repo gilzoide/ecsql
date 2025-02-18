@@ -35,6 +35,17 @@ ecsql::Component CircleComponent {
 	}
 };
 
+ecsql::Component BoxComponent {
+	"Box",
+	{
+		"half_width DEFAULT 0.5",
+		"half_height DEFAULT 0.5",
+		"x",
+		"y",
+		"rotation",
+	}
+};
+
 ecsql::HookSystem ShapeHookSystem {
 	ShapeComponent,
 	[](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
@@ -80,11 +91,10 @@ void register_physics_shape(ecsql::World& world) {
 				-- circle
 				Circle.x, Circle.y, Circle.radius,
 				-- rectangle
-				Rectangle.x, Rectangle.y, Rectangle.width, Rectangle.height, Rotation.z
+				Box.half_width, Box.half_height, Box.x, Box.y, Box.rotation
 			FROM Shape
 				LEFT JOIN Circle USING(entity_id)
-				LEFT JOIN Rectangle USING(entity_id)
-				LEFT JOIN Rotation USING(entity_id)
+				LEFT JOIN Box USING(entity_id)
 			WHERE entity_id = ?
 		)",
 		[](ecsql::PreparedSQL& select_shape) {
@@ -113,7 +123,8 @@ void register_physics_shape(ecsql::World& world) {
 					invoke_contact_creation,
 					update_body_mass,
 					circle,
-					rectangle,
+					box_half_size,
+					position,
 					rotation_angle
 				] = select_shape(shape_entity_id).get<
 					std::optional<float>,
@@ -129,11 +140,12 @@ void register_physics_shape(ecsql::World& world) {
 					std::optional<bool>,
 					std::optional<bool>,
 					std::optional<b2Circle>,
-					std::optional<Rectangle>,
-					float
+					std::optional<b2Vec2>,
+					std::optional<b2Vec2>,
+					std::optional<float>
 				>();
 
-				if (!circle && !rectangle) {
+				if (!circle && !box_half_size) {
 					continue;
 				}
 
@@ -179,10 +191,8 @@ void register_physics_shape(ecsql::World& world) {
 				if (circle) {
 					shape_id = b2CreateCircleShape(body_id, &shapedef, &circle.value());
 				}
-				if (rectangle) {
-					b2Vec2 half_size = b2Vec2(rectangle->width * 0.5f, rectangle->height * 0.5f);
-					b2Vec2 center = b2Vec2(rectangle->x + half_size.x, rectangle->y + half_size.y);
-					b2Polygon polygon = b2MakeOffsetBox(half_size.x, half_size.y, center, b2MakeRot(rotation_angle * DEG2RAD));
+				if (box_half_size) {
+					b2Polygon polygon = b2MakeOffsetBox(box_half_size->x, box_half_size->y, position.value_or(b2Vec2_zero), b2MakeRot(rotation_angle.value_or(0) * DEG2RAD));
 					shape_id = b2CreatePolygonShape(body_id, &shapedef, &polygon);
 				}
 
