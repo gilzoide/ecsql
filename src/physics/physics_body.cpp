@@ -1,5 +1,6 @@
 #include <box2d/box2d.h>
 #include <cdedent.hpp>
+#include <raylib.h>
 
 #include "physics_body.hpp"
 #include "physics_world.hpp"
@@ -198,7 +199,7 @@ void register_physics_body(ecsql::World& world) {
 					bodydef.position = *position;
 				}
 				if (rotation_angle) {
-					bodydef.rotation = b2MakeRot(*rotation_angle);
+					bodydef.rotation = b2MakeRot(*rotation_angle * DEG2RAD);
 				}
 				b2BodyId body_id = b2CreateBody(world_id, &bodydef);
 				body_map[entity_id] = body_id;
