@@ -1,3 +1,5 @@
+#include <raylib.h>
+
 #include "physics_body.hpp"
 #include "physics_shape.hpp"
 #include "../ecsql/system.hpp"
@@ -76,9 +78,13 @@ void register_physics_shape(ecsql::World& world) {
 				invoke_contact_creation,
 				update_body_mass,
 				-- circle
-				Circle.x, Circle.y, Circle.radius
+				Circle.x, Circle.y, Circle.radius,
+				-- rectangle
+				Rectangle.x, Rectangle.y, Rectangle.width, Rectangle.height, Rotation.z
 			FROM Shape
 				LEFT JOIN Circle USING(entity_id)
+				LEFT JOIN Rectangle USING(entity_id)
+				LEFT JOIN Rotation USING(entity_id)
 			WHERE entity_id = ?
 		)",
 		[](ecsql::PreparedSQL& select_shape) {
@@ -106,7 +112,9 @@ void register_physics_shape(ecsql::World& world) {
 					enable_pre_solve_events,
 					invoke_contact_creation,
 					update_body_mass,
-					circle
+					circle,
+					rectangle,
+					rotation_angle
 				] = select_shape(shape_entity_id).get<
 					std::optional<float>,
 					std::optional<float>,
@@ -120,10 +128,12 @@ void register_physics_shape(ecsql::World& world) {
 					std::optional<bool>,
 					std::optional<bool>,
 					std::optional<bool>,
-					std::optional<b2Circle>
+					std::optional<b2Circle>,
+					std::optional<Rectangle>,
+					float
 				>();
 
-				if (!circle) {
+				if (!circle && !rectangle) {
 					continue;
 				}
 
@@ -168,6 +178,12 @@ void register_physics_shape(ecsql::World& world) {
 				b2ShapeId shape_id;
 				if (circle) {
 					shape_id = b2CreateCircleShape(body_id, &shapedef, &circle.value());
+				}
+				if (rectangle) {
+					b2Vec2 half_size = b2Vec2(rectangle->width * 0.5f, rectangle->height * 0.5f);
+					b2Vec2 center = b2Vec2(rectangle->x + half_size.x, rectangle->y + half_size.y);
+					b2Polygon polygon = b2MakeOffsetBox(half_size.x, half_size.y, center, b2MakeRot(rotation_angle * DEG2RAD));
+					shape_id = b2CreatePolygonShape(body_id, &shapedef, &polygon);
 				}
 
 				if (b2Shape_IsValid(shape_id)) {
