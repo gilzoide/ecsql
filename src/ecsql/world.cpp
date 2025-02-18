@@ -213,6 +213,13 @@ void World::update(float delta_time) {
 			self.update_delta_time_stmt(delta_time);
 		}
 
+		// make sure all background systems finished before starting a new frame
+		for (auto&& [system, future] : self.background_systems) {
+			if (system.should_join_before_new_frame() && future.valid()) {
+				future.get();
+			}
+		}
+
 		// fixed update
 		float fixed_delta_time = self.select_fixed_delta_time_stmt().get<float>();
 		float fixed_delta_progress = self.fixed_delta_executor.execute(delta_time, fixed_delta_time, [&]() {
