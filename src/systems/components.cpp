@@ -110,6 +110,16 @@ ecsql::Component CameraUpdate {
 	}
 };
 
+// Physics
+ecsql::Component LinearVelocityComponent {
+	"LinearVelocity",
+	{
+		"x DEFAULT 0",
+		"y DEFAULT 0",
+		"z DEFAULT 0",
+	}
+};
+
 // UI Layout
 ecsql::Component YogaNode {
 	"YogaNode",
