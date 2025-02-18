@@ -3,6 +3,9 @@ require "systems"
 
 require "input_maps"
 
+require "physics"
+require "walls"
+
 entity "PlayerShip" {
     Texture = {
         path = "textures/playerShip1_blue.png",
@@ -20,7 +23,7 @@ entity "PlayerShip" {
     SpawnOnAction = {
         scene = "bullet",
         action = "shoot",
-        cooldown = 0.2,
+        cooldown = 1,
     },
 }
 
