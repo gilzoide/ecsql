@@ -137,15 +137,6 @@ ecsql::Component AngularVelocityComponent {
 	}
 };
 
-ecsql::Component LocalForceComponent {
-	"LocalForce",
-	{
-		"x NOT NULL DEFAULT 0",
-		"y NOT NULL DEFAULT 0",
-		"wake DEFAULT TRUE",
-	}
-};
-
 ecsql::Component ForceComponent {
 	"Force",
 	{
@@ -153,13 +144,26 @@ ecsql::Component ForceComponent {
 		"y NOT NULL DEFAULT 0",
 		"point_x",
 		"point_y",
+		"is_local",  // If true, take current rotation into consideration
+		"wake DEFAULT TRUE",
+	}
+};
+
+ecsql::Component LinearImpulseComponent {
+	"LinearImpulse",
+	{
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"point_x",
+		"point_y",
+		"is_local",  // If true, take current rotation into consideration
 		"wake DEFAULT TRUE",
 	}
 };
 
 ecsql::Component TorqueComponent {
 	"Torque",
-{
+	{
 		"angle NOT NULL DEFAULT 0",
 		"wake DEFAULT TRUE",
 	}

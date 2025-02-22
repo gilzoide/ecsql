@@ -198,12 +198,15 @@ static void register_usertypes(sol::state_view& state) {
 			[](float xy) -> Vector2 { return { .x = xy, .y = xy }; },
 			[](float x, float y) -> Vector2 { return { .x = x, .y = y }; }
 		),
-		"x", sol::property(&Vector2::x),
-		"y", sol::property(&Vector2::y),
+		"x", sol::property(&Vector2::x, &Vector2::x),
+		"y", sol::property(&Vector2::y, &Vector2::y),
 		"normalized", Vector2Normalize,
+		"rotated", Vector2Rotate,
 		"unpack", [](const Vector2& v) { return std::make_pair(v.x, v.y); },
 		sol::meta_method::to_string, [](const Vector2& v) { return std::format("({}, {})", v.x, v.y); }
 	);
+	state["RAD2DEG"] = RAD2DEG;
+	state["DEG2RAD"] = DEG2RAD;
 }
 
 static int string_replace(lua_State *L) {

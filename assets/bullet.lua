@@ -1,19 +1,27 @@
 local BULLET_RADIUS = 13
 local get_position = world:prepare_sql([[
-SELECT x, y
+SELECT
+    Position.x, Position.y,
+    coalesce(Rotation.z, 0)
 FROM Position
+    LEFT JOIN Rotation USING(entity_id)
 WHERE entity_id = ?
 ]], true)
 
 return function(parent_id)
-    local x, y = get_position(parent_id):unpack()
+    local x, y, rotation = get_position(parent_id):unpack()
+    local offset = Vector2(0, -50):rotated(rotation * DEG2RAD)
+    local impulse = Vector2(0, -100000):rotated(rotation * DEG2RAD)
     return entity "Bullet" {
         Texture = {
             path = "textures/ballGrey_08.png",
         },
         Position = {
-            x = x,
-            y = y - 50,
+            x = x + offset.x,
+            y = y + offset.y,
+        },
+        Rotation = {
+            z = rotation,
         },
         DestroyOnOutOfScreen = {},
         Body = {
@@ -29,8 +37,9 @@ return function(parent_id)
         Circle = {
             radius = BULLET_RADIUS,
         },
-        LinearVelocity = {
-            y = -300,
+        LinearImpulse = {
+            x = impulse.x,
+            y = impulse.y,
         },
     }
 end

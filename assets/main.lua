@@ -15,7 +15,7 @@ entity "PlayerShip" {
         y = 500,
     },
     ThrustSpeed = {
-        linear = 500000,
+        linear = 700000,
         angular = 10000000,
     },
     MoveOnArrows = {},
