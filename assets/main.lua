@@ -4,7 +4,9 @@ require "systems"
 require "input_maps"
 
 require "physics"
-require "walls"
+local create_walls = require "create_walls"
+
+create_walls(800, 600)
 
 entity "PlayerShip" {
     Texture = {
