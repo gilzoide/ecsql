@@ -81,6 +81,7 @@ system "MoveOnArrows" {
             end
         end
     end,
+    use_fixed_delta = true,
 }
 
 system "MoveVector" {

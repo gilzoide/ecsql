@@ -3,10 +3,10 @@ local table_insert, table_concat, table_unpack = table.insert, table.concat, tab
 
 function system(name, t)
     if t then
-        world:register_system(name, t)
+        world:register_system(name, t, t.use_fixed_delta)
     else
         return function(t)
-            world:register_system(name, t)
+            world:register_system(name, t, t.use_fixed_delta)
         end
     end
 end

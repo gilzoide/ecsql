@@ -11,7 +11,7 @@
 #include "../ecsql/prepared_sql.hpp"
 #include "../ecsql/system.hpp"
 
-static void lua_register_system(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table) {
+static void lua_register_system(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table, bool use_fixed_delta) {
 	sol::function lua_function;
 	std::vector<std::string> sqls;
 
@@ -40,10 +40,10 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 					throw result.get<sol::error>();
 				}
 			}
-		});
+		}, use_fixed_delta);
 	}
 	else {
-		world.register_system({ prefixed_name, sqls });
+		world.register_system({ prefixed_name, sqls }, use_fixed_delta);
 	}
 }
 
