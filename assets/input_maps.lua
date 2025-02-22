@@ -11,3 +11,12 @@ for action, keys in pairs(key_maps) do
         sql(action, key)
     end
 end
+
+local key_map_2d = {
+    move_x = { positive = "right", negative = "left" },
+    move_y = { positive = "up", negative = "down" },
+}
+local sql = world:prepare_sql "INSERT INTO input_action_axis(action, action_positive, action_negative) VALUES(?, ?, ?)"
+for action, keys in pairs(key_map_2d) do
+    sql(action, keys.positive, keys.negative)
+end

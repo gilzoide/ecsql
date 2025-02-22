@@ -30,28 +30,18 @@ system "DestroyOnOutOfScreen" {
 
 system "MoveOnArrows" {
     [[
-        WITH up AS (
-            SELECT is_down AS up
-            FROM input_action
-            WHERE action = 'up'
+        WITH x AS (
+            SELECT value AS x
+            FROM input_action_axis
+            WHERE action = 'move_x'
         ),
-        down AS (
-            SELECT is_down AS down
-            FROM input_action
-            WHERE action = 'down'
-        ),
-        left AS (
-            SELECT is_down AS left
-            FROM input_action
-            WHERE action = 'left'
-        ),
-        right AS (
-            SELECT is_down AS right
-            FROM input_action
-            WHERE action = 'right'
+        y AS (
+            SELECT value AS y
+            FROM input_action_axis
+            WHERE action = 'move_y'
         )
-        SELECT right - left AS x, down - up AS y
-        FROM up, down, left, right
+        SELECT x, -y
+        FROM x, y
     ]],
     [[
         UPDATE Position

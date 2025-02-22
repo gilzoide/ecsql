@@ -73,10 +73,27 @@ void register_key_handler(ecsql::World& world) {
 		"UpdateInputActions",
 		R"(
 			REPLACE INTO input_action(action, state)
-			SELECT action, MIN(state) as state
+			SELECT action, MIN(state) AS state
 			FROM input_map
 				JOIN keyboard ON input = name
 			GROUP BY action
 		)"_dedent,
+	});
+
+	world.register_system({
+		"UpdateInputActions1D",
+		R"(
+			UPDATE input_action_axis
+			SET value = t.value
+			FROM (
+				SELECT
+					input_action_axis.action,
+					positive.is_down - negative.is_down AS value
+				FROM input_action_axis
+					JOIN input_action AS positive ON positive.action = action_positive
+					JOIN input_action AS negative ON negative.action = action_negative
+			) AS t
+			WHERE input_action_axis.action = t.action
+		)",
 	});
 }

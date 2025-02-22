@@ -61,3 +61,10 @@ CREATE TABLE input_action(
   state,
   is_down AS (COALESCE(state IN ('pressed', 'hold'), FALSE))
 );
+
+CREATE TABLE input_action_axis(
+  action TEXT PRIMARY KEY,
+  action_positive,
+  action_negative,
+  value
+);
