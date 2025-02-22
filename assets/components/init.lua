@@ -7,8 +7,9 @@ component "BakePosition" {
 
 component "DestroyOnOutOfScreen" {}
 
-component "LinearSpeed" {
-    "speed NOT NULL DEFAULT 1"
+component "ThrustSpeed" {
+    "linear NOT NULL DEFAULT 1",
+    "angular NOT NULL DEFAULT 1",
 }
 
 component "MoveOnArrows" {}

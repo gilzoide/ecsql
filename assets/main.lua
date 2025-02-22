@@ -14,16 +14,31 @@ entity "PlayerShip" {
         x = 400,
         y = 500,
     },
-    LinearSpeed = {
-        speed = 300,
+    ThrustSpeed = {
+        linear = 500000,
+        angular = 10000000,
     },
     MoveOnArrows = {},
+
+    -- Physics
+    Body = {
+        type = "dynamic",
+        gravity_scale = 0,
+        angular_damping = 5,
+        linear_damping = 1.5,
+    },
+    Shape = {
+    },
+    Box = {
+        half_width = 20,
+        half_height = 35,
+    },
 
     -- Bullet spawner
     SpawnOnAction = {
         scene = "bullet",
         action = "shoot",
-        cooldown = 1,
+        cooldown = 0.6,
     },
 }
 

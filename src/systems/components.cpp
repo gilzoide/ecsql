@@ -122,18 +122,46 @@ ecsql::Component CameraUpdate {
 ecsql::Component LinearVelocityComponent {
 	"LinearVelocity",
 	{
-		"x DEFAULT 0",
-		"y DEFAULT 0",
-		"z DEFAULT 0",
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"z NOT NULL DEFAULT 0",
 	}
 };
 
 ecsql::Component AngularVelocityComponent {
 	"AngularVelocity",
 	{
-		"x DEFAULT 0",
-		"y DEFAULT 0",
-		"z DEFAULT 0",
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"z NOT NULL DEFAULT 0",
+	}
+};
+
+ecsql::Component LocalForceComponent {
+	"LocalForce",
+	{
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"wake DEFAULT TRUE",
+	}
+};
+
+ecsql::Component ForceComponent {
+	"Force",
+	{
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"point_x",
+		"point_y",
+		"wake DEFAULT TRUE",
+	}
+};
+
+ecsql::Component TorqueComponent {
+	"Torque",
+{
+		"angle NOT NULL DEFAULT 0",
+		"wake DEFAULT TRUE",
 	}
 };
 

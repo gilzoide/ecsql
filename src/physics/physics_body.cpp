@@ -210,4 +210,118 @@ void register_physics_body(ecsql::World& world) {
 			pending_create_body.clear();
 		},
 	});
+
+	world.register_system({
+		"ApplyForce",
+		{
+			R"(
+				SELECT
+					entity_id,
+					x, y,
+					point_x, point_y
+				FROM Force
+			)",
+			"DELETE FROM Force",
+		},
+		[](std::vector<ecsql::PreparedSQL>& sqls) {
+			auto select_forces = sqls[0];
+			auto delete_forces = sqls[1];
+			for (auto row : select_forces()) {
+				auto [
+					entity_id,
+					force,
+					point,
+					wake
+				] = row.get<
+					ecsql::EntityID,
+					b2Vec2,
+					std::optional<b2Vec2>,
+					bool
+				>();
+
+				auto it = body_map.find(entity_id);
+				if (it != body_map.end()) {
+					if (point) {
+						b2Body_ApplyForce(it->second, force, *point, wake);
+					}
+					else {
+						b2Body_ApplyForceToCenter(it->second, force, wake);
+					}
+				}
+			}
+			delete_forces();
+		},
+	});
+
+	world.register_system({
+		"ApplyLocalForce",
+		{
+			R"(
+				SELECT
+					entity_id,
+					x, y,
+					wake
+				FROM LocalForce
+			)",
+			"DELETE FROM LocalForce",
+		},
+		[](std::vector<ecsql::PreparedSQL>& sqls) {
+			auto select_forces = sqls[0];
+			auto delete_forces = sqls[1];
+			for (auto row : select_forces()) {
+				auto [
+					entity_id,
+					force,
+					wake
+				] = row.get<
+					ecsql::EntityID,
+					b2Vec2,
+					bool
+				>();
+
+				auto it = body_map.find(entity_id);
+				if (it != body_map.end()) {
+					b2Rot rotation = b2Body_GetRotation(it->second);
+					force = b2RotateVector(rotation, force);
+					b2Body_ApplyForceToCenter(it->second, force, wake);
+				}
+			}
+			delete_forces();
+		},
+	});
+
+	world.register_system({
+		"ApplyTorque",
+		{
+			R"(
+				SELECT
+					entity_id,
+					angle,
+					wake
+				FROM Torque
+			)",
+			"DELETE FROM Torque",
+		},
+		[](std::vector<ecsql::PreparedSQL>& sqls) {
+			auto select_torque = sqls[0];
+			auto delete_torque = sqls[1];
+			for (auto row : select_torque()) {
+				auto [
+					entity_id,
+					torque,
+					wake
+				] = row.get<
+					ecsql::EntityID,
+					float,
+					bool
+				>();
+
+				auto it = body_map.find(entity_id);
+				if (it != body_map.end()) {
+					b2Body_ApplyTorque(it->second, torque, wake);
+				}
+			}
+			delete_torque();
+		},
+	});
 }
