@@ -114,6 +114,13 @@ void register_draw_systems(ecsql::World& world) {
 					position = Vector2Lerp(*previous_position, position, fixed_delta_progress);
 				}
 				if (previous_rotation) {
+					float rotation_diff = rotation - *previous_rotation;
+					if (rotation_diff > 180) {
+						rotation -= 360;
+					}
+					else if (rotation_diff < -180) {
+						rotation += 360;
+					}
 					rotation = Lerp(*previous_rotation, rotation, fixed_delta_progress);
 				}
 
