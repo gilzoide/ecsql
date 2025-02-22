@@ -99,6 +99,9 @@ void World::remove_system(std::string_view system_name) {
 	std::erase_if(systems, [system_name](std::tuple<System, std::vector<PreparedSQL>> t) {
 		return std::get<0>(t).name == system_name;
 	});
+	std::erase_if(fixed_systems, [system_name](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name == system_name;
+	});
 }
 
 void World::remove_system(const System& system) {
@@ -107,6 +110,9 @@ void World::remove_system(const System& system) {
 
 void World::remove_systems_with_prefix(std::string_view system_name_prefix) {
 	std::erase_if(systems, [system_name_prefix](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name.starts_with(system_name_prefix);
+	});
+	std::erase_if(fixed_systems, [system_name_prefix](std::tuple<System, std::vector<PreparedSQL>> t) {
 		return std::get<0>(t).name.starts_with(system_name_prefix);
 	});
 }
