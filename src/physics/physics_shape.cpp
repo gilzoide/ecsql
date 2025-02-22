@@ -5,7 +5,7 @@
 #include "../ecsql/system.hpp"
 
 std::unordered_map<ecsql::EntityID, b2ShapeId> shape_map;
-std::vector<ecsql::EntityID> pending_create_shape;
+std::vector<std::pair<ecsql::EntityID, ecsql::EntityID>> pending_create_shape;
 
 struct b2Box {
 	b2Vec2 half_size;
@@ -16,6 +16,7 @@ struct b2Box {
 ecsql::Component ShapeComponent {
 	"Shape",
 	{
+		"body",  // Body entity id. If NULL, defaults to Shape.entity_id
 		"friction",
 		"restitution",
 		"rolling_resistance",
@@ -68,7 +69,7 @@ ecsql::HookSystem ShapeHookSystem {
 	[](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
 		switch (hook) {
 			case ecsql::HookType::OnInsert:
-				pending_create_shape.push_back(new_row.get<ecsql::EntityID>(0));
+				pending_create_shape.push_back(new_row.get<ecsql::EntityID, ecsql::EntityID>(0));
 				break;
 
 			case ecsql::HookType::OnUpdate:
@@ -119,8 +120,8 @@ void register_physics_shape(ecsql::World& world) {
 			WHERE entity_id = ?
 		)",
 		[](ecsql::PreparedSQL& select_shape) {
-			for (auto shape_entity_id : pending_create_shape) {
-				auto body_it = body_map.find(shape_entity_id);
+			for (auto [shape_entity_id, body_entity_id] : pending_create_shape) {
+				auto body_it = body_map.find(body_entity_id ?: shape_entity_id);
 				if (body_it == body_map.end()) {
 					continue;
 				}
