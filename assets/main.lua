@@ -18,7 +18,7 @@ entity "PlayerShip" {
     },
     ThrustSpeed = {
         linear = 700000,
-        angular = 10000000,
+        angular = 7000000,
     },
     MoveOnArrows = {},
 
@@ -31,9 +31,12 @@ entity "PlayerShip" {
     },
     Shape = {
     },
-    Box = {
-        half_width = 20,
-        half_height = 35,
+    Capsule = {
+        x1 = 0,
+        y1 = 27,
+        x2 = 0,
+        y2 = -27,
+        radius = 10,
     },
 
     -- Bullet spawner

@@ -7,6 +7,12 @@
 std::unordered_map<ecsql::EntityID, b2ShapeId> shape_map;
 std::vector<ecsql::EntityID> pending_create_shape;
 
+struct b2Box {
+	b2Vec2 half_size;
+	b2Vec2 center;
+	float rotation;
+};
+
 ecsql::Component ShapeComponent {
 	"Shape",
 	{
@@ -31,6 +37,17 @@ ecsql::Component CircleComponent {
 	{
 		"x NOT NULL DEFAULT 0",
 		"y NOT NULL DEFAULT 0",
+		"radius NOT NULL",
+	}
+};
+
+ecsql::Component CapsuleComponent {
+	"Capsule",
+	{
+		"x1 NOT NULL DEFAULT 0",
+		"y1 NOT NULL DEFAULT 0.5",
+		"x2 NOT NULL DEFAULT 0",
+		"y2 NOT NULL DEFAULT -0.5",
 		"radius NOT NULL",
 	}
 };
@@ -76,6 +93,7 @@ void register_physics_shape(ecsql::World& world) {
 		"physics.CreateShape",
 		R"(
 			SELECT
+				-- shape
 				friction,
 				restitution,
 				rolling_resistance,
@@ -90,10 +108,13 @@ void register_physics_shape(ecsql::World& world) {
 				update_body_mass,
 				-- circle
 				Circle.x, Circle.y, Circle.radius,
+				-- capsule
+				Capsule.x1, Capsule.y1, Capsule.x2, Capsule.y2, Capsule.radius,
 				-- rectangle
 				Box.half_width, Box.half_height, Box.x, Box.y, Box.rotation
 			FROM Shape
 				LEFT JOIN Circle USING(entity_id)
+				LEFT JOIN Capsule USING(entity_id)
 				LEFT JOIN Box USING(entity_id)
 			WHERE entity_id = ?
 		)",
@@ -123,9 +144,8 @@ void register_physics_shape(ecsql::World& world) {
 					invoke_contact_creation,
 					update_body_mass,
 					circle,
-					box_half_size,
-					position,
-					rotation_angle
+					capsule,
+					box
 				] = select_shape(shape_entity_id).get<
 					std::optional<float>,
 					std::optional<float>,
@@ -140,12 +160,11 @@ void register_physics_shape(ecsql::World& world) {
 					std::optional<bool>,
 					std::optional<bool>,
 					std::optional<b2Circle>,
-					std::optional<b2Vec2>,
-					std::optional<b2Vec2>,
-					std::optional<float>
+					std::optional<b2Capsule>,
+					std::optional<b2Box>
 				>();
 
-				if (!circle && !box_half_size) {
+				if (!circle && !capsule && !box) {
 					continue;
 				}
 
@@ -187,12 +206,15 @@ void register_physics_shape(ecsql::World& world) {
 					shapedef.updateBodyMass = *update_body_mass;
 				}
 
-				b2ShapeId shape_id;
+				b2ShapeId shape_id = b2_nullShapeId;
 				if (circle) {
-					shape_id = b2CreateCircleShape(body_id, &shapedef, &circle.value());
+					shape_id = b2CreateCircleShape(body_id, &shapedef, &*circle);
 				}
-				if (box_half_size) {
-					b2Polygon polygon = b2MakeOffsetBox(box_half_size->x, box_half_size->y, position.value_or(b2Vec2_zero), b2MakeRot(rotation_angle.value_or(0) * DEG2RAD));
+				if (capsule) {
+					shape_id = b2CreateCapsuleShape(body_id, &shapedef, &*capsule);
+				}
+				if (box) {
+					b2Polygon polygon = b2MakeOffsetBox(box->half_size.x, box->half_size.y, box->center, b2MakeRot(box->rotation * DEG2RAD));
 					shape_id = b2CreatePolygonShape(body_id, &shapedef, &polygon);
 				}
 
