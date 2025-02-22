@@ -21,6 +21,28 @@ function component(name, t)
     end
 end
 
+local function create_component_internal(component_name, entity_id, fields)
+    local sql = {
+        "INSERT INTO ",
+        component_name,
+        "(entity_id",
+    }
+    local values = {}
+    for field, value in pairs(fields) do
+        sql[#sql + 1] = ", "
+        sql[#sql + 1] = field
+        values[#values + 1] = value
+    end
+
+    sql[#sql + 1] = ") VALUES(?"
+    for i = 1, #values do
+        sql[#sql + 1] = ", ?"
+    end
+    sql[#sql + 1] = ")"
+
+    world:execute_sql(table_concat(sql), entity_id, table_unpack(values))
+end
+
 local function create_entity_internal(name, t)
     local entity_id = world:create_entity(name, t.parent_id)
     for component_name, fields in pairs(t) do
@@ -28,25 +50,13 @@ local function create_entity_internal(name, t)
             goto continue
         end
 
-        local sql = {
-            "INSERT INTO ",
-            component_name,
-            "(entity_id",
-        }
-        local values = {}
-        for field, value in pairs(fields) do
-            sql[#sql + 1] = ", "
-            sql[#sql + 1] = field
-            values[#values + 1] = value
+        if #fields > 0 then
+            for i = 1, #fields do
+                create_component_internal(component_name, entity_id, fields[i])
+            end
+        else
+            create_component_internal(component_name, entity_id, fields)
         end
-
-        sql[#sql + 1] = ") VALUES(?"
-        for i = 1, #values do
-            sql[#sql + 1] = ", ?"
-        end
-        sql[#sql + 1] = ")"
-
-        world:execute_sql(table_concat(sql), entity_id, table_unpack(values))
         ::continue::
     end
     return entity_id
