@@ -146,7 +146,9 @@ ecsql::Component ForceComponent {
 		"point_y",
 		"is_local",  // If true, take current rotation into consideration
 		"wake DEFAULT TRUE",
-	}
+	},
+	"",
+	true,
 };
 
 ecsql::Component LinearImpulseComponent {
@@ -158,7 +160,9 @@ ecsql::Component LinearImpulseComponent {
 		"point_y",
 		"is_local",  // If true, take current rotation into consideration
 		"wake DEFAULT TRUE",
-	}
+	},
+	"",
+	true,
 };
 
 ecsql::Component TorqueComponent {
@@ -166,7 +170,9 @@ ecsql::Component TorqueComponent {
 	{
 		"angle NOT NULL DEFAULT 0",
 		"wake DEFAULT TRUE",
-	}
+	},
+	"",
+	true,
 };
 
 // UI Layout

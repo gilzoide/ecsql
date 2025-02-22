@@ -50,11 +50,11 @@ system "MoveOnArrows" {
             JOIN y
     ]],
     [[
-        REPLACE INTO Force(entity_id, y, is_local)
+        INSERT INTO Force(entity_id, y, is_local)
         VALUES (?, ?, TRUE)
     ]],
     [[
-        REPLACE INTO Torque(entity_id, angle)
+        INSERT INTO Torque(entity_id, angle)
         VALUES (?, ?)
     ]],
     function(get_movement, add_force, add_torque)
