@@ -83,12 +83,15 @@ void register_physics_body(ecsql::World& world) {
 					-- rotation
 					Rotation.z,
 					-- linear velocity
-					LinearVelocity.x, LinearVelocity.y
+					LinearVelocity.x, LinearVelocity.y,
+					-- angular velocity
+					AngularVelocity.z
 				FROM Body
 					JOIN entity ON Body.entity_id = entity.id
 					LEFT JOIN Position USING(entity_id)
 					LEFT JOIN Rotation USING(entity_id)
 					LEFT JOIN LinearVelocity USING(entity_id)
+					LEFT JOIN AngularVelocity USING(entity_id)
 				WHERE entity_id = ?
 			)"_dedent,
 			R"(
@@ -111,7 +114,8 @@ void register_physics_body(ecsql::World& world) {
 					enable_sleep, is_awake, fixed_rotation, is_bullet, is_enabled, allow_fast_rotation,
 					position,
 					rotation_angle,
-					linear_velocity
+					linear_velocity,
+					angular_velocity
 				] = select_body(entity_id).get<
 					std::optional<const char *>,
 					std::optional<ecsql::EntityID>,
@@ -120,7 +124,8 @@ void register_physics_body(ecsql::World& world) {
 					std::optional<bool>, std::optional<bool>, std::optional<bool>, std::optional<bool>, std::optional<bool>, std::optional<bool>,
 					std::optional<b2Vec2>,
 					std::optional<float>,
-					std::optional<b2Vec2>
+					std::optional<b2Vec2>,
+					std::optional<float>
 				>();
 
 				b2WorldId world_id = b2_nullWorldId;
@@ -195,6 +200,9 @@ void register_physics_body(ecsql::World& world) {
 				}
 				if (linear_velocity) {
 					bodydef.linearVelocity = *linear_velocity;
+				}
+				if (angular_velocity) {
+					bodydef.angularVelocity = *angular_velocity * DEG2RAD;
 				}
 				b2BodyId body_id = b2CreateBody(world_id, &bodydef);
 				body_map[entity_id] = body_id;
