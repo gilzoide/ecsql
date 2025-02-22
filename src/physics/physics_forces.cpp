@@ -4,7 +4,7 @@
 
 void register_physics_forces(ecsql::World& world) {
 	world.register_system({
-		"ApplyForce",
+		"physics.ApplyForce",
 		{
 			R"(
 				SELECT
@@ -55,7 +55,7 @@ void register_physics_forces(ecsql::World& world) {
 	});
 
 	world.register_system({
-		"ApplyLinearImpulse",
+		"physics.ApplyLinearImpulse",
 		{
 			R"(
 				SELECT
@@ -106,7 +106,7 @@ void register_physics_forces(ecsql::World& world) {
 	});
 
 	world.register_system({
-		"ApplyTorque",
+		"physics.ApplyTorque",
 		{
 			R"(
 				SELECT
