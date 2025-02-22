@@ -1,4 +1,5 @@
-local BULLET_RADIUS = 13
+local tuning = require "tuning"
+
 local get_position = world:prepare_sql([[
 SELECT
     Position.x, Position.y,
@@ -31,18 +32,18 @@ return function(parent_id)
             restitution = 1,
         },
         Size = {
-            width = BULLET_RADIUS * 2,
-            height = BULLET_RADIUS * 2,
+            width = tuning.BULLET_RADIUS * 2,
+            height = tuning.BULLET_RADIUS * 2,
         },
         Circle = {
-            radius = BULLET_RADIUS,
+            radius = tuning.BULLET_RADIUS,
         },
         LinearImpulse = {
             x = impulse.x,
             y = impulse.y,
         },
         DeleteAfter = {
-            seconds = 5,
+            seconds = 10,
         },
     }
 end

@@ -1,3 +1,5 @@
+local tuning = require "tuning"
+
 return function()
     local player_ship = entity "PlayerShip" {
         Texture = {
@@ -9,8 +11,8 @@ return function()
         },
         -- Movement
         ThrustSpeed = {
-            linear = 700000,
-            angular = 7000000,
+            linear = tuning.PLAYER_SPEED_LINEAR,
+            angular = tuning.PLAYER_SPEED_ANGULAR,
         },
         MoveOnArrows = {},
         -- Physics
@@ -24,7 +26,7 @@ return function()
         SpawnOnAction = {
             scene = "bullet",
             action = "shoot",
-            cooldown = 0.6,
+            cooldown = tuning.PLAYER_SHOOT_COOLDOWN,
         },
     }
     entity "PlayerShipShape1" {
@@ -53,6 +55,5 @@ return function()
             radius = 10,
         },
     }
-
     return player_ship
 end
