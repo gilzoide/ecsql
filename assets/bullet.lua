@@ -41,5 +41,8 @@ return function(parent_id)
             x = impulse.x,
             y = impulse.y,
         },
+        DeleteAfter = {
+            seconds = 5,
+        },
     }
 end
