@@ -36,6 +36,10 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 	return db;
 }
 
+static void set_thread_name(int i) {
+	tracy::SetThreadName(std::format("ecsql-{}", i).c_str());
+}
+
 World::World()
 	: World(DEFAULT_DB_NAME)
 {
@@ -56,16 +60,9 @@ World::World(const char *db_name)
 #ifdef __EMSCRIPTEN__
 	, dispatch_queue(0)
 #else
-	, dispatch_queue(2)
+	, dispatch_queue(2, set_thread_name)
 #endif
 {
-#ifdef TRACY_ENABLE
-	for (int i = 0; i < dispatch_queue.thread_count(); i++) {
-		dispatch_queue.dispatch_forget([=]() {
-			tracy::SetThreadName(std::format("ecsql-{}", i).c_str());
-		});
-	}
-#endif
 	sqlite3_preupdate_hook(db.get(), preupdate_hook, this);
 }
 
