@@ -18,6 +18,16 @@ ecsql::Component PreviousPositionComponent {
 		"z NOT NULL DEFAULT 0",
 	}
 };
+ecsql::AdditionalSQL CachePreviousPosition {
+	R"(
+		CREATE TRIGGER PreviousPosition_Position_updated
+		AFTER UPDATE ON Position
+		BEGIN
+			REPLACE INTO PreviousPosition(entity_id, x, y, z)
+			VALUES(new.entity_id, new.x, new.y, new.z);
+		END;
+	)"
+};
 
 ecsql::Component RotationComponent {
 	"Rotation",
@@ -34,6 +44,16 @@ ecsql::Component PreviousRotationComponent {
 		"y NOT NULL DEFAULT 0",
 		"z NOT NULL DEFAULT 0",
 	}
+};
+ecsql::AdditionalSQL CachePreviousRotation {
+	R"(
+		CREATE TRIGGER PreviousRotation_Rotation_updated
+		AFTER UPDATE ON Rotation
+		BEGIN
+			REPLACE INTO PreviousRotation(entity_id, x, y, z)
+			VALUES(new.entity_id, new.x, new.y, new.z);
+		END;
+	)"
 };
 
 ecsql::Component LookAtComponent {

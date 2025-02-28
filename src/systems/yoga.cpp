@@ -6,10 +6,8 @@
 #include <raylib.h>
 #include <yoga/Yoga.h>
 
-#include "draw_systems.hpp"
 #include "yoga.hpp"
 #include "../ecsql/hook_system.hpp"
-#include "../ecsql/sql_hook_row.hpp"
 #include "../ecsql/system.hpp"
 
 enum YogaNodeColumn {

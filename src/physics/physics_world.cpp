@@ -125,20 +125,8 @@ void register_physics_world(ecsql::World& world) {
 				VALUES(?, ?, ?)
 			)"_dedent,
 			R"(
-				REPLACE INTO PreviousPosition(entity_id, x, y)
-				SELECT entity_id, x, y
-				FROM Position
-				WHERE entity_id = ?
-			)"_dedent,
-			R"(
 				REPLACE INTO Rotation(entity_id, z)
 				VALUES(?, ?)
-			)"_dedent,
-			R"(
-				REPLACE INTO PreviousRotation(entity_id, z)
-				SELECT entity_id, z
-				FROM Rotation
-				WHERE entity_id = ?
 			)"_dedent,
 			R"(
 				REPLACE INTO LinearVelocity(entity_id, x, y)
@@ -152,11 +140,9 @@ void register_physics_world(ecsql::World& world) {
 		[](std::vector<ecsql::PreparedSQL>& sqls) {
 			auto get_worlds = sqls[0];
 			auto update_position = sqls[1];
-			auto update_previous_position = sqls[2];
-			auto update_rotation = sqls[3];
-			auto update_previous_rotation = sqls[4];
-			auto update_linear_velocity = sqls[5];
-			auto update_angular_velocity = sqls[6];
+			auto update_rotation = sqls[2];
+			auto update_linear_velocity = sqls[3];
+			auto update_angular_velocity = sqls[4];
 			for (auto row : get_worlds()) {
 				auto [
 					world_entity_id,
@@ -174,9 +160,6 @@ void register_physics_world(ecsql::World& world) {
 				b2BodyEvents body_events = b2World_GetBodyEvents(world_id);
 				for (auto move_event : std::span<b2BodyMoveEvent>(body_events.moveEvents, body_events.moveCount)) {
 					ecsql::EntityID entity_id = BodyUserData::from(move_event.bodyId)->entity_id;
-
-					update_previous_position(entity_id);
-					update_previous_rotation(entity_id);
 
 					update_position(entity_id, move_event.transform.p);
 					update_rotation(entity_id, b2Rot_GetAngle(move_event.transform.q) * RAD2DEG);
