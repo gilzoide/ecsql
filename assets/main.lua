@@ -1,32 +1,22 @@
+local tuning = require "tuning"
+
 require "components"
 require "systems"
 
 require "input_maps"
 
-entity "PlayerShip" {
-    Texture = {
-        path = "textures/playerShip1_blue.png",
-    },
-    Position = {
-        x = 400,
-        y = 500,
-    },
-    LinearSpeed = {
-        speed = 300,
-    },
-    MoveOnArrows = {},
+require "physics"
+require "create_walls"(tuning.ROOM_WIDTH, tuning.ROOM_HEIGHT)
+require "create_player_ship"()
 
-    -- Bullet spawner
-    SpawnOnAction = {
-        scene = "bullet",
-        action = "shoot",
-        cooldown = 0.2,
-    },
-}
-
-local screen_rect = entity "FullScreenRect" {
+local FullScreenRect = entity "FullScreenRect" {
     YogaNode = {},
-    ScreenRect = {},
+    Rectangle = {
+        x = 0,
+        y = 0,
+        width = tuning.ROOM_WIDTH,
+        height = tuning.ROOM_HEIGHT,
+    }
 }
 entity "Title" {
     Text = {
@@ -35,8 +25,8 @@ entity "Title" {
     },
     Color = BLACK,
     YogaNode = {
-        parent_id = screen_rect,
-        top = 20,
+        parent_id = FullScreenRect,
+        top = 30,
         align_self = "center",
     },
 }

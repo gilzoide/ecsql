@@ -3,6 +3,9 @@
 lua_Alloc lua_allocf = nullptr;
 
 #ifdef TRACY_ENABLE
+#include <cstdlib>
+
+#include <box2d/box2d.h>
 #include <physfs.h>
 #include <sqlite3.h>
 #include <tracy/Tracy.hpp>
@@ -17,6 +20,23 @@ void *operator new(std::size_t n) {
 void operator delete(void * p) noexcept {
 	TracyFree(p);
 	free(p);
+}
+
+// Box2D memory allocator
+const char *BOX2D_MEMORY_ZONE_NAME = "box2d";
+static void *box2d_alloc(unsigned int size, int alignment) {
+	void *ptr = std::aligned_alloc(alignment, size);
+	TracyAllocN(ptr, size, BOX2D_MEMORY_ZONE_NAME);
+	return ptr;
+}
+
+static void box2d_free(void *ptr) {
+	TracyFreeN(ptr, BOX2D_MEMORY_ZONE_NAME);
+	free(ptr);
+}
+
+static void configure_box2d_allocator() {
+	b2SetAllocator(box2d_alloc, box2d_free);
 }
 
 // Lua memory allocator
@@ -111,6 +131,7 @@ static void configure_physfs_allocator() {
 
 void configure_memory_hooks() {
 #ifdef TRACY_ENABLE
+	configure_box2d_allocator();
 	configure_sqlite_memory_methods();
 	configure_physfs_allocator();
 	lua_allocf = lua_alloc;

@@ -34,7 +34,7 @@ double SQLValue::get_double() const {
 std::string_view SQLValue::get_text() const {
 	const unsigned char *text = sqlite3_value_text(value);
 	int size = sqlite3_value_bytes(value);
-    return std::string_view((const char *) text, size);
+	return std::string_view((const char *) text, size);
 }
 
 std::span<const uint8_t> SQLValue::get_blob() const {

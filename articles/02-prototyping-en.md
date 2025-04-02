@@ -1,4 +1,6 @@
 # Starting the prototype: a world with entities, components and systems
+> 2024-12-15 | `#ECS #SQL #SQLite` | [*Versão em Português*](02-prototyping-pt.md)
+
 In the [previous article](01-ecs-databases-en.md) I showed you how we can model ECS worlds as relational databases.
 Today I'll go through some of the design choices for the prototype I already started creating.
 

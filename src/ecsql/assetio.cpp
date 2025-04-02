@@ -1,5 +1,3 @@
-#include <stdexcept>
-
 #include <raylib.h>
 
 #include "assetio.hpp"

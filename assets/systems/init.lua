@@ -14,6 +14,19 @@ system "BakeRelativePosition" {
     ]],
 }
 
+system "DeleteAfterSeconds" {
+    [[
+        WITH entities_to_delete AS (
+            SELECT entity_id
+            FROM DeleteAfter
+                JOIN time
+            WHERE uptime - create_uptime >= seconds
+        )
+        DELETE FROM entity
+        WHERE id IN entities_to_delete
+    ]],
+}
+
 system "DestroyOnOutOfScreen" {
     [[
         DELETE FROM entity
@@ -30,64 +43,56 @@ system "DestroyOnOutOfScreen" {
 
 system "MoveOnArrows" {
     [[
-        WITH up AS (
-            SELECT is_down AS up
-            FROM input_action
-            WHERE action = 'up'
+        WITH x AS (
+            SELECT value AS x
+            FROM input_action_axis
+            WHERE action = 'move_x'
         ),
-        down AS (
-            SELECT is_down AS down
-            FROM input_action
-            WHERE action = 'down'
-        ),
-        left AS (
-            SELECT is_down AS left
-            FROM input_action
-            WHERE action = 'left'
-        ),
-        right AS (
-            SELECT is_down AS right
-            FROM input_action
-            WHERE action = 'right'
+        y AS (
+            SELECT value AS y
+            FROM input_action_axis
+            WHERE action = 'move_y'
         )
-        SELECT right - left AS x, down - up AS y
-        FROM up, down, left, right
+        SELECT
+            entity_id,
+            linear, angular,
+            x, -y
+        FROM MoveOnArrows
+            JOIN ThrustSpeed USING(entity_id)
+            JOIN x
+            JOIN y
     ]],
     [[
-        UPDATE Position
-        SET x = clamp(x + ? * movement.speed, 0, screen_width), y = clamp(y + ? * movement.speed, 0, screen_height)
-        FROM (
-            SELECT
-                entity_id,
-                ifnull(LinearSpeed.speed, 1) * time.delta AS speed,
-                width AS screen_width, height AS screen_height
-            FROM MoveOnArrows
-                LEFT JOIN LinearSpeed USING(entity_id)
-                JOIN time
-                JOIN screen
-        ) AS movement
-        WHERE Position.entity_id = movement.entity_id
+        INSERT INTO Force(entity_id, y, is_local)
+        VALUES (?, ?, TRUE)
     ]],
-    function(get_movement, update_position)
+    [[
+        INSERT INTO Torque(entity_id, angle)
+        VALUES (?, ?)
+    ]],
+    function(get_movement, add_force, add_torque)
         for row in get_movement() do
-            local x, y = row:unpack()
-            if x ~= 0 or y ~= 0 then
-                local v = Vector2(x, y)
-                update_position(v:normalized():unpack())
+            local entity_id, linear, angular, x, y = row:unpack()
+            if x ~= 0 then
+                add_torque(entity_id, x * angular)
+            end
+            if y ~= 0 then
+                add_force(entity_id, y * linear)
             end
         end
     end,
+    use_fixed_delta = true,
 }
 
 system "MoveVector" {
     [[
         UPDATE Position
-        SET x = Position.x + movement.x, y = Position.y + movement.y
-        FROM (
-            SELECT entity_id, ifnull(MoveVector.x, 0) * time.delta AS x, ifnull(MoveVector.y, 0) * time.delta AS y
-            FROM MoveVector, time
-        ) AS movement
-        WHERE Position.entity_id = movement.entity_id
+        SET
+            x = Position.x + MoveVector.x * time.delta,
+            y = Position.y + MoveVector.y * time.delta,
+            z = Position.z + MoveVector.z * time.delta
+        FROM MoveVector, time
+        WHERE Position.entity_id = MoveVector.entity_id
     ]],
 }
 
@@ -112,6 +117,40 @@ system "SpawnOnAction" {
             local entity_id, scene_path = row:unpack()
             require(scene_path)(entity_id)
             update_spawn_time(entity_id)
+        end
+    end,
+}
+
+system "UpdateParentOffset" {
+    [[
+        SELECT
+            ParentOffset.entity_id AS entity_id,
+            ParentOffset.x AS local_x,
+            ParentOffset.y AS local_y,
+            parent_position.x AS parent_x,
+            parent_position.y AS parent_y,
+            coalesce(parent_rotation.z, 0) AS rotation
+        FROM ParentOffset
+            JOIN entity ON ParentOffset.entity_id = entity.id
+            JOIN Position AS parent_position ON parent_position.entity_id = parent_id
+            LEFT JOIN Rotation AS parent_rotation ON parent_rotation.entity_id = parent_id
+        WHERE is_dirty
+    ]],
+    [[
+        REPLACE INTO Position(entity_id, x, y)
+        VALUES(?, ?, ?)
+    ]],
+    [[
+        REPLACE INTO Rotation(entity_id, z)
+        VALUES(?, ?)
+    ]],
+    function(select_values, update_position, update_rotation)
+        for row in select_values() do
+            local entity_id, local_x, local_y, parent_x, parent_y, rotation = row:unpack()
+            local local_position = Vector2(local_x, local_y):rotated(rotation * DEG2RAD)
+            local global_position = Vector2(parent_x, parent_y) + local_position
+            update_position(entity_id, global_position:unpack())
+            update_rotation(entity_id, rotation)
         end
     end,
 }

@@ -1,33 +1,16 @@
---[[ Example:
-system "name" {
-    "SELECT 'sql1'",
-    "SELECT 'sql2'",
-    function(sql1, sql2)
-        -- ...
-    end
-}
---]]
+local assert, pairs, select, setmetatable, type = assert, pairs, select, setmetatable, type
+local table_insert, table_concat, table_unpack = table.insert, table.concat, table.unpack
+
 function system(name, t)
     if t then
-        world:register_system(name, t)
+        world:register_system(name, t, t.use_fixed_delta)
     else
         return function(t)
-            world:register_system(name, t)
+            world:register_system(name, t, t.use_fixed_delta)
         end
     end
 end
 
---[[ Example:
-component "name" {
-    "column1",
-    "column2 DEFAULT 0",
-    "column3 TEXT",
-
-    -- Optional arguments
-    additional_schema = "CREATE INDEX ...",
-    allow_duplicates = true,
-}
---]]
 function component(name, t)
     if t then
         world:register_component(name, t)
@@ -38,34 +21,71 @@ function component(name, t)
     end
 end
 
---[[ Example:
-entity "name" {
-    component1 = {
-        col1 = "value",
-        col2 = 42,
-        col3 = true,
-    },
-    component2 = {},
-}
-
-entity {
-    -- ...
-}
---]]
-function entity(name, t)
-    if type(name) == "table" then
-        return world:create_entity(t, name)
-    elseif t then
-        return world:create_entity(name, t)
-    else
-        return function(t)
-            return world:create_entity(name, t)
-        end
+local function create_component_internal(component_name, entity_id, fields)
+    local sql = {
+        "INSERT INTO ",
+        component_name,
+        "(entity_id",
+    }
+    local values = {}
+    for field, value in pairs(fields) do
+        sql[#sql + 1] = ", "
+        sql[#sql + 1] = field
+        values[#values + 1] = value
     end
+
+    sql[#sql + 1] = ") VALUES(?"
+    for i = 1, #values do
+        sql[#sql + 1] = ", ?"
+    end
+    sql[#sql + 1] = ")"
+
+    world:execute_sql(table_concat(sql), entity_id, table_unpack(values))
 end
 
+local function create_entity_internal(name, t)
+    local entity_id = world:create_entity(name, t.parent_id)
+    for component_name, fields in pairs(t) do
+        if component_name == "parent_id" then
+            goto continue
+        end
+
+        if #fields > 0 then
+            for i = 1, #fields do
+                create_component_internal(component_name, entity_id, fields[i])
+            end
+        else
+            create_component_internal(component_name, entity_id, fields)
+        end
+        ::continue::
+    end
+    return entity_id
+end
+
+_G.entity = setmetatable({}, {
+    __index = {
+        delete = function(id)
+            return world:delete_entity(id)
+        end,
+        find = function(name)
+            return world:find_entity(name)
+        end,
+    },
+    __call = function(self, name, t)
+        if type(name) == "table" then
+            return create_entity_internal(t, name)
+        elseif t then
+            return create_entity_internal(name, t)
+        else
+            return function(t)
+                return create_entity_internal(name, t)
+            end
+        end
+    end,
+})
+
 function sql(script, ...)
-    if select('#', ...) > 0 then
+    if select('#', ...) > 0 or not script:match(";") then
         return world:execute_sql(script, ...)
     else
         world:execute_sql_script(script)
@@ -86,10 +106,10 @@ local function searchpath(name, path, sep, rep)
         if ecsql.file_exists(filename) then
 			return filename
 		else
-			table.insert(notfound, ("\n\tno file %q"):format(filename))
+			table_insert(notfound, ("\n\tno file %q"):format(filename))
 		end
 	end
-	return nil, table.concat(notfound)
+	return nil, table_concat(notfound)
 end
 package.searchpath = searchpath
 

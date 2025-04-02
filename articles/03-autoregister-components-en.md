@@ -1,4 +1,6 @@
 # Automatically registering components
+> 2025-02-01 | `#ECS #C++ #GlobalVariables #LinkedList` | [*Versão em Português*](03-autoregister-components-pt.md)
+
 After some prototyping, I quickly realized that manually registering components is a tedious task.
 I was creating components as global C++ instances, then registering them one by one using `world.register_component(component)` in the app's `main` function.
 

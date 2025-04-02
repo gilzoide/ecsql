@@ -1,6 +1,5 @@
 #pragma once
 
-#include <concepts>
 #include <span>
 
 template<typename T>

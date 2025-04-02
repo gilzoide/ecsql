@@ -4,6 +4,7 @@ target_compile_definitions(sqlite3
   PUBLIC
     "SQLITE_ENABLE_PREUPDATE_HOOK"
   PRIVATE
+    "SQLITE_THREADSAFE=0"
     "SQLITE_USE_URI"
     "SQLITE_DQS=0"
     "SQLITE_DEFAULT_MEMSTATUS=0"

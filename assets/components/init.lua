@@ -1,21 +1,74 @@
 component "BakePosition" {
     "parent_id INTEGER REFERENCES entity(id)",
-    "x DEFAULT 0",
-    "y DEFAULT 0",
-    "z DEFAULT 0",
+    "x NOT NULL DEFAULT 0",
+    "y NOT NULL DEFAULT 0",
+    "z NOT NULL DEFAULT 0",
+}
+
+component "DeleteAfter" {
+    "seconds NOT NULL",
+    "create_uptime",
+    additional_schema = [[
+        CREATE TRIGGER DeleteAfter_inserted
+        AFTER INSERT ON DeleteAfter
+        BEGIN
+            UPDATE DeleteAfter
+            SET create_uptime = uptime
+            FROM time
+            WHERE entity_id = new.entity_id;
+        END;
+    ]]
 }
 
 component "DestroyOnOutOfScreen" {}
 
-component "LinearSpeed" {
-    "speed DEFAULT 1"
+component "ThrustSpeed" {
+    "linear NOT NULL DEFAULT 1",
+    "angular NOT NULL DEFAULT 1",
 }
 
 component "MoveOnArrows" {}
 
 component "MoveVector" {
-    "x DEFAULT 0",
-    "y DEFAULT 0",
+    "x NOT NULL DEFAULT 0",
+    "y NOT NULL DEFAULT 0",
+    "z NOT NULL DEFAULT 0",
+}
+
+component "ParentOffset" {
+    "x NOT NULL DEFAULT 0",
+    "y NOT NULL DEFAULT 0",
+    "z NOT NULL DEFAULT 0",
+    "is_dirty DEFAULT TRUE",
+    additional_schema = [[
+        CREATE INDEX ParentOffset_is_dirty ON ParentOffset(is_dirty);
+
+        CREATE TRIGGER ParentOffset_Position_updated
+        AFTER UPDATE ON Position
+        BEGIN
+            UPDATE ParentOffset
+            SET is_dirty = TRUE
+            FROM (
+                SELECT id
+                FROM entity
+                WHERE parent_id = new.entity_id
+            ) AS t
+            WHERE ParentOffset.entity_id = t.id;
+        END;
+
+        CREATE TRIGGER ParentOffset_Rotation_updated
+        AFTER UPDATE ON Rotation
+        BEGIN
+            UPDATE ParentOffset
+            SET is_dirty = TRUE
+            FROM (
+                SELECT id
+                FROM entity
+                WHERE parent_id = new.entity_id
+            ) AS t
+            WHERE ParentOffset.entity_id = t.id;
+        END;
+    ]]
 }
 
 component "ScreenRect" {

@@ -7,10 +7,11 @@
 #include "lua_scripting.hpp"
 #include "../memory.hpp"
 #include "../ecsql/assetio.hpp"
+#include "../ecsql/background_system.hpp"
 #include "../ecsql/prepared_sql.hpp"
 #include "../ecsql/system.hpp"
 
-static void lua_register_system(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table) {
+static void lua_register_system(sol::this_state L, ecsql::World& world, std::string_view name, sol::table table, bool use_fixed_delta) {
 	sol::function lua_function;
 	std::vector<std::string> sqls;
 
@@ -39,10 +40,10 @@ static void lua_register_system(sol::this_state L, ecsql::World& world, std::str
 					throw result.get<sol::error>();
 				}
 			}
-		});
+		}, use_fixed_delta);
 	}
 	else {
-		world.register_system({ prefixed_name, sqls });
+		world.register_system({ prefixed_name, sqls }, use_fixed_delta);
 	}
 }
 
@@ -66,63 +67,6 @@ static void lua_register_component(sol::this_state L, ecsql::World& world, std::
 		additional_schema,
 		allow_duplicate,
 	});
-}
-
-static ecsql::EntityID lua_create_entity(sol::this_state L, ecsql::World& world, std::optional<std::string_view> name, sol::table table) {
-	auto parent_id = table.get<std::optional<ecsql::EntityID>>("parent_id");
-	ecsql::EntityID entity_id = world.create_entity(name, parent_id);
-	for (auto [key, value] : table) {
-		if (key.as<std::string_view>() == "parent_id") {
-			continue;
-		}
-
-		sol::table component_values = value;
-
-		std::string sql = "INSERT INTO \"";
-		sql += key.as<std::string_view>();
-		sql += "\"(entity_id";
-		int value_count = 0;
-		for (auto [key, _] : component_values) {
-			sql += ", ";
-			sql += key.as<std::string_view>();
-			value_count++;
-		}
-		sql += ") VALUES(?";
-		for (int i = 0; i < value_count; i++) {
-			sql += ", ?";
-		}
-		sql += ")";
-
-		ecsql::PreparedSQL preparedSql(world.get_db().get(), sql);
-		preparedSql.bind(1, entity_id);
-
-		int i = 2;
-		for (auto [_, value] : component_values) {
-			switch (value.get_type()) {
-				case sol::type::none:
-				case sol::type::lua_nil:
-					preparedSql.bind_null(i++);
-					break;
-
-				case sol::type::string:
-					preparedSql.bind_text(i++, value.as<std::string_view>());
-					break;
-
-				case sol::type::number:
-					preparedSql.bind_double(i++, value.as<lua_Number>());
-					break;
-
-				case sol::type::boolean:
-					preparedSql.bind_bool(i++, value.as<bool>());
-					break;
-
-				default:
-					luaL_error(L, "Unsupported type '%s' for component data", lua_typename(L, (int) value.get_type()));
-			}
-		}
-		preparedSql();
-	}
-	return entity_id;
 }
 
 static ecsql::ExecutedSQL lua_prepared_sql_call(sol::this_state L, ecsql::PreparedSQL& prepared_sql, sol::variadic_args args) {
@@ -187,7 +131,12 @@ static void register_usertypes(sol::state_view& state) {
 		sol::no_construction(),
 		"register_system", lua_register_system,
 		"register_component", lua_register_component,
-		"create_entity", lua_create_entity,
+		"create_entity", &ecsql::World::create_entity,
+		"delete_entity", sol::overload(
+			sol::resolve<int(ecsql::EntityID)>(&ecsql::World::delete_entity),
+			sol::resolve<int(std::string_view)>(&ecsql::World::delete_entity)
+		),
+		"find_entity", &ecsql::World::find_entity,
 		"prepare_sql", [](ecsql::World& world, std::string_view sql, sol::optional<bool> is_persistent) {
 			return world.prepare_sql(sql, is_persistent.value_or(false));
 		},
@@ -249,20 +198,24 @@ static void register_usertypes(sol::state_view& state) {
 			[](float xy) -> Vector2 { return { .x = xy, .y = xy }; },
 			[](float x, float y) -> Vector2 { return { .x = x, .y = y }; }
 		),
-		"x", sol::property(&Vector2::x),
-		"y", sol::property(&Vector2::y),
+		"x", sol::property(&Vector2::x, &Vector2::x),
+		"y", sol::property(&Vector2::y, &Vector2::y),
 		"normalized", Vector2Normalize,
+		"rotated", Vector2Rotate,
 		"unpack", [](const Vector2& v) { return std::make_pair(v.x, v.y); },
+		sol::meta_method::addition, Vector2Add,
 		sol::meta_method::to_string, [](const Vector2& v) { return std::format("({}, {})", v.x, v.y); }
 	);
+	state["RAD2DEG"] = RAD2DEG;
+	state["DEG2RAD"] = DEG2RAD;
 }
 
 static int string_replace(lua_State *L) {
-    const char *s = luaL_checkstring(L, 1);
-    const char *p = luaL_checkstring(L, 2);
-    const char *r = luaL_checkstring(L, 3);
-    luaL_gsub(L, s, p, r);
-    return 1;
+	const char *s = luaL_checkstring(L, 1);
+	const char *p = luaL_checkstring(L, 2);
+	const char *r = luaL_checkstring(L, 3);
+	luaL_gsub(L, s, p, r);
+	return 1;
 }
 
 LuaScripting::LuaScripting(ecsql::World& world)
@@ -301,10 +254,18 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	if (!result.valid()) {
 		throw result.get<sol::error>();
 	}
+
+	world.register_background_system({
+		"lua.gc",
+		[this]() {
+			lua_gc(state, LUA_GCCOLLECT);
+		},
+	});
 }
 
 LuaScripting::~LuaScripting() {
 	world.remove_systems_with_prefix("lua.");
+	world.remove_background_systems_with_prefix("lua.");
 }
 
 LuaScripting::operator lua_State *() const {

@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include "background_system.hpp"
 #include "component.hpp"
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
@@ -35,6 +36,10 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 	return db;
 }
 
+static void set_thread_name(int i) {
+	tracy::SetThreadName(std::format("ecsql-{}", i).c_str());
+}
+
 World::World()
 	: World(DEFAULT_DB_NAME)
 {
@@ -47,7 +52,16 @@ World::World(const char *db_name)
 	, rollback_stmt(db.get(), "ROLLBACK", true)
 	, create_entity_stmt(db.get(), Entity::insert_sql, true)
 	, delete_entity_stmt(db.get(), Entity::delete_sql, true)
+	, delete_entity_by_name_stmt(db.get(), Entity::delete_by_name_sql, true)
+	, find_entity_stmt(db.get(), Entity::find_by_name_sql, true)
 	, update_delta_time_stmt(db.get(), time::update_delta_sql, true)
+	, select_fixed_delta_time_stmt(db.get(), time::select_fixed_delta_time_sql, true)
+	, update_fixed_delta_progress_stmt(db.get(), time::update_fixed_delta_progress_sql, true)
+#ifdef __EMSCRIPTEN__
+	, dispatch_queue(0)
+#else
+	, dispatch_queue(2, set_thread_name)
+#endif
 {
 	sqlite3_preupdate_hook(db.get(), preupdate_hook, this);
 }
@@ -66,20 +80,23 @@ void World::register_component(Component&& component) {
 	component.prepare(db.get());
 }
 
-void World::register_system(const System& system) {
+void World::register_system(const System& system, bool use_fixed_delta) {
 	std::vector<PreparedSQL> prepared_sql;
 	system.prepare(db.get(), prepared_sql);
-	systems.emplace_back(system, std::move(prepared_sql));
+	(use_fixed_delta ? fixed_systems : systems).emplace_back(system, std::move(prepared_sql));
 }
 
-void World::register_system(System&& system) {
+void World::register_system(System&& system, bool use_fixed_delta) {
 	std::vector<PreparedSQL> prepared_sql;
 	system.prepare(db.get(), prepared_sql);
-	systems.emplace_back(std::move(system), std::move(prepared_sql));
+	(use_fixed_delta ? fixed_systems : systems).emplace_back(std::move(system), std::move(prepared_sql));
 }
 
 void World::remove_system(std::string_view system_name) {
 	std::erase_if(systems, [system_name](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name == system_name;
+	});
+	std::erase_if(fixed_systems, [system_name](std::tuple<System, std::vector<PreparedSQL>> t) {
 		return std::get<0>(t).name == system_name;
 	});
 }
@@ -92,6 +109,9 @@ void World::remove_systems_with_prefix(std::string_view system_name_prefix) {
 	std::erase_if(systems, [system_name_prefix](std::tuple<System, std::vector<PreparedSQL>> t) {
 		return std::get<0>(t).name.starts_with(system_name_prefix);
 	});
+	std::erase_if(fixed_systems, [system_name_prefix](std::tuple<System, std::vector<PreparedSQL>> t) {
+		return std::get<0>(t).name.starts_with(system_name_prefix);
+	});
 }
 
 void World::register_hook_system(const HookSystem& system) {
@@ -101,6 +121,7 @@ void World::register_hook_system(const HookSystem& system) {
 	}
 	it->second.push_back(system);
 }
+
 void World::register_hook_system(HookSystem&& system) {
 	auto it = hook_systems.find(system.component_name);
 	if (it == hook_systems.end()) {
@@ -109,23 +130,119 @@ void World::register_hook_system(HookSystem&& system) {
 	it->second.push_back(std::move(system));
 }
 
+void World::register_background_system(const BackgroundSystem& system) {
+	background_systems.emplace_back(system, std::future<void>());
+}
+
+void World::register_background_system(BackgroundSystem&& system) {
+	background_systems.emplace_back(std::move(system), std::future<void>());
+}
+
+void World::remove_background_system(std::string_view system_name) {
+	std::erase_if(background_systems, [system_name](std::pair<BackgroundSystem, std::future<void>>& t) {
+		return t.first.get_name() == system_name;
+	});
+}
+
+void World::remove_background_system(const BackgroundSystem& system) {
+	remove_background_system(system.get_name());
+}
+
+void World::remove_background_systems_with_prefix(std::string_view system_name_prefix) {
+	std::erase_if(background_systems, [system_name_prefix](std::pair<BackgroundSystem, std::future<void>>& t) {
+		return t.first.get_name().starts_with(system_name_prefix);
+	});
+}
+
 EntityID World::create_entity(std::optional<std::string_view> name, std::optional<EntityID> parent) {
 	create_entity_stmt(name, parent);
 	return sqlite3_last_insert_rowid(db.get());
 }
 
-bool World::delete_entity(EntityID id) {
-	return delete_entity_stmt(id).get<bool>();
+int World::delete_entity(EntityID id) {
+	delete_entity_stmt(id);
+	return sqlite3_changes(db.get());
 }
 
-void World::update(float time_delta) {
+int World::delete_entity(std::string_view name) {
+	delete_entity_by_name_stmt(name);
+	return sqlite3_changes(db.get());
+}
+
+std::optional<EntityID> World::find_entity(std::string_view name) {
+	if (auto it = find_entity_stmt(name).begin()) {
+		return it.row().get<EntityID>();
+	}
+	else {
+		return std::nullopt;
+	}
+}
+
+
+void World::begin_transaction() {
+	ZoneScopedN("begin_transaction");
+	if (commit_or_rollback_result.valid()) {
+		commit_or_rollback_result.get();
+	}
+	begin_stmt();
+}
+
+void World::commit_transaction() {
+	ZoneScoped;
+	if (commit_or_rollback_result.valid()) {
+		commit_or_rollback_result.get();
+	}
+	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
+		ZoneScopedN("commit_transaction.async");
+		commit_stmt();
+	});
+}
+
+void World::rollback_transaction() {
+	ZoneScoped;
+	if (commit_or_rollback_result.valid()) {
+		commit_or_rollback_result.get();
+	}
+	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
+		ZoneScoped;
+		commit_stmt();
+	});
+}
+
+void World::update(float delta_time) {
 	inside_transaction([=](World& self) {
 		{
 			ZoneScopedN("update_delta_time");
-			self.update_delta_time_stmt(time_delta);
+			self.update_delta_time_stmt(delta_time);
 		}
+
+		// make sure all background systems finished before starting a new frame
+		for (auto&& [system, future] : self.background_systems) {
+			if (system.should_join_before_new_frame() && future.valid()) {
+				future.get();
+			}
+		}
+
+		// fixed update
+		float fixed_delta_time = self.select_fixed_delta_time_stmt().get<float>();
+		float fixed_delta_progress = self.fixed_delta_executor.execute(delta_time, fixed_delta_time, [&]() {
+			for (auto&& [system, prepared_sql] : self.fixed_systems) {
+				system(self, prepared_sql);
+			}
+		});
+		self.update_fixed_delta_progress_stmt(fixed_delta_progress);
+
+		// regular update
 		for (auto&& [system, prepared_sql] : self.systems) {
 			system(self, prepared_sql);
+		}
+
+		// lastly, dispatch background systems
+		for (auto&& [system, future] : self.background_systems) {
+			if (future.valid()) {
+				future.get();
+			}
+			future = self.dispatch_queue.dispatch([&]() { system(); });
 		}
 	});
 }
@@ -188,13 +305,13 @@ void World::create_function(const char *name, int argument_count, void (*fn)(sql
 
 // private methods
 void World::preupdate_hook(
-    void *pCtx,                   /* Copy of third arg to preupdate_hook() */
-    sqlite3 *db,                  /* Database handle */
-    int op,                       /* SQLITE_UPDATE, DELETE or INSERT */
-    char const *zDb,              /* Database name */
-    char const *zName,            /* Table name */
-    sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
-    sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
+	void *pCtx,                   /* Copy of third arg to preupdate_hook() */
+	sqlite3 *db,                  /* Database handle */
+	int op,                       /* SQLITE_UPDATE, DELETE or INSERT */
+	char const *zDb,              /* Database name */
+	char const *zName,            /* Table name */
+	sqlite3_int64 iKey1,          /* Rowid of row about to be deleted/updated */
+	sqlite3_int64 iKey2           /* New rowid value (for a rowid UPDATE) */
 ) {
 	World *world = (World *) pCtx;
 	switch (op) {

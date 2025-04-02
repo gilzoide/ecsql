@@ -1,9 +1,17 @@
 add_library(libs INTERFACE)
 
+# box2d
+add_subdirectory(box2d)
+target_link_libraries(libs INTERFACE box2d)
+
 # cdedent
 add_subdirectory(cdedent)
 target_link_libraries(libs INTERFACE cdedent)
 target_compile_features(cdedent PRIVATE cxx_std_17)
+
+# Dispatch Queue
+add_subdirectory(dispatch-queue)
+target_link_libraries(libs INTERFACE dispatch_queue)
 
 # Flyweight.hpp
 add_subdirectory(flyweight.hpp)
@@ -46,7 +54,7 @@ target_link_libraries(libs INTERFACE raylib)
 target_include_directories(libs INTERFACE reflect)
 
 # Sol2 v3.0
-set(SOL2_LUA_VERSION "5.4.7")
+set(SOL2_LUA_VERSION "5.4.7" CACHE STRING "")
 add_subdirectory(sol2)
 target_compile_definitions(sol2
   INTERFACE

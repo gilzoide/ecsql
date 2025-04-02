@@ -1,3 +1,4 @@
+#include <cdedent.hpp>
 #include <config.h>
 #include <raylib.h>
 #include <reflect>
@@ -39,18 +40,60 @@ void register_key_handler(ecsql::World& world) {
 			auto update_hold = sqls[3];
 
 			// 1. reset all previously released keys
-			reset_released();
+			{
+				ZoneScopedN("reset_released");
+				reset_released();
+			}
 
 			// 2. mark released keys
-			update_released();
+			{
+				ZoneScopedN("update_released");
+				update_released();
+			}
 
 			// 3. pressed keys that weren't released are now on hold
-			update_hold();
+			{
+				ZoneScopedN("update_hold");
+				update_hold();
+			}
 
 			// 4. add newly pressed keys
-			while (int key = GetKeyPressed()) {
-				set_pressed(key);
+			{
+				ZoneScopedN("set_pressed");
+				while (int key = GetKeyPressed()) {
+					set_pressed(key);
+				}
 			}
 		}
+	});
+
+	// TODO: handle mouse and gamepad inputs before updating input_action
+
+	world.register_system({
+		"UpdateInputActions",
+		R"(
+			REPLACE INTO input_action(action, state)
+			SELECT action, MIN(state) AS state
+			FROM input_map
+				JOIN keyboard ON input = name
+			GROUP BY action
+		)"_dedent,
+	});
+
+	world.register_system({
+		"UpdateInputActions1D",
+		R"(
+			UPDATE input_action_axis
+			SET value = t.value
+			FROM (
+				SELECT
+					input_action_axis.action,
+					positive.is_down - negative.is_down AS value
+				FROM input_action_axis
+					JOIN input_action AS positive ON positive.action = action_positive
+					JOIN input_action AS negative ON negative.action = action_negative
+			) AS t
+			WHERE input_action_axis.action = t.action
+		)",
 	});
 }

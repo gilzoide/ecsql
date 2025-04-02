@@ -8,7 +8,6 @@
 
 #include "../ecsql/component.hpp"
 #include "../ecsql/hook_system.hpp"
-#include "../ecsql/sql_hook_row.hpp"
 
 using namespace ecsql;
 

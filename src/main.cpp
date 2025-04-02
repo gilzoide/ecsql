@@ -10,14 +10,14 @@
 #include <sol/sol.hpp>
 #include <tracy/Tracy.hpp>
 
-#include "final_schema.h"
 #include "memory.hpp"
 #include "sqlite_functions.hpp"
+#include "ecsql/additional_sql.hpp"
 #include "ecsql/assetio.hpp"
 #include "ecsql/component.hpp"
 #include "ecsql/hook_system.hpp"
-#include "ecsql/screen.hpp"
 #include "ecsql/world.hpp"
+#include "physics/physics.hpp"
 #include "scripting/lua_scripting.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/key_handler.hpp"
@@ -106,8 +106,6 @@ int main(int argc, const char **argv) {
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
 	register_sqlite_functions(world);
 
-	LuaScripting lua(world);
-
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {
 		world.register_component(*component);
@@ -115,12 +113,18 @@ int main(int argc, const char **argv) {
 	ecsql::HookSystem::foreach_static_linked_list([&](ecsql::HookSystem *system) {
 		world.register_hook_system(*system);
 	});
-	world.execute_sql_script(final_schema);
+	ecsql::AdditionalSQL::foreach_static_linked_list([&](ecsql::AdditionalSQL *additional_sql) {
+		world.execute_sql_script(additional_sql->get_sql().c_str());
+	});
 
 	// Systems
 	register_key_handler(world);
 	register_update_yoga(world);
 	register_draw_systems(world);
+
+	// Other engine features, must be created after world components are registered
+	LuaScripting lua(world);
+	Physics physics(world);
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.lua";
@@ -133,11 +137,11 @@ int main(int argc, const char **argv) {
 	}
 
 #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(&game_loop, &world, 0, 1);
+	emscripten_set_main_loop_arg(&game_loop, &world, 0, 1);
 #else
-    while (!WindowShouldClose()) {
+	while (!WindowShouldClose()) {
 		game_loop(world);
-    }
+	}
 #endif
 	CloseWindow();
 

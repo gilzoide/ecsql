@@ -1,4 +1,5 @@
 PRAGMA foreign_keys = ON;
+PRAGMA synchronous = normal;
 
 -- Entity
 CREATE TABLE entity(
@@ -24,8 +25,13 @@ CREATE VIEW entity_parents AS
   SELECT * FROM parents;
 
 -- Time singleton
-CREATE TABLE time(delta, uptime);
-INSERT INTO time(delta, uptime) VALUES(0, 0);
+CREATE TABLE time(
+  delta DEFAULT 0,
+  uptime DEFAULT 0,
+  fixed_delta DEFAULT (1.0 / 60.0),
+  fixed_delta_progress DEFAULT 0
+);
+INSERT INTO time DEFAULT VALUES;
 
 -- Screen singleton
 CREATE TABLE screen(
@@ -39,7 +45,7 @@ CREATE TABLE keyboard(
   key INTEGER PRIMARY KEY,
   name,
   state,  -- one of: NULL, 'pressed', 'hold', 'released'
-  is_down AS (state IN ('pressed', 'hold'))
+  is_down AS (COALESCE(state IN ('pressed', 'hold'), FALSE))
 );
 CREATE INDEX keyboard_state ON keyboard(state);
 CREATE INDEX keyboard_name_state ON keyboard(name, state);
@@ -48,10 +54,17 @@ CREATE TABLE input_map(
   action,
   input
 );
-CREATE INDEX input_map_action ON input_map(action);
+CREATE UNIQUE INDEX input_map_action_input ON input_map(action, input);
 
-CREATE VIEW input_action AS
-  SELECT action, MIN(state) AS state, ifnull(state IN ('pressed', 'hold'), 0) AS is_down
-  FROM input_map
-    JOIN keyboard ON input = name
-  GROUP BY action;
+CREATE TABLE input_action(
+  action TEXT PRIMARY KEY,
+  state,
+  is_down AS (COALESCE(state IN ('pressed', 'hold'), FALSE))
+);
+
+CREATE TABLE input_action_axis(
+  action TEXT PRIMARY KEY,
+  action_positive,
+  action_negative,
+  value
+);
