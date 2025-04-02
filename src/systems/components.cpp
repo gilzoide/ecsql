@@ -250,7 +250,7 @@ ecsql::AdditionalSQL YogaNodeTriggers(R"(
 	AFTER INSERT ON YogaNode
 	BEGIN
 		UPDATE YogaNode
-		SET is_text_dirty = exists(SELECT entity_id FROM Text WHERE entity_id = new.entity_id)
+		SET is_text_dirty = EXISTS(SELECT entity_id FROM Text WHERE entity_id = new.entity_id)
 		WHERE entity_id = new.entity_id;
 	END;
 
