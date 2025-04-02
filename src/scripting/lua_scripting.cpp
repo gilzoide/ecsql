@@ -203,6 +203,7 @@ static void register_usertypes(sol::state_view& state) {
 		"normalized", Vector2Normalize,
 		"rotated", Vector2Rotate,
 		"unpack", [](const Vector2& v) { return std::make_pair(v.x, v.y); },
+		sol::meta_method::addition, Vector2Add,
 		sol::meta_method::to_string, [](const Vector2& v) { return std::format("({}, {})", v.x, v.y); }
 	);
 	state["RAD2DEG"] = RAD2DEG;
