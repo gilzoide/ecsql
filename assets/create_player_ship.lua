@@ -29,7 +29,7 @@ return function()
             cooldown = tuning.PLAYER_SHOOT_COOLDOWN,
         },
     }
-    entity "PlayerShipShape1" {
+    entity "PlayerShip_Shape1" {
         Shape = {
             body = player_ship,
             density = 0.5,
@@ -42,7 +42,7 @@ return function()
             radius = 10,
         },
     }
-    entity "PlayerShipShape2" {
+    entity "PlayerShip_Shape2" {
         Shape = {
             body = player_ship,
             density = 0.5,

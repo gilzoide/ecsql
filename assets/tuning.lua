@@ -1,4 +1,7 @@
 return {
+    ROOM_WIDTH = 800,
+    ROOM_HEIGHT = 600,
+
     BULLET_RADIUS = 13,
 
     PLAYER_SPEED_LINEAR = 1400000,
