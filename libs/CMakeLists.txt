@@ -54,7 +54,7 @@ target_link_libraries(libs INTERFACE raylib)
 target_include_directories(libs INTERFACE reflect)
 
 # Sol2 v3.0
-set(SOL2_LUA_VERSION "5.4.7")
+set(SOL2_LUA_VERSION "5.4.7" CACHE STRING "")
 add_subdirectory(sol2)
 target_compile_definitions(sol2
   INTERFACE
