@@ -83,6 +83,11 @@ World = {
     --- @param self World
     --- @param sql string
     execute_sql_script = function(self, sql) end,
+
+    --- @param self World
+    --- @param filename string
+    --- @param db_name string|nil
+    backup_into = function(self, filename, db_name) end,
 }
 
 --- @class PreparedSQL

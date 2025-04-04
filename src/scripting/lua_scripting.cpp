@@ -144,7 +144,10 @@ static void register_usertypes(sol::state_view& state) {
 			ecsql::PreparedSQL prepared_sql = world.prepare_sql(sql);
 			return lua_prepared_sql_call(L, prepared_sql, args);
 		},
-		"execute_sql_script", &ecsql::World::execute_sql_script
+		"execute_sql_script", &ecsql::World::execute_sql_script,
+		"backup_into", [](ecsql::World& world, const char *filename, std::optional<const char *>db_name) {
+			world.backup_into(filename, db_name.value_or("main"));
+		}
 	);
 
 	state.new_usertype<ecsql::PreparedSQL>(
