@@ -1,0 +1,11 @@
+{
+    "workspace": {
+        "library": [
+            "src/scripting/lua_globals.lua",
+            "tools/lualib"
+        ]
+    },
+    "diagnostics": {
+        "disable": ["lowercase-global"]
+    }
+}

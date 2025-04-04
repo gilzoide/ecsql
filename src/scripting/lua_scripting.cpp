@@ -206,8 +206,6 @@ static void register_usertypes(sol::state_view& state) {
 		sol::meta_method::addition, Vector2Add,
 		sol::meta_method::to_string, [](const Vector2& v) { return std::format("({}, {})", v.x, v.y); }
 	);
-	state["RAD2DEG"] = RAD2DEG;
-	state["DEG2RAD"] = DEG2RAD;
 }
 
 static int string_replace(lua_State *L) {
@@ -248,6 +246,8 @@ LuaScripting::LuaScripting(ecsql::World& world)
 
 	register_usertypes(state);
 	state["world"] = &world;
+	state["RAD2DEG"] = RAD2DEG;
+	state["DEG2RAD"] = DEG2RAD;
 	register_colors(state);
 
 	auto result = state.do_string(std::string_view(lua_globals, lua_globals_size), "lua_globals.lua");
