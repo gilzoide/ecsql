@@ -15,14 +15,18 @@
 namespace ecsql {
 
 #if defined(DEBUG) && !defined(NDEBUG) && !defined(__EMSCRIPTEN__)
-static const char DEFAULT_DB_NAME[] = "ecsql_world.sqlite3";
-static const char LAST_DB_NAME[] = "ecsql_world-backup10.sqlite3";
+static const char DEFAULT_WORLD_DB_NAME[] = "ecsql_world.sqlite3";
+static const char DEFAULT_SAVE_DB_NAME[] = "save.sqlite3";
+static const char LAST_WORLD_DB_NAME[] = "ecsql_world-backup10.sqlite3";
+static const char LAST_SAVE_DB_NAME[] = "save-backup10.sqlite3";
 #else
-static const char DEFAULT_DB_NAME[] = ":memory:";
-static const char LAST_DB_NAME[] = "";
+static const char DEFAULT_WORLD_DB_NAME[] = ":memory:";
+static const char DEFAULT_SAVE_DB_NAME[] = "save.dat";
+static const char LAST_WORLD_DB_NAME[] = "";
+static const char LAST_SAVE_DB_NAME[] = "";
 #endif
 
-static sqlite3 *ecsql_create_db(const char *db_name) {
+static sqlite3 *ecsql_create_db(const char *db_name, const char *save_db_name) {
 	std::remove(db_name);
 
 	sqlite3 *db;
@@ -30,8 +34,11 @@ static sqlite3 *ecsql_create_db(const char *db_name) {
 	if (res != SQLITE_OK) {
 		throw std::runtime_error(sqlite3_errmsg(db));
 	}
-
 	execute_sql_script(db, world_schema);
+
+	if (save_db_name) {
+		PreparedSQL(db, "ATTACH ? AS save")(save_db_name);
+	}
 
 	return db;
 }
@@ -41,12 +48,17 @@ static void set_thread_name(int i) {
 }
 
 World::World()
-	: World(DEFAULT_DB_NAME)
+	: World(DEFAULT_WORLD_DB_NAME)
 {
 }
 
-World::World(const char *db_name)
-	: db(ecsql_create_db(db_name ?: DEFAULT_DB_NAME), sqlite3_close_v2)
+World::World(const char *world_db_path)
+	: World(world_db_path, DEFAULT_SAVE_DB_NAME)
+{
+}
+
+World::World(const char *world_db_path, const char *save_db_path)
+	: db(ecsql_create_db(world_db_path ?: DEFAULT_WORLD_DB_NAME, save_db_path ?: DEFAULT_SAVE_DB_NAME), sqlite3_close_v2)
 	, begin_stmt(db.get(), "BEGIN", true)
 	, commit_stmt(db.get(), "COMMIT", true)
 	, rollback_stmt(db.get(), "ROLLBACK", true)
@@ -67,8 +79,11 @@ World::World(const char *db_name)
 }
 
 World::~World() {
-	if (LAST_DB_NAME[0]) {
-		backup_into(LAST_DB_NAME);
+	if (LAST_WORLD_DB_NAME[0]) {
+		backup_into(LAST_WORLD_DB_NAME);
+	}
+	if (LAST_SAVE_DB_NAME[0]) {
+		backup_into(LAST_SAVE_DB_NAME, "save");
 	}
 	execute_all_prehooks(HookType::OnDelete);
 }
@@ -251,37 +266,37 @@ void World::on_window_resized(int new_width, int new_height) {
 	execute_sql(screen::update_sql, new_width, new_height);
 }
 
-bool World::backup_into(const char *db_name) {
+bool World::backup_into(const char *filename, const char *db_name) {
 	sqlite3 *db;
-	if (sqlite3_open_v2(db_name, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr) != SQLITE_OK) {
-		std::cerr << "Error backing up into \"" << db_name << "\": " << sqlite3_errmsg(db) << std::endl;
+	if (sqlite3_open_v2(filename, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr) != SQLITE_OK) {
+		std::cerr << "Error backing up into \"" << filename << "\": " << sqlite3_errmsg(db) << std::endl;
 		return false;
 	}
-	bool result = backup_into(db);
+	bool result = backup_into(db, db_name);
 	sqlite3_close(db);
 	return result;
 }
 
-bool World::backup_into(sqlite3 *db) {
-	sqlite3_backup *backup = sqlite3_backup_init(db, "main", this->db.get(), "main");
+bool World::backup_into(sqlite3 *db, const char *db_name) {
+	sqlite3_backup *backup = sqlite3_backup_init(db, "main", this->db.get(), db_name);
 	sqlite3_backup_step(backup, -1);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
 
-bool World::restore_from(const char *db_name) {
+bool World::restore_from(const char *filename, const char *db_name) {
 	sqlite3 *db;
-	if (sqlite3_open_v2(db_name, &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
-		std::cerr << "Error restoring from \"" << db_name << "\": " << sqlite3_errmsg(db) << std::endl;
+	if (sqlite3_open_v2(filename, &db, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
+		std::cerr << "Error restoring from \"" << filename << "\": " << sqlite3_errmsg(db) << std::endl;
 		return false;
 	}
-	bool result = restore_from(db);
+	bool result = restore_from(db, db_name);
 	sqlite3_close(db);
 	return result;
 }
 
-bool World::restore_from(sqlite3 *db) {
+bool World::restore_from(sqlite3 *db, const char *db_name) {
 	execute_all_prehooks(HookType::OnDelete);
-	sqlite3_backup *backup = sqlite3_backup_init(this->db.get(), "main", db, "main");
+	sqlite3_backup *backup = sqlite3_backup_init(this->db.get(), db_name, db, "main");
 	sqlite3_backup_step(backup, -1);
 	execute_all_prehooks(HookType::OnInsert);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;

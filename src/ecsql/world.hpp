@@ -28,7 +28,8 @@ class System;
 class World {
 public:
 	World();
-	World(const char *db_name);
+	World(const char *world_db_path);
+	World(const char *world_db_path, const char *save_db_path);
 	~World();
 
 	void register_component(const Component& component);
@@ -84,11 +85,11 @@ public:
 
 	void on_window_resized(int new_width, int new_height);
 
-	bool backup_into(const char *db_name);
-	bool backup_into(sqlite3 *db);
+	bool backup_into(const char *filename, const char *db_name = "main");
+	bool backup_into(sqlite3 *db, const char *db_name = "main");
 
-	bool restore_from(const char *db_name);
-	bool restore_from(sqlite3 *db);
+	bool restore_from(const char *filename, const char *db_name = "main");
+	bool restore_from(sqlite3 *db, const char *db_name = "main");
 
 	std::shared_ptr<sqlite3> get_db() const;
 	PreparedSQL prepare_sql(std::string_view sql, bool is_persistent = false);
