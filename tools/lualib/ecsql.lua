@@ -1,3 +1,6 @@
+--- @type boolean|nil
+DEBUG = nil
+
 --- @param s string
 --- @param pattern string
 --- @param replacement string

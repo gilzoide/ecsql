@@ -221,6 +221,10 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	, world(world)
 {
 	state.open_libraries();
+#if defined(DEBUG) && !defined(NDEBUG)
+	state["DEBUG"] = true;
+#endif
+
 	state["string"]["replace"] = string_replace;
 
 	auto ecsql_namespace = state["ecsql"].get_or_create<sol::table>();
