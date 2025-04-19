@@ -1,12 +1,15 @@
 #include <stdexcept>
 
 #include <sqlite3.h>
+#include <tracy/Tracy.hpp>
 
 #include "prepared_sql.hpp"
 
 namespace ecsql {
 
 static sqlite3_stmt *prepare_statement(sqlite3 *db, std::string_view str, bool is_persistent) {
+	ZoneScoped;
+	ZoneText(str.data(), str.size());
 	sqlite3_stmt *stmt;
 	int res = sqlite3_prepare_v3(db, str.data(), str.size(), is_persistent ? SQLITE_PREPARE_PERSISTENT : 0, &stmt, NULL);
 	if (res != SQLITE_OK) {

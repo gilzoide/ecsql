@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <tracy/Tracy.hpp>
+
 #include "executed_sql.hpp"
 
 namespace ecsql {
@@ -30,6 +32,8 @@ ExecutedSQL::RowIterator::RowIterator(std::shared_ptr<sqlite3_stmt> stmt)
 }
 
 ExecutedSQL::RowIterator& ExecutedSQL::RowIterator::operator++() {
+	ZoneScopedN("step SQL");
+	ZoneTextF("%s", sqlite3_sql(stmt.get()));
 	switch (sqlite3_step(stmt.get())) {
 		case SQLITE_ROW:
 			break;
