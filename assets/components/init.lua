@@ -101,3 +101,5 @@ component "SpawnOnAction" {
     "action",
     "last_spawn_time",
 }
+
+component "UptimeText" {}

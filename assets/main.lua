@@ -32,3 +32,23 @@ entity "Title" {
         align_self = "center",
     },
 }
+entity "TextVSpacing" {
+    YogaNode = {
+        parent_id = FullScreenRect,
+        flex_grow = 1,
+    },
+}
+entity "UptimeText" {
+    Text = {
+        text = "oi",
+        size = 20,
+    },
+    Color = BLACK,
+    YogaNode = {
+        parent_id = FullScreenRect,
+        margin_right = 16,
+        margin_bottom = 16,
+        align_self = "flex-end",
+    },
+    UptimeText = {},
+}
