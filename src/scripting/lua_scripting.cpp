@@ -98,7 +98,7 @@ static ecsql::ExecutedSQL lua_prepared_sql_call(sol::this_state L, ecsql::Prepar
 	return prepared_sql.execute();
 }
 
-static sol::object lua_sql_row_get(sol::this_state L, ecsql::ExecutedSQL::RowIterator& it, int index) {
+static sol::object lua_sql_row_get(sol::this_state L, const ecsql::ExecutedSQL::RowIterator& it, int index) {
 	ecsql::SQLRow row = *it;
 	index--;
 	if (index < 0 || index >= row.column_count()) {
@@ -123,6 +123,16 @@ static sol::object lua_sql_row_get(sol::this_state L, ecsql::ExecutedSQL::RowIte
 		default:
 			return sol::lua_nil;
 	}
+}
+
+static sol::variadic_results lua_sql_row_get_all(sol::this_state L, const ecsql::ExecutedSQL::RowIterator& it) {
+	ecsql::SQLRow row = *it;
+
+	sol::variadic_results results;
+	for (int i = 1; i <= row.column_count(); i++) {
+		results.push_back(lua_sql_row_get(L, it, i));
+	}
+	return results;
 }
 
 static void register_usertypes(sol::state_view& state) {
@@ -184,14 +194,17 @@ static void register_usertypes(sol::state_view& state) {
 			auto it = executed_sql.begin();
 			return (*it).column_count();
 		},
-		"unpack", state["table"]["unpack"].get<sol::object>()
+		"unpack", [](sol::this_state L, ecsql::ExecutedSQL& executed_sql) {
+			auto it = executed_sql.begin();
+			return lua_sql_row_get_all(L, it);
+		}
 	);
 
 	state.new_usertype<ecsql::ExecutedSQL::RowIterator>(
 		"SQLRowIterator",
 		sol::meta_method::index, lua_sql_row_get,
 		sol::meta_method::length, [](ecsql::ExecutedSQL::RowIterator& it) { return (*it).column_count(); },
-		"unpack", state["table"]["unpack"].get<sol::object>()
+		"unpack", lua_sql_row_get_all
 	);
 
 	state.new_usertype<Vector2>(
