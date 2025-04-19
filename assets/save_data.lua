@@ -4,6 +4,10 @@ INSERT OR IGNORE INTO save.schema_version(rowid, version) VALUES(1, 0);
 ]])
 
 local MIGRATIONS = {
+    [[
+        CREATE TABLE save.statistics(total_uptime FLOAT DEFAULT 0);
+        INSERT INTO save.statistics DEFAULT VALUES;
+    ]],
 }
 
 local current_version = sql("SELECT version FROM save.schema_version")[1]

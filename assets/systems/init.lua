@@ -154,3 +154,11 @@ system "UpdateParentOffset" {
         end
     end,
 }
+
+system "UpdateUptimeStatistics" {
+    [[
+        UPDATE save.statistics
+        SET total_uptime = total_uptime + time.delta
+        FROM time
+    ]],
+}
