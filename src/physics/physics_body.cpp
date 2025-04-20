@@ -7,6 +7,10 @@
 #include "physics_world.hpp"
 #include "../ecsql/system.hpp"
 
+BodyUserData *BodyUserData::from(b2BodyId body_id) {
+	return (BodyUserData *) b2Body_GetUserData(body_id);
+}
+
 std::unordered_map<ecsql::EntityID, b2BodyId> body_map;
 std::vector<ecsql::EntityID> pending_create_body;
 
@@ -43,7 +47,7 @@ ecsql::HookSystem BodyHookSystem {
 				auto it = body_map.find(old_row.get<ecsql::EntityID>(0));
 				if (it != body_map.end()) {
 					if (b2Body_IsValid(it->second)) {
-						delete reinterpret_cast<BodyUserData *>(b2Body_GetUserData(it->second));
+						delete BodyUserData::from(it->second);
 						b2DestroyBody(it->second);
 					}
 					body_map.erase(it);
@@ -53,10 +57,6 @@ ecsql::HookSystem BodyHookSystem {
 		}
 	},
 };
-
-BodyUserData *BodyUserData::from(b2BodyId body_id) {
-	return (BodyUserData *) b2Body_GetUserData(body_id);
-}
 
 void register_physics_body(ecsql::World& world) {
 	world.register_system({

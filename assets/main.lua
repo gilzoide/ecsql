@@ -10,6 +10,7 @@ require "input_maps"
 require "physics"
 require "create_walls"(tuning.ROOM_WIDTH, tuning.ROOM_HEIGHT)
 require "create_player_ship"()
+require "create_target"()
 
 local FullScreenRect = entity "FullScreenRect" {
     YogaNode = {},

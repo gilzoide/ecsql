@@ -4,6 +4,10 @@
 #include "physics_shape.hpp"
 #include "../ecsql/system.hpp"
 
+ShapeUserData *ShapeUserData::from(b2ShapeId shape_id) {
+	return (ShapeUserData *) b2Shape_GetUserData(shape_id);
+}
+
 std::unordered_map<ecsql::EntityID, b2ShapeId> shape_map;
 std::vector<std::pair<ecsql::EntityID, ecsql::EntityID>> pending_create_shape;
 
@@ -79,6 +83,7 @@ ecsql::HookSystem ShapeHookSystem {
 				auto it = shape_map.find(old_row.get<ecsql::EntityID>(0));
 				if (it != shape_map.end()) {
 					if (b2Shape_IsValid(it->second)) {
+						delete ShapeUserData::from(it->second);
 						b2DestroyShape(it->second, true);
 					}
 					shape_map.erase(it);
@@ -170,6 +175,9 @@ void register_physics_shape(ecsql::World& world) {
 				}
 
 				b2ShapeDef shapedef = b2DefaultShapeDef();
+				shapedef.userData = new ShapeUserData {
+					.entity_id = shape_entity_id,
+				};
 				if (friction) {
 					shapedef.friction = *friction;
 				}

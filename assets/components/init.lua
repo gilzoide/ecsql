@@ -35,6 +35,10 @@ component "MoveVector" {
     "z NOT NULL DEFAULT 0",
 }
 
+component "OnBeginContact" {
+    "callback TEXT",
+}
+
 component "ParentOffset" {
     "x NOT NULL DEFAULT 0",
     "y NOT NULL DEFAULT 0",
