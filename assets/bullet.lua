@@ -43,7 +43,7 @@ return function(parent_id)
             y = impulse.y,
         },
         DeleteAfter = {
-            seconds = 10,
+            seconds = tuning.BULLET_LIFETIME,
         },
     }
 end
