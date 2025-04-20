@@ -92,6 +92,16 @@ function sql(script, ...)
     end
 end
 
+function inside_transaction(f)
+    sql("BEGIN")
+    local success = pcall(f)
+    if success then
+        sql("COMMIT")
+    else
+        sql("ROLLBACK")
+    end
+end
+
 -- Patch package Lua loader using PhysFS
 local execdir_repl = ecsql.file_base_dir()
 local function searchpath(name, path, sep, rep)

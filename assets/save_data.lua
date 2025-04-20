@@ -17,8 +17,10 @@ if current_version < #MIGRATIONS then
         print("Backing up save before migration: " .. backup_name)
         world:backup_into(backup_name, "save")
     end
-    for i = current_version + 1, #MIGRATIONS do
-        sql(MIGRATIONS[i])
-    end
-    sql("UPDATE save.schema_version SET version = ?", #MIGRATIONS)
+    inside_transaction(function()
+        for i = current_version + 1, #MIGRATIONS do
+            sql(MIGRATIONS[i])
+        end
+        sql("UPDATE save.schema_version SET version = ?", #MIGRATIONS)
+    end)
 end

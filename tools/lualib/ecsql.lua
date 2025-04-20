@@ -25,6 +25,9 @@ function system(name, t) end
 --- @param script string
 function sql(script, ...) end
 
+--- @param f function
+function inside_transaction(f) end
+
 ecsql = {
     --- @param path string
     --- @return string
