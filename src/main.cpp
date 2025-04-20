@@ -4,7 +4,7 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#include <idbvfs.h>
+#include <idbvfs.hpp>
 #endif
 #include <raylib.h>
 #include <sol/sol.hpp>
@@ -89,7 +89,7 @@ void game_loop(void *world) {
 	game_loop(*(ecsql::World *) world);
 }
 
-int main(int argc, const char **argv) {
+int game_main(int argc, const char **argv) {
 	configure_memory_hooks();
 	sqlite3_config(SQLITE_CONFIG_LOG, log_function, nullptr);
 
@@ -104,10 +104,6 @@ int main(int argc, const char **argv) {
 	TracySetProgramName(exe_file_name);
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, exe_file_name);
-
-#if __EMSCRIPTEN__
-	idbvfs_register(true);
-#endif
 
 	ecsql::World world(getenv("ECSQL_DB"));
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
@@ -156,3 +152,14 @@ int main(int argc, const char **argv) {
 
 	return 0;
 }
+
+#if __EMSCRIPTEN__
+int main(int argc, const char **argv) {
+	idbvfs_register(true);
+	idbvfs::async_call_after_mounted(game_main, argc, argv);
+}
+#else
+int main(int argc, const char **argv) {
+	return game_main(argc, argv);
+}
+#endif
