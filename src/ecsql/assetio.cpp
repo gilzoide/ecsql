@@ -1,3 +1,5 @@
+#include <filesystem>
+
 #include <raylib.h>
 
 #include "assetio.hpp"
@@ -90,6 +92,23 @@ static const char *lua_reader(lua_State *L, void *data, size_t *size) {
 void assetio_initialize(const char *argv0, const char *organization, const char *app_name, const char *archive_ext, bool archives_first) {
 	PHYSFS_init(argv0);
 	PHYSFS_setSaneConfig(organization, app_name, archive_ext, 0, archives_first);
+
+#if defined(DEBUG) && !defined(NDEBUG) && !defined(__EMSCRIPTEN__)
+	// In debug builds, mount the first "assets" folder found in parent directories
+	// This enables us to rerun the game after changing assets without having to rebuild
+	for (std::filesystem::path dir = PHYSFS_getBaseDir(); dir.has_relative_path(); dir = dir.parent_path()) {
+		std::filesystem::path assets_path = dir / "assets";
+		if (std::filesystem::exists(assets_path)) {
+			if (PHYSFS_mount( assets_path.c_str(), nullptr, 0)) {
+				std::cout << "DEBUG: Mounted assets folder: " << assets_path << std::endl;
+			}
+			else {
+				std::cerr << "DEBUG: Error mounting 'assets': " << PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()) << std::endl;
+			}
+			break;
+		}
+	}
+#endif
 
 	SetLoadFileDataCallback(LoadFileDataCallback);
 	SetSaveFileDataCallback(SaveFileDataCallback);
