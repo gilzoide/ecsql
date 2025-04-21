@@ -100,8 +100,6 @@ public:
 		return prepare_sql(sql)(std::forward<Args>(args)...);
 	}
 
-	void create_function(const char *name, int argument_count, void (*fn)(sqlite3_context*, int, sqlite3_value**));
-
 private:
 	std::shared_ptr<sqlite3> db;
 	PreparedSQL begin_stmt;

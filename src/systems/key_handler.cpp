@@ -4,13 +4,7 @@
 #include <reflect>
 
 #include "key_handler.hpp"
-#include "../ecsql/sql_value.hpp"
 #include "../ecsql/system.hpp"
-
-static void IsKeyReleased_function(sqlite3_context *ctx, int argc, sqlite3_value **argv) {
-	ecsql::SQLValue key(argv[0]);
-	sqlite3_result_int(ctx, IsKeyReleased(key.get_int()));
-}
 
 void register_key_handler(ecsql::World& world) {
 	{
@@ -22,8 +16,6 @@ void register_key_handler(ecsql::World& world) {
 			}
 		}
 	}
-
-	world.create_function("IsKeyReleased", 1, IsKeyReleased_function);
 
 	world.register_system({
 		"KeyboardHandler",

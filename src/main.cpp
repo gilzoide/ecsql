@@ -107,7 +107,7 @@ int game_main(int argc, const char **argv) {
 
 	ecsql::World world(getenv("ECSQL_DB"));
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
-	register_sqlite_functions(world);
+	register_sqlite_functions(world.get_db().get());
 
 	// Components
 	ecsql::Component::foreach_static_linked_list([&](ecsql::Component *component) {

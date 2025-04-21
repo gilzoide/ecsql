@@ -1,7 +1,5 @@
 #pragma once
 
-namespace ecsql {
-	class World;
-}
+typedef struct sqlite3 sqlite3;
 
-void register_sqlite_functions(ecsql::World& world);
+void register_sqlite_functions(sqlite3 *db);
