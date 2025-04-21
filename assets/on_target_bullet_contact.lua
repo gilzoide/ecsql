@@ -7,6 +7,6 @@ return function(target_id, bullet_id)
         return
     end
 
-    entity.delete(target_id)
     create_target()
+    entity.delete(target_id)
 end
