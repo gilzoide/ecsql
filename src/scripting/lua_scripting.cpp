@@ -98,7 +98,7 @@ static ecsql::ExecutedSQL lua_prepared_sql_call(sol::this_state L, ecsql::Prepar
 	return prepared_sql.execute();
 }
 
-static sol::object lua_sql_row_get(sol::this_state L, ecsql::ExecutedSQL::RowIterator& it, int index) {
+static sol::object lua_sql_row_get(sol::this_state L, const ecsql::ExecutedSQL::RowIterator& it, int index) {
 	ecsql::SQLRow row = *it;
 	index--;
 	if (index < 0 || index >= row.column_count()) {
@@ -125,6 +125,16 @@ static sol::object lua_sql_row_get(sol::this_state L, ecsql::ExecutedSQL::RowIte
 	}
 }
 
+static sol::variadic_results lua_sql_row_get_all(sol::this_state L, const ecsql::ExecutedSQL::RowIterator& it) {
+	ecsql::SQLRow row = *it;
+
+	sol::variadic_results results;
+	for (int i = 1; i <= row.column_count(); i++) {
+		results.push_back(lua_sql_row_get(L, it, i));
+	}
+	return results;
+}
+
 static void register_usertypes(sol::state_view& state) {
 	state.new_usertype<ecsql::World>(
 		"World",
@@ -144,7 +154,10 @@ static void register_usertypes(sol::state_view& state) {
 			ecsql::PreparedSQL prepared_sql = world.prepare_sql(sql);
 			return lua_prepared_sql_call(L, prepared_sql, args);
 		},
-		"execute_sql_script", &ecsql::World::execute_sql_script
+		"execute_sql_script", &ecsql::World::execute_sql_script,
+		"backup_into", [](ecsql::World& world, const char *filename, std::optional<const char *>db_name) {
+			world.backup_into(filename, db_name.value_or("main"));
+		}
 	);
 
 	state.new_usertype<ecsql::PreparedSQL>(
@@ -181,14 +194,17 @@ static void register_usertypes(sol::state_view& state) {
 			auto it = executed_sql.begin();
 			return (*it).column_count();
 		},
-		"unpack", state["table"]["unpack"].get<sol::object>()
+		"unpack", [](sol::this_state L, ecsql::ExecutedSQL& executed_sql) {
+			auto it = executed_sql.begin();
+			return lua_sql_row_get_all(L, it);
+		}
 	);
 
 	state.new_usertype<ecsql::ExecutedSQL::RowIterator>(
 		"SQLRowIterator",
 		sol::meta_method::index, lua_sql_row_get,
 		sol::meta_method::length, [](ecsql::ExecutedSQL::RowIterator& it) { return (*it).column_count(); },
-		"unpack", state["table"]["unpack"].get<sol::object>()
+		"unpack", lua_sql_row_get_all
 	);
 
 	state.new_usertype<Vector2>(
@@ -206,8 +222,6 @@ static void register_usertypes(sol::state_view& state) {
 		sol::meta_method::addition, Vector2Add,
 		sol::meta_method::to_string, [](const Vector2& v) { return std::format("({}, {})", v.x, v.y); }
 	);
-	state["RAD2DEG"] = RAD2DEG;
-	state["DEG2RAD"] = DEG2RAD;
 }
 
 static int string_replace(lua_State *L) {
@@ -223,6 +237,10 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	, world(world)
 {
 	state.open_libraries();
+#if defined(DEBUG) && !defined(NDEBUG)
+	state["DEBUG"] = true;
+#endif
+
 	state["string"]["replace"] = string_replace;
 
 	auto ecsql_namespace = state["ecsql"].get_or_create<sol::table>();
@@ -248,6 +266,8 @@ LuaScripting::LuaScripting(ecsql::World& world)
 
 	register_usertypes(state);
 	state["world"] = &world;
+	state["RAD2DEG"] = RAD2DEG;
+	state["DEG2RAD"] = DEG2RAD;
 	register_colors(state);
 
 	auto result = state.do_string(std::string_view(lua_globals, lua_globals_size), "lua_globals.lua");

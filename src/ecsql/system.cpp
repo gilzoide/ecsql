@@ -51,6 +51,14 @@ void System::operator()(World& world, std::vector<PreparedSQL>& prepared_sql) co
 	ZoneScoped;
 	ZoneName(name.c_str(), name.size());
 	implementation(world, prepared_sql);
+	{
+		ZoneScopedN("reset busy SQL");
+		for (PreparedSQL& s : prepared_sql) {
+			if (s.busy()) {
+				s.reset();
+			}
+		}
+	}
 }
 
 void System::prepare(sqlite3 *db, std::vector<PreparedSQL>& prepared_sql) const {

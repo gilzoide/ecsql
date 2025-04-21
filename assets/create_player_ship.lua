@@ -55,5 +55,11 @@ return function()
             radius = 10,
         },
     }
+    entity "BulletTextureHolder" {
+        parent_id = player_ship,
+        Texture = {
+            path = "textures/ballGrey_08.png",
+        },
+    }
     return player_ship
 end

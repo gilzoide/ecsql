@@ -41,6 +41,23 @@ system "DestroyOnOutOfScreen" {
     ]],
 }
 
+system "OnBeginContact" {
+    [[
+        SELECT
+            OnBeginContact.entity_id, callback,
+            shape1, shape2
+        FROM OnBeginContact
+            JOIN Contact ON (Contact.shape1 = OnBeginContact.entity_id OR Contact.shape2 = OnBeginContact.entity_id)
+    ]],
+    function(select_callbacks)
+        for row in select_callbacks() do
+            local entity_id, callback, shape1, shape2 = row:unpack()
+            local other_id = shape1 == entity_id and shape2 or shape1
+            require(callback)(entity_id, other_id)
+        end
+    end
+}
+
 system "MoveOnArrows" {
     [[
         WITH x AS (
@@ -153,4 +170,45 @@ system "UpdateParentOffset" {
             update_rotation(entity_id, rotation)
         end
     end,
+}
+
+system "UpdateUptimeStatistics" {
+    [[
+        UPDATE save.statistics
+        SET total_uptime = total_uptime + time.delta
+        FROM time
+    ]],
+    [[
+        SELECT total_uptime
+        FROM save.statistics
+    ]],
+    [[
+        SELECT entity_id, text
+        FROM UptimeText
+            JOIN Text USING(entity_id)
+    ]],
+    [[
+        UPDATE Text
+        SET text = ?2
+        WHERE Text.entity_id = ?1
+    ]],
+    function(update_uptime, get_uptime, select_texts, update_text)
+        update_uptime()
+        local uptime_text
+        for row in select_texts() do
+            local entity_id, current_text = row:unpack()
+            if not uptime_text then
+                local pedacos = {}
+                local uptime = get_uptime():unpack()
+                while uptime > 0 do
+                    table.insert(pedacos, 1, string.format("%02d", math.floor(uptime % 60)))
+                    uptime = uptime // 60
+                end
+                uptime_text = table.concat(pedacos, ":")
+            end
+            if current_text ~= uptime_text then
+                update_text(entity_id, uptime_text)
+            end
+        end
+    end
 }

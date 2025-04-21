@@ -4,7 +4,7 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#include <idbvfs.h>
+#include <idbvfs.hpp>
 #endif
 #include <raylib.h>
 #include <sol/sol.hpp>
@@ -31,15 +31,22 @@ void run_debug_functionality(ecsql::World& world) {
 	for (int fkey = KEY_F1; fkey <= KEY_F10; fkey++) {
 		bool is_shift_down = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
 		if (IsKeyPressed(fkey)) {
-			const char *db_name = TextFormat("ecsql_world-backup%02d.sqlite3", fkey - KEY_F1 + 1);
+			const char *world_db_path = TextFormat("ecsql_world-backup%02d.sqlite3", fkey - KEY_F1 + 1);
+			const char *save_db_path = TextFormat("save-backup%02d.sqlite3", fkey - KEY_F1 + 1);
 			if (is_shift_down) {
-				if (world.backup_into(db_name)) {
-					std::cout << "Backed up into \"" << db_name << "\"" << std::endl;
+				if (world.backup_into(world_db_path)) {
+					std::cout << "World backed up into \"" << world_db_path << "\"" << std::endl;
+				}
+				if (world.backup_into(save_db_path, "save")) {
+					std::cout << "Save backed up into \"" << save_db_path << "\"" << std::endl;
 				}
 			}
 			else {
-				if (world.restore_from(db_name)) {
-					std::cout << "Restored from \"" << db_name << "\"" << std::endl;
+				if (world.restore_from(world_db_path)) {
+					std::cout << "World restored from \"" << world_db_path << "\"" << std::endl;
+				}
+				if (world.restore_from(save_db_path, "save")) {
+					std::cout << "Save restored from \"" << save_db_path << "\"" << std::endl;
 				}
 			}
 		}
@@ -82,7 +89,7 @@ void game_loop(void *world) {
 	game_loop(*(ecsql::World *) world);
 }
 
-int main(int argc, const char **argv) {
+int game_main(int argc, const char **argv) {
 	configure_memory_hooks();
 	sqlite3_config(SQLITE_CONFIG_LOG, log_function, nullptr);
 
@@ -97,10 +104,6 @@ int main(int argc, const char **argv) {
 	TracySetProgramName(exe_file_name);
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 600, exe_file_name);
-
-#if __EMSCRIPTEN__
-	idbvfs_register(true);
-#endif
 
 	ecsql::World world(getenv("ECSQL_DB"));
 	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
@@ -149,3 +152,14 @@ int main(int argc, const char **argv) {
 
 	return 0;
 }
+
+#if __EMSCRIPTEN__
+int main(int argc, const char **argv) {
+	idbvfs_register(true);
+	idbvfs::async_call_after_mounted(game_main, argc, argv);
+}
+#else
+int main(int argc, const char **argv) {
+	return game_main(argc, argv);
+}
+#endif

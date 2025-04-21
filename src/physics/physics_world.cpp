@@ -3,6 +3,7 @@
 #include <raylib.h>
 
 #include "physics_body.hpp"
+#include "physics_shape.hpp"
 #include "physics_world.hpp"
 #include "../ecsql/system.hpp"
 
@@ -136,6 +137,18 @@ void register_physics_world(ecsql::World& world) {
 				REPLACE INTO AngularVelocity(entity_id, z)
 				VALUES(?, ?)
 			)"_dedent,
+			R"(
+				INSERT INTO Contact(
+					entity_id,
+					shape1, shape2,
+					normal_x, normal_y
+				)
+				VALUES(?, ?, ?, ?, ?)
+			)"_dedent,
+			R"(
+				DELETE FROM Contact
+				WHERE shape1 = ?1 AND shape2 = ?2
+			)"_dedent,
 		},
 		[](std::vector<ecsql::PreparedSQL>& sqls) {
 			auto get_worlds = sqls[0];
@@ -143,6 +156,8 @@ void register_physics_world(ecsql::World& world) {
 			auto update_rotation = sqls[2];
 			auto update_linear_velocity = sqls[3];
 			auto update_angular_velocity = sqls[4];
+			auto insert_contact = sqls[5];
+			auto delete_contact = sqls[6];
 			for (auto row : get_worlds()) {
 				auto [
 					world_entity_id,
@@ -166,6 +181,26 @@ void register_physics_world(ecsql::World& world) {
 
 					update_linear_velocity(entity_id, b2Body_GetLinearVelocity(move_event.bodyId));
 					update_angular_velocity(entity_id, b2Body_GetAngularVelocity(move_event.bodyId) * RAD2DEG);
+				}
+
+				// Update contacts
+				b2ContactEvents contact_events = b2World_GetContactEvents(world_id);
+				for (auto begin_contacts : std::span<b2ContactBeginTouchEvent>(contact_events.beginEvents, contact_events.beginCount)) {
+					insert_contact(
+						world_entity_id,
+						ShapeUserData::from(begin_contacts.shapeIdA)->entity_id,
+						ShapeUserData::from(begin_contacts.shapeIdB)->entity_id,
+						begin_contacts.manifold.normal.x,
+						begin_contacts.manifold.normal.y
+					);
+				}
+				for (auto end_contacts : std::span<b2ContactEndTouchEvent>(contact_events.endEvents, contact_events.endCount)) {
+					if (b2Shape_IsValid(end_contacts.shapeIdA) && b2Shape_IsValid(end_contacts.shapeIdB)) {
+						delete_contact(
+							ShapeUserData::from(end_contacts.shapeIdA)->entity_id,
+							ShapeUserData::from(end_contacts.shapeIdB)->entity_id
+						);
+					}
 				}
 			}
 		},
