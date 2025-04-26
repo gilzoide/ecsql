@@ -8,7 +8,6 @@ ShapeUserData *ShapeUserData::from(b2ShapeId shape_id) {
 	return (ShapeUserData *) b2Shape_GetUserData(shape_id);
 }
 
-std::unordered_map<ecsql::EntityID, b2ShapeId> shape_map;
 std::vector<std::pair<ecsql::EntityID, ecsql::EntityID>> pending_create_shape;
 
 struct b2Box {
@@ -20,7 +19,7 @@ struct b2Box {
 ecsql::Component ShapeComponent {
 	"Shape",
 	{
-		"body",  // Body entity id. If NULL, defaults to Shape.entity_id
+		"body INTEGER REFERENCES Body(entity_id)",  // Body entity id. If NULL, defaults to Shape.entity_id
 		"friction",
 		"restitution",
 		"rolling_resistance",
@@ -79,17 +78,8 @@ ecsql::HookSystem ShapeHookSystem {
 			case ecsql::HookType::OnUpdate:
 				break;
 
-			case ecsql::HookType::OnDelete: {
-				auto it = shape_map.find(old_row.get<ecsql::EntityID>(0));
-				if (it != shape_map.end()) {
-					if (b2Shape_IsValid(it->second)) {
-						delete ShapeUserData::from(it->second);
-						b2DestroyShape(it->second, true);
-					}
-					shape_map.erase(it);
-				}
+			case ecsql::HookType::OnDelete:
 				break;
-			}
 		}
 	}
 };
@@ -132,7 +122,7 @@ void register_physics_shape(ecsql::World& world) {
 				}
 
 				b2BodyId body_id = body_it->second;
-				if (!b2Body_IsValid(body_it->second)) {
+				if (!b2Body_IsValid(body_id)) {
 					continue;
 				}
 
@@ -174,10 +164,10 @@ void register_physics_shape(ecsql::World& world) {
 					continue;
 				}
 
+				std::unique_ptr<ShapeUserData> userData = std::make_unique<ShapeUserData>(shape_entity_id);
+
 				b2ShapeDef shapedef = b2DefaultShapeDef();
-				shapedef.userData = new ShapeUserData {
-					.entity_id = shape_entity_id,
-				};
+				shapedef.userData = userData.get();
 				if (friction) {
 					shapedef.material.friction = *friction;
 				}
@@ -228,7 +218,7 @@ void register_physics_shape(ecsql::World& world) {
 				}
 
 				if (b2Shape_IsValid(shape_id)) {
-					shape_map[shape_entity_id] = shape_id;
+					std::ignore = userData.release();
 				}
 			}
 			pending_create_shape.clear();
