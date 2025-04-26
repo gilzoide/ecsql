@@ -25,7 +25,7 @@ ecsql::Component ShapeComponent {
 		"restitution",
 		"rolling_resistance",
 		"tangent_speed",
-		"material",
+		"material_id",
 		"density",
 		// "filter", TODO
 		"is_sensor",
@@ -104,7 +104,7 @@ void register_physics_shape(ecsql::World& world) {
 				restitution,
 				rolling_resistance,
 				tangent_speed,
-				material,
+				material_id,
 				density,
 				is_sensor,
 				enable_contact_events,
@@ -141,7 +141,7 @@ void register_physics_shape(ecsql::World& world) {
 					restitution,
 					rolling_resistance,
 					tangent_speed,
-					material,
+					material_id,
 					density,
 					is_sensor,
 					enable_contact_events,
@@ -179,19 +179,19 @@ void register_physics_shape(ecsql::World& world) {
 					.entity_id = shape_entity_id,
 				};
 				if (friction) {
-					shapedef.friction = *friction;
+					shapedef.material.friction = *friction;
 				}
 				if (restitution) {
-					shapedef.restitution = *restitution;
+					shapedef.material.restitution = *restitution;
 				}
 				if (rolling_resistance) {
-					shapedef.rollingResistance = *rolling_resistance;
+					shapedef.material.rollingResistance = *rolling_resistance;
 				}
 				if (tangent_speed) {
-					shapedef.tangentSpeed = *tangent_speed;
+					shapedef.material.tangentSpeed = *tangent_speed;
 				}
-				if (material) {
-					shapedef.material = *material;
+				if (material_id) {
+					shapedef.material.userMaterialId = *material_id;
 				}
 				if (density) {
 					shapedef.density = *density;

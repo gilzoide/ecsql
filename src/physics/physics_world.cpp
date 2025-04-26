@@ -19,7 +19,7 @@ ecsql::Component WorldComponent {
 		"hit_event_threshold",
 		"contact_hertz",
 		"contact_damping_ratio",
-		"contact_push_max_speed",
+		"max_contact_push_speed",
 		"joint_hertz",
 		"joint_damping_ratio",
 		"maximum_linear_speed",
@@ -40,7 +40,7 @@ ecsql::HookSystem WorldHookSystem {
 					gravity,
 					restitution_threshold,
 					hit_event_threshold,
-					contact_hertz, contact_damping_ratio, contact_push_max_speed,
+					contact_hertz, contact_damping_ratio, max_contact_push_speed,
 					joint_hertz, joint_damping_ratio,
 					maximum_linear_speed,
 					enable_sleep, enable_continuous
@@ -70,8 +70,8 @@ ecsql::HookSystem WorldHookSystem {
 				if (contact_damping_ratio) {
 					worlddef.contactDampingRatio = *contact_damping_ratio;
 				}
-				if (contact_push_max_speed) {
-					worlddef.contactPushMaxSpeed = *contact_push_max_speed;
+				if (max_contact_push_speed) {
+					worlddef.maxContactPushSpeed = *max_contact_push_speed;
 				}
 				if (joint_hertz) {
 					worlddef.jointHertz = *joint_hertz;
