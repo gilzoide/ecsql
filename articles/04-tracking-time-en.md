@@ -5,7 +5,7 @@ One thing you'll see in pretty much any game engine is that they all have a way 
 This is used to convert between frames and real world time, making games run in the same speed independently of how many frames are processed per second.
 
 For example, if a sprite moves 10 pixels each frame, it will move at the speed of 600 pixels per second if the game is running at 60 frames per second (FPS), but only 300 pixels/s if runing at 30 FPS.
-The game may run at 60 FPS on a high-end device, but only at 30 FPS on a lower-end device, and we need should make the game experience the same in both cases.
+The game may run at 60 FPS on a high-end device, but only at 30 FPS on a lower-end device, and we need to make the game experience the same in both cases.
 To ensure a consistent gameplay experience, we should move the sprite in a rate of pixels per second instead of pixels per frame, that's where delta time come in handy.
 
 

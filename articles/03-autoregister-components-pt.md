@@ -14,7 +14,7 @@ private:
 public:
     // 2. Insira cada componente à lista em seu construtor
     Component(...) {
-      lista_global.push_front(this);
+        lista_global.push_front(this);
     }
 
     // 3. Crie o método "foreach" que aplica uma função às instâncias

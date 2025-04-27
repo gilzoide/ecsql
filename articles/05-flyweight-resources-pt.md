@@ -3,7 +3,7 @@
 
 Um dos problemas que aparece rapidamente ao usar SQLite como base de dados para ECS é: como associar dados nativos usados em C++ com dados de SQL?
 
-Exemplo: para desenhar texturas usando *raylib*, precisamos de uma instância da estrutura `Texture`.
+Exemplo: para desenhar texturas usando raylib, precisamos de uma instância da estrutura `Texture`.
 Mas sistemas consultam os componentes usando SQL, como conseguir a instância `Texture` para desenhar a textura em C++?
 
 Para resolver esse problema, precisamos manter um mapa associativo entre dados de SQL e instâncias nativas.

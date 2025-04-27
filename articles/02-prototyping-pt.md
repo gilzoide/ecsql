@@ -17,6 +17,11 @@ Hoje vamos passar por algumas escolhas de *design* do protótipo que já comecei
 ## Entidades
 Em ECSQL, entidades são representadas por IDs numéricos.
 Criei o tipo `EntityID` como um *typedef* para o tipo `sqlite3_int64`, que é o tipo do SQLite usado para IDs, e é basicamente isso.
+```cpp
+namespace ecsql {
+    typedef sqlite3_int64 EntityID;
+}
+```
 
 
 ## Componentes
@@ -29,16 +34,16 @@ O SQL adicional pode ser usado para criar índices, *triggers* e *views*, dentre
 Exemplo:
 ```cpp
 ecsql::Component PositionComponent {
-  // nome
-  "Position",
-  // campos
-  {
-    "x DEFAULT 0",
-    "y DEFAULT 0",
-    "z DEFAULT 0",
-  },
-  // (opcional) SQL adicional
-  "",
+    // nome
+    "Position",
+    // campos
+    {
+        "x DEFAULT 0",
+        "y DEFAULT 0",
+        "z DEFAULT 0",
+    },
+    // (opcional) SQL adicional
+    "",
 };
 ```
 
@@ -52,27 +57,27 @@ Declarações preparadas são mantidas entre chamadas do mesmo sistema, de modo 
 Exemplo:
 ```cpp
 ecsql::System SistemaDesenhaPonto {
-  // nome
-  "DesenhaPonto",
-  // declarações SQL
-  {
-    R"(
-      SELECT
-        x, y, z,
-        r, g, b, a
-      FROM PointTag
-        JOIN Position USING(entity_id)
-        JOIN Color USING(entity_id)
-    )",
-  },
-  // implementação
-  [](ecsql::World& mundo, std::vector<ecsql::PreparedSQL>& sqls_preparados) {
-    auto select_pontos_a_desenhar = sqls_preparados[0];
-    for (ecsql::SQLRow row : select_pontos_a_desenhar()) {
-      auto [posicao, cor] = row.get<Vector3, Color>();
-      desenha_ponto(posicao, cor);
-    }
-  },
+    // nome
+    "DesenhaPonto",
+    // declarações SQL
+    {
+        R"(
+            SELECT
+                x, y, z,
+                r, g, b, a
+            FROM PointTag
+                JOIN Position USING(entity_id)
+                JOIN Color USING(entity_id)
+        )",
+    },
+    // implementação
+    [](ecsql::World& mundo, std::vector<ecsql::PreparedSQL>& sqls_preparados) {
+        auto select_pontos_a_desenhar = sqls_preparados[0];
+        for (ecsql::SQLRow row : select_pontos_a_desenhar()) {
+            auto [posicao, cor] = row.get<Vector3, Color>();
+            desenha_ponto(posicao, cor);
+        }
+    },
 };
 ```
 
@@ -81,28 +86,29 @@ ecsql::System SistemaDesenhaPonto {
 Esses sistemas usam [ganchos de *preupdate* do SQLite](https://www.sqlite.org/c3ref/preupdate_blobwrite.html) e são chamados quando componentes são inseridos/atualizados/apagados.
 Eles são usados como ponte entre dados do SQL e dados nativos, de modo que dados nativos podem ser criados/atualizados/apagados junto com os dados de SQL correspondentes.
 
+> Eu escrevi mais sobre como conectar dados do SQL e dados de C++ [aqui](05-flyweight-resources-pt.md)
+
 Exemplo:
 ```cpp
 ecsql::HookSystem GanchoPosition {
-  // nome do Componente
-  "Position"
-  // implementação
-  [](ecsql::HookType gancho, ecsql::SQLBaseRow& linha_antiga, ecsql::SQLBaseRow& linha_nova) {
-    switch (gancho) {
-      case ecsql::HookType::OnInsert:
-        // Position inserido
-        break;
+    // nome do Componente
+    "Position"
+    // implementação
+    [](ecsql::HookType gancho, ecsql::SQLBaseRow& linha_antiga, ecsql::SQLBaseRow& linha_nova) {
+        switch (gancho) {
+          case ecsql::HookType::OnInsert:
+              // Position inserido
+              break;
 
-      case ecsql::HookType::OnUpdate:
-        // Position atualizado
-        break;
+          case ecsql::HookType::OnUpdate:
+              // Position atualizado
+              break;
 
-      case ecsql::HookType::OnDelete: {
-        // Position apagado
-        break;
-      }
-    }
-  },
+          case ecsql::HookType::OnDelete:
+              // Position apagado
+              break;
+        }
+    },
 };
 ```
 
@@ -120,8 +126,8 @@ mundo.register_system(SistemaDesenhaPonto);
 mundo.register_hook_system(GanchoPosition);
 
 while (jogo_esta_rodando()) {
-  float delta_time = get_delta_time();
-  mundo.update(delta_time);
+    float delta_time = get_delta_time();
+    mundo.update(delta_time);
 }
 ```
 

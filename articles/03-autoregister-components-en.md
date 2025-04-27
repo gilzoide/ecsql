@@ -14,7 +14,7 @@ private:
 public:
     // 2. Insert each Component to the list in its constructor
     Component(...) {
-      static_linked_list.push_front(this);
+        static_linked_list.push_front(this);
     }
 
     // 3. Add a "foreach" method that applies a function to all instances

@@ -9,7 +9,7 @@ Today I'll go through some of the design choices for the prototype I already sta
 - C++: a language that I know well enough how to use and that has tons of ready-to-use libraries for software/game development.
   I'm using the C++20 standard in this project.
 - [CMake](https://cmake.org/) for the builds.
-- SQLite for the SQL database engine.
+- [SQLite](https://sqlite.org/) for the SQL database engine.
 - [raylib](https://www.raylib.com/) as the game frontend library.
   Super easy to use, easy to build, supports several platforms, simply an awesome library.
 
@@ -17,6 +17,11 @@ Today I'll go through some of the design choices for the prototype I already sta
 ## Entities
 In ECSQL, entities are represented by numeric IDs.
 There's the `EntityID` type alias for `sqlite3_int64`, which is the underlying type in SQLite, and that's basically it.
+```cpp
+namespace ecsql {
+    typedef sqlite3_int64 EntityID;
+}
+```
 
 
 ## Components
@@ -29,16 +34,16 @@ The optional additional SQL may be used to declare indices, triggers and views, 
 Example:
 ```cpp
 ecsql::Component PositionComponent {
-  // name
-  "Position",
-  // fields
-  {
-    "x DEFAULT 0",
-    "y DEFAULT 0",
-    "z DEFAULT 0",
-  },
-  // (optional) additional SQL
-  "",
+    // name
+    "Position",
+    // fields
+    {
+        "x DEFAULT 0",
+        "y DEFAULT 0",
+        "z DEFAULT 0",
+    },
+    // (optional) additional SQL
+    "",
 };
 ```
 
@@ -52,27 +57,27 @@ Prepared SQL statements are cached between calls, so that we only spend time pre
 Example:
 ```cpp
 ecsql::System DrawPointSystem {
-  // name
-  "DrawPoint",
-  // SQL statements
-  {
-    R"(
-      SELECT
-        x, y, z,
-        r, g, b, a
-      FROM PointTag
-        JOIN Position USING(entity_id)
-        JOIN Color USING(entity_id)
-    )",
-  },
-  // implementation
-  [](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sqls) {
-    auto select_points_to_draw = prepared_sqls[0];
-    for (ecsql::SQLRow row : select_points_to_draw()) {
-      auto [position, color] = row.get<Vector3, Color>();
-      draw_point(position, color);
-    }
-  },
+    // name
+    "DrawPoint",
+    // SQL statements
+    {
+        R"(
+          SELECT
+              x, y, z,
+              r, g, b, a
+          FROM PointTag
+              JOIN Position USING(entity_id)
+              JOIN Color USING(entity_id)
+        )",
+    },
+    // implementation
+    [](ecsql::World& world, std::vector<ecsql::PreparedSQL>& prepared_sqls) {
+        auto select_points_to_draw = prepared_sqls[0];
+        for (ecsql::SQLRow row : select_points_to_draw()) {
+            auto [position, color] = row.get<Vector3, Color>();
+            draw_point(position, color);
+        }
+    },
 };
 ```
 
@@ -81,28 +86,29 @@ ecsql::System DrawPointSystem {
 Hook Systems use [SQLite preupdate hooks](https://www.sqlite.org/c3ref/preupdate_blobwrite.html) and are called when rows are inserted/updated/deleted.
 They are used to bridge SQL data with native data, so that native data can be created/updated/deleted whenever their corresponding SQL rows do.
 
+> I've written more about how I connect SQL data with C++ data [here](05-flyweight-resources-en.md)
+
 Example:
 ```cpp
 ecsql::HookSystem PositionHook {
-  // Component name
-  "Position"
-  // implementation
-  [](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
-    switch (hook) {
-      case ecsql::HookType::OnInsert:
-        // Position inserted
-        break;
+    // Component name
+    "Position"
+    // implementation
+    [](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
+        switch (hook) {
+            case ecsql::HookType::OnInsert:
+                // Position inserted
+                break;
 
-      case ecsql::HookType::OnUpdate:
-        // Position updated
-        break;
+            case ecsql::HookType::OnUpdate:
+                // Position updated
+                break;
 
-      case ecsql::HookType::OnDelete: {
-        // Position deleted
-        break;
+            case ecsql::HookType::OnDelete:
+                // Position deleted
+                break;
       }
-    }
-  },
+    },
 };
 ```
 
@@ -120,8 +126,8 @@ world.register_system(DrawPointSystem);
 world.register_hook_system(PositionHook);
 
 while (game_is_running()) {
-  float delta_time = get_delta_time();
-  world.update(delta_time);
+    float delta_time = get_delta_time();
+    world.update(delta_time);
 }
 ```
 
