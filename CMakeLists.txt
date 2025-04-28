@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.18)
 
 project(ecsql C CXX)
 
+# Add "Asan" build type
+include(tools/asan.cmake)
+
 add_subdirectory(libs)
 
 include(tools/file2c/file2c.cmake)
