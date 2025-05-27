@@ -2,9 +2,6 @@ local tuning = require "tuning"
 
 require "save_data"
 
-require "components"
-require "systems"
-
 require "input_maps"
 
 require "physics"

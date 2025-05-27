@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -128,6 +129,14 @@ int game_main(int argc, const char **argv) {
 	// Other engine features, must be created after world components are registered
 	LuaScripting lua(world);
 	Physics physics(world);
+
+	// Lua components + systems
+	ecsql::foreach_file("components", [&](const std::filesystem::path& path) {
+		ecsql::do_lua_script(lua, path.c_str());
+	});
+	ecsql::foreach_file("systems", [&](const std::filesystem::path& path) {
+		ecsql::do_lua_script(lua, path.c_str());
+	});
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.lua";
