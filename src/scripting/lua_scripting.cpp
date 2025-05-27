@@ -69,6 +69,27 @@ static void lua_register_component(sol::this_state L, ecsql::World& world, std::
 	});
 }
 
+static void lua_register_hook_system(sol::this_state L, ecsql::World& world, std::string_view component_name, sol::protected_function lua_function) {
+	world.register_hook_system({
+		component_name,
+		[lua_function](ecsql::HookType hook, ecsql::SQLBaseRow& old_row, ecsql::SQLBaseRow& new_row) {
+			switch (hook) {
+				case ecsql::HookType::OnInsert:
+					lua_function("insert", sol::lua_nil, new_row);
+					break;
+
+				case ecsql::HookType::OnUpdate:
+					lua_function("update", old_row, new_row);
+					break;
+
+				case ecsql::HookType::OnDelete:
+					lua_function("delete", old_row, sol::lua_nil);
+					break;
+			}
+		},
+	});
+}
+
 static ecsql::ExecutedSQL lua_prepared_sql_call(sol::this_state L, ecsql::PreparedSQL& prepared_sql, sol::variadic_args args) {
 	prepared_sql.reset();
 	int i = 1;
@@ -98,8 +119,7 @@ static ecsql::ExecutedSQL lua_prepared_sql_call(sol::this_state L, ecsql::Prepar
 	return prepared_sql.execute();
 }
 
-static sol::object lua_sql_row_get(sol::this_state L, const ecsql::ExecutedSQL::RowIterator& it, int index) {
-	ecsql::SQLRow row = *it;
+static sol::object lua_sql_row_get(sol::this_state L, const ecsql::SQLBaseRow& row, int index) {
 	index--;
 	if (index < 0 || index >= row.column_count()) {
 		return sol::lua_nil;
@@ -125,12 +145,10 @@ static sol::object lua_sql_row_get(sol::this_state L, const ecsql::ExecutedSQL::
 	}
 }
 
-static sol::variadic_results lua_sql_row_get_all(sol::this_state L, const ecsql::ExecutedSQL::RowIterator& it) {
-	ecsql::SQLRow row = *it;
-
+static sol::variadic_results lua_sql_row_get_all(sol::this_state L, const ecsql::SQLBaseRow& row) {
 	sol::variadic_results results;
 	for (int i = 1; i <= row.column_count(); i++) {
-		results.push_back(lua_sql_row_get(L, it, i));
+		results.push_back(lua_sql_row_get(L, row, i));
 	}
 	return results;
 }
@@ -141,6 +159,7 @@ static void register_usertypes(sol::state_view& state) {
 		sol::no_construction(),
 		"register_system", lua_register_system,
 		"register_component", lua_register_component,
+		"register_hook_system", lua_register_hook_system,
 		"create_entity", &ecsql::World::create_entity,
 		"delete_entity", sol::overload(
 			sol::resolve<int(ecsql::EntityID)>(&ecsql::World::delete_entity),
@@ -188,7 +207,7 @@ static void register_usertypes(sol::state_view& state) {
 		},
 		sol::meta_method::index, [](sol::this_state L, ecsql::ExecutedSQL& executed_sql, int index) {
 			auto it = executed_sql.begin();
-			return lua_sql_row_get(L, it, index);
+			return lua_sql_row_get(L, *it, index);
 		},
 		sol::meta_method::length, [](ecsql::ExecutedSQL& executed_sql) {
 			auto it = executed_sql.begin();
@@ -196,14 +215,27 @@ static void register_usertypes(sol::state_view& state) {
 		},
 		"unpack", [](sol::this_state L, ecsql::ExecutedSQL& executed_sql) {
 			auto it = executed_sql.begin();
-			return lua_sql_row_get_all(L, it);
+			return lua_sql_row_get_all(L, *it);
 		}
 	);
 
 	state.new_usertype<ecsql::ExecutedSQL::RowIterator>(
 		"SQLRowIterator",
-		sol::meta_method::index, lua_sql_row_get,
+		sol::no_construction(),
+		sol::meta_method::index, [](sol::this_state L, ecsql::ExecutedSQL::RowIterator& it, int index) {
+			return lua_sql_row_get(L, *it, index);
+		},
 		sol::meta_method::length, [](ecsql::ExecutedSQL::RowIterator& it) { return (*it).column_count(); },
+		"unpack", [](sol::this_state L, ecsql::ExecutedSQL::RowIterator& it) {
+			return lua_sql_row_get_all(L, *it);
+		}
+	);
+
+	state.new_usertype<ecsql::SQLBaseRow>(
+		"SQLRow",
+		sol::no_construction(),
+		sol::meta_method::index, lua_sql_row_get,
+		sol::meta_method::length, &ecsql::SQLBaseRow::column_count,
 		"unpack", lua_sql_row_get_all
 	);
 

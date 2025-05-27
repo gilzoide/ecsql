@@ -58,6 +58,11 @@ World = {
     register_component = function(self, name, t) end,
 
     --- @param self World
+    --- @param component_name string
+    --- @param f function
+    register_hook_system = function(self, component_name, f) end,
+
+    --- @param self World
     --- @param name string|nil
     --- @param parent_id integer|nil
     --- @return integer

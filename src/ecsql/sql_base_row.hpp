@@ -13,6 +13,8 @@
 namespace ecsql {
 
 struct SQLBaseRow {
+	virtual ~SQLBaseRow() = default;
+
 	virtual int column_count() const = 0;
 
 	virtual int column_type(int index) const = 0;

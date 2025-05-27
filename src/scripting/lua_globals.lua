@@ -21,6 +21,10 @@ function component(name, t)
     end
 end
 
+function hook_system(component_name, f)
+    world:register_hook_system(component_name, f)
+end
+
 local function create_component_internal(component_name, entity_id, fields)
     local sql = {
         "INSERT INTO ",
