@@ -6,8 +6,8 @@ return function()
             path = "textures/playerShip1_blue.png",
         },
         Position = {
-            x = 400,
-            y = 500,
+            x = tuning.ROOM_WIDTH * 0.5,
+            y = tuning.ROOM_HEIGHT * 0.75,
         },
         -- Movement
         ThrustSpeed = {
