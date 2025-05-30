@@ -11,4 +11,7 @@ return {
     PLAYER_SHOOT_COOLDOWN = 0.4,
 
     TARGET_RADIUS = 20,
+
+    GRAVITY_X = 0,
+    GRAVITY_y = 0,
 }

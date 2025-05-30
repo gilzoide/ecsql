@@ -1,6 +1,8 @@
+local tuning = require "tuning"
+
 entity "World" {
     World = {
-        gravity_x = 0,
-        gravity_y = 10,
+        gravity_x = tuning.GRAVITY_X,
+        gravity_y = tuning.GRAVITY_y,
     },
 }
