@@ -28,6 +28,12 @@ struct PHYSFS_FileDeleter {
 	}
 };
 
+struct PHYSFS_FileListDeleter {
+	void operator()(char **file_list) {
+		PHYSFS_freeList(file_list);
+	}
+};
+
 template<typename Buffer>
 Buffer read_asset_data(const char *filename, int buffer_size = 1024) {
 	Buffer buffer;
@@ -47,20 +53,21 @@ Buffer read_asset_data(const char *filename, int buffer_size = 1024) {
 }
 
 template<typename Fn>
-void foreach_file(const char *dir, Fn&& f) {
-	auto f_listed_files = std::make_pair(std::move(f), std::unordered_set<std::filesystem::path>());
-	PHYSFS_enumerate(dir, [](void *data, const char *origdir, const char *fname) -> PHYSFS_EnumerateCallbackResult {
-		auto&& [f, listed_files] = *((decltype(f_listed_files) *) data);
-		std::filesystem::path path = std::filesystem::path(origdir) / fname;
-		if (listed_files.find(path) == listed_files.end()) {
-			f(path);
-			listed_files.emplace(path);
-			return PHYSFS_ENUM_OK;
+void foreach_file(std::filesystem::path dir, Fn&& f, bool recursive = false) {
+	std::unique_ptr<char *, PHYSFS_FileListDeleter> list(PHYSFS_enumerateFiles(dir.c_str()));
+	if (list) {
+		PHYSFS_Stat stat;
+		for (char **entry = list.get(); *entry != nullptr; entry++) {
+			std::filesystem::path full_path = dir / *entry;
+			PHYSFS_stat(full_path.c_str(), &stat);
+			if (stat.filetype == PHYSFS_FILETYPE_REGULAR) {
+				f(full_path);
+			}
+			else if (recursive) {
+				foreach_file(full_path, f, recursive);
+			}
 		}
-		else {
-			return PHYSFS_ENUM_STOP;
-		}
-	}, (void *) &f_listed_files);
+	}
 }
 
 }
