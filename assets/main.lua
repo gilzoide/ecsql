@@ -1,9 +1,5 @@
 local tuning = require "tuning"
 
-require "save_data"
-
-require "input_maps"
-
 require "physics"
 require "create_walls"(tuning.ROOM_WIDTH, tuning.ROOM_HEIGHT)
 require "create_player_ship"()

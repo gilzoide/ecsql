@@ -130,13 +130,10 @@ int game_main(int argc, const char **argv) {
 	LuaScripting lua(world);
 	Physics physics(world);
 
-	// Lua components + systems
-	ecsql::foreach_file("components", [&](const std::filesystem::path& path) {
+	// Lua components + systems + whatever
+	ecsql::foreach_file("autoload", [&](const std::filesystem::path& path) {
 		ecsql::do_lua_script(lua, path.c_str());
-	});
-	ecsql::foreach_file("systems", [&](const std::filesystem::path& path) {
-		ecsql::do_lua_script(lua, path.c_str());
-	});
+	}, true);
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.lua";

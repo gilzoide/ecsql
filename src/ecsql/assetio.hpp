@@ -64,7 +64,7 @@ void foreach_file(std::filesystem::path dir, Fn&& f, bool recursive = false) {
 				f(full_path);
 			}
 			else if (recursive) {
-				foreach_file(full_path, f, recursive);
+				foreach_file(full_path, f, true);
 			}
 		}
 	}
