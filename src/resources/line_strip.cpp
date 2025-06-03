@@ -2,8 +2,8 @@
 
 #include <istream>
 
-#include <raymath.h>
 #include <physfs_streambuf.hpp>
+#include <raymath.h>
 
 LineStrip::LineStrip()
 	: looped_point_vector()

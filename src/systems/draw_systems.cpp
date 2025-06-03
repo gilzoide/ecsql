@@ -1,3 +1,4 @@
+#include <optional>
 #include <string_view>
 
 #include <cdedent.hpp>
@@ -14,6 +15,31 @@
 #define DEFAULT_CLEAR_COLOR WHITE
 #define DEFAULT_TEXT_COLOR BLACK
 #define DEFAULT_LINE_STRIP_COLOR BLACK
+
+static Vector2 interpolated_position(Vector2 position, std::optional<Vector2> previous_position, float fixed_delta_progress) {
+	if (previous_position) {
+		return Vector2Lerp(*previous_position, position, fixed_delta_progress);
+	}
+	else {
+		return position;
+	}
+}
+
+static float interpolated_rotation(float rotation, std::optional<float> previous_rotation, float fixed_delta_progress) {
+	if (previous_rotation) {
+		float rotation_diff = rotation - *previous_rotation;
+		if (rotation_diff > 180) {
+			rotation -= 360;
+		}
+		else if (rotation_diff < -180) {
+			rotation += 360;
+		}
+		return Lerp(*previous_rotation, rotation, fixed_delta_progress);
+	}
+	else {
+		return rotation;
+	}
+}
 
 void register_draw_systems(ecsql::World& world) {
 	world.register_system({
@@ -113,19 +139,8 @@ void register_draw_systems(ecsql::World& world) {
 					std::optional<Color>,
 					float
 				>();
-				if (previous_position) {
-					position = Vector2Lerp(*previous_position, position, fixed_delta_progress);
-				}
-				if (previous_rotation) {
-					float rotation_diff = rotation - *previous_rotation;
-					if (rotation_diff > 180) {
-						rotation -= 360;
-					}
-					else if (rotation_diff < -180) {
-						rotation += 360;
-					}
-					rotation = Lerp(*previous_rotation, rotation, fixed_delta_progress);
-				}
+				position = interpolated_position(position, previous_position, fixed_delta_progress);
+				rotation = interpolated_rotation(rotation, previous_rotation, fixed_delta_progress);
 
 				auto tex = TextureFlyweight.get(tex_path);
 
@@ -178,30 +193,44 @@ void register_draw_systems(ecsql::World& world) {
 			SELECT
 				path,
 				Position.x, Position.y,
+				PreviousPosition.x, PreviousPosition.y,
 				Rotation.z,
+				PreviousRotation.z,
 				Scale.x, Scale.y,
-				r, g, b, a
+				r, g, b, a,
+				fixed_delta_progress
 			FROM PointStrip
-				LEFT JOIN Position USING(entity_id)
+				JOIN Position USING(entity_id)
+				LEFT JOIN PreviousPosition USING(entity_id)
 				LEFT JOIN Rotation USING(entity_id)
+				LEFT JOIN PreviousRotation USING(entity_id)
 				LEFT JOIN Scale USING(entity_id)
 				LEFT JOIN Color USING(entity_id)
+				JOIN time
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
 				auto [
 					points_path,
 					position,
+					previous_position,
 					rotation,
+					previous_rotation,
 					scale,
-					color
+					color,
+					fixed_delta_progress
 				] = row.get<
 					std::string_view,
 					Vector2,
-					float,
 					std::optional<Vector2>,
-					std::optional<Color>
+					float,
+					std::optional<float>,
+					std::optional<Vector2>,
+					std::optional<Color>,
+					float
 				>();
+				position = interpolated_position(position, previous_position, fixed_delta_progress);
+				rotation = interpolated_rotation(rotation, previous_rotation, fixed_delta_progress);
 				if (!scale) scale.emplace(1, 1);
 				auto point_strip = LineStripFlyweight.get(points_path);
 				auto points = point_strip.value.looped_points();
