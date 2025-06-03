@@ -1,7 +1,9 @@
 #include "line_strip.hpp"
 
+#include <istream>
+
 #include <raymath.h>
-#include <physfs_funopen.h>
+#include <physfs_streambuf.hpp>
 
 LineStrip::LineStrip()
 	: looped_point_vector()
@@ -11,7 +13,7 @@ LineStrip::LineStrip()
 LineStrip::LineStrip(const std::vector<Vector2>& points)
 	: looped_point_vector(points)
 {
-	if (looped_point_vector.front() != looped_point_vector.back()) {
+	if (!looped_point_vector.empty() && looped_point_vector.front() != looped_point_vector.back()) {
 		looped_point_vector.push_back(looped_point_vector.front());
 	}
 }
@@ -19,7 +21,7 @@ LineStrip::LineStrip(const std::vector<Vector2>& points)
 LineStrip::LineStrip(std::vector<Vector2>&& points)
 	: looped_point_vector(std::move(points))
 {
-	if (looped_point_vector.front() != looped_point_vector.back()) {
+	if (!looped_point_vector.empty() && looped_point_vector.front() != looped_point_vector.back()) {
 		looped_point_vector.push_back(looped_point_vector.front());
 	}
 }
@@ -42,11 +44,17 @@ std::span<const Vector2> LineStrip::looped_points() const {
 
 LineStrip LineStrip::parse(const char *filename) {
 	std::vector<Vector2> points;
-	Vector2 point;
-	FILE *stream = PHYSFS_funopenRead(filename);
-	while (fscanf(stream, " %f, %f", &point.x, &point.y) == 2) {
+	physfs_streambuf buf(filename, std::ios::in);
+	std::istream is(&buf);
+	while (true) {
+		Vector2 point;
+		is >> point.x;
+		is.ignore(1, ',');
+		is >> point.y;
+		if (is.fail() || is.eof()) {
+			break;
+		}
 		points.push_back(point);
 	}
-	fclose(stream);
 	return LineStrip(std::move(points));
 }
