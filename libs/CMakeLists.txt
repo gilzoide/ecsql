@@ -45,6 +45,10 @@ option(PHYSFS_ARCHIVE_VDF "Enable Gothic I/II VDF archive support" OFF)
 add_subdirectory(physfs)
 target_link_libraries(libs INTERFACE PhysFS::PhysFS-static)
 
+# PhysFS funopen
+add_subdirectory(physfs-funopen)
+target_link_libraries(libs INTERFACE physfs_funopen)
+
 # Raylib
 add_subdirectory(raylib)
 target_compile_options(raylib PRIVATE "-w")  # disable warnings
