@@ -122,12 +122,14 @@ void register_physics_world(ecsql::World& world) {
 					JOIN time
 			)"_dedent,
 			R"(
-				REPLACE INTO Position(entity_id, x, y)
-				VALUES(?, ?, ?)
+				INSERT INTO Position(entity_id, x, y)
+				VALUES(?1, ?2, ?3)
+				ON CONFLICT DO UPDATE SET x = ?2, y = ?3
 			)"_dedent,
 			R"(
-				REPLACE INTO Rotation(entity_id, z)
-				VALUES(?, ?)
+				INSERT INTO Rotation(entity_id, z)
+				VALUES(?1, ?2)
+				ON CONFLICT DO UPDATE SET z = ?2
 			)"_dedent,
 			R"(
 				REPLACE INTO LinearVelocity(entity_id, x, y)

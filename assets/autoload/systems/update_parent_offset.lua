@@ -14,12 +14,14 @@ system "UpdateParentOffset" {
         WHERE is_dirty
     ]],
     [[
-        REPLACE INTO Position(entity_id, x, y)
-        VALUES(?, ?, ?)
+        INSERT INTO Position(entity_id, x, y)
+        VALUES(?1, ?2, ?3)
+        ON CONFLICT DO UPDATE SET x = ?2, y = ?3
     ]],
     [[
-        REPLACE INTO Rotation(entity_id, z)
-        VALUES(?, ?)
+        INSERT INTO Rotation(entity_id, z)
+        VALUES(?1, ?2)
+        ON CONFLICT DO UPDATE SET z = ?2
     ]],
     function(select_values, update_position, update_rotation)
         for row in select_values() do

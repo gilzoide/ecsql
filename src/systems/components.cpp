@@ -23,8 +23,9 @@ ecsql::AdditionalSQL CachePreviousPosition {
 		CREATE TRIGGER PreviousPosition_Position_updated
 		AFTER UPDATE ON Position
 		BEGIN
-			REPLACE INTO PreviousPosition(entity_id, x, y, z)
-			VALUES(new.entity_id, new.x, new.y, new.z);
+			INSERT INTO PreviousPosition(entity_id, x, y, z)
+			VALUES(new.entity_id, old.x, old.y, old.z)
+			ON CONFLICT DO UPDATE SET x = old.x, y = old.y, z = old.z;
 		END;
 	)"
 };
@@ -50,8 +51,9 @@ ecsql::AdditionalSQL CachePreviousRotation {
 		CREATE TRIGGER PreviousRotation_Rotation_updated
 		AFTER UPDATE ON Rotation
 		BEGIN
-			REPLACE INTO PreviousRotation(entity_id, x, y, z)
-			VALUES(new.entity_id, new.x, new.y, new.z);
+			INSERT INTO PreviousRotation(entity_id, x, y, z)
+			VALUES(new.entity_id, old.x, old.y, old.z)
+			ON CONFLICT DO UPDATE SET x = old.x, y = old.y, z = old.z;
 		END;
 	)"
 };
