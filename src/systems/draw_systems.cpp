@@ -3,14 +3,17 @@
 #include <cdedent.hpp>
 #include <raylib.h>
 #include <raymath.h>
+#include <rlgl.h>
 
 #include "draw_systems.hpp"
 #include "../ecsql/system.hpp"
+#include "../flyweights/line_strip_flyweight.hpp"
 #include "../flyweights/model_flyweight.hpp"
 #include "../flyweights/texture_flyweight.hpp"
 
 #define DEFAULT_CLEAR_COLOR WHITE
 #define DEFAULT_TEXT_COLOR BLACK
+#define DEFAULT_LINE_STRIP_COLOR BLACK
 
 void register_draw_systems(ecsql::World& world) {
 	world.register_system({
@@ -168,6 +171,50 @@ void register_draw_systems(ecsql::World& world) {
 				}
 			}
 		}
+	});
+	world.register_system({
+		"DrawLineStrip",
+		R"(
+			SELECT
+				path,
+				Position.x, Position.y,
+				Rotation.z,
+				Scale.x, Scale.y,
+				r, g, b, a
+			FROM PointStrip
+				LEFT JOIN Position USING(entity_id)
+				LEFT JOIN Rotation USING(entity_id)
+				LEFT JOIN Scale USING(entity_id)
+				LEFT JOIN Color USING(entity_id)
+		)"_dedent,
+		[](auto& sql) {
+			for (ecsql::SQLRow row : sql()) {
+				auto [
+					points_path,
+					position,
+					rotation,
+					scale,
+					color
+				] = row.get<
+					std::string_view,
+					Vector2,
+					float,
+					std::optional<Vector2>,
+					std::optional<Color>
+				>();
+				if (!scale) scale.emplace(1, 1);
+				auto point_strip = LineStripFlyweight.get(points_path);
+				auto points = point_strip.value.looped_points();
+				rlPushMatrix();
+					rlLoadIdentity();
+					rlSetLineWidth(2);
+					rlTranslatef(position.x, position.y, 0);
+					rlRotatef(rotation, 0, 0, 1);
+					rlScalef(scale->x, scale->y, 1);
+					DrawLineStrip(points.data(), points.size(), color.value_or(DEFAULT_LINE_STRIP_COLOR));
+				rlPopMatrix();
+			}
+		},
 	});
 	world.register_system({
 		"DrawModel",

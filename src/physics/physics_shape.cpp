@@ -3,6 +3,7 @@
 #include "physics_body.hpp"
 #include "physics_shape.hpp"
 #include "../ecsql/system.hpp"
+#include "../flyweights/line_strip_flyweight.hpp"
 
 ShapeUserData *ShapeUserData::from(b2ShapeId shape_id) {
 	return (ShapeUserData *) b2Shape_GetUserData(shape_id);
@@ -107,11 +108,14 @@ void register_physics_shape(ecsql::World& world) {
 				-- capsule
 				Capsule.x1, Capsule.y1, Capsule.x2, Capsule.y2, Capsule.radius,
 				-- rectangle
-				Box.half_width, Box.half_height, Box.x, Box.y, Box.rotation
+				Box.half_width, Box.half_height, Box.x, Box.y, Box.rotation,
+				-- convex hull
+				PointStrip.path
 			FROM Shape
 				LEFT JOIN Circle USING(entity_id)
 				LEFT JOIN Capsule USING(entity_id)
 				LEFT JOIN Box USING(entity_id)
+				LEFT JOIN PointStrip USING(entity_id)
 			WHERE entity_id = ?
 		)",
 		[](ecsql::PreparedSQL& select_shape) {
@@ -141,7 +145,8 @@ void register_physics_shape(ecsql::World& world) {
 					update_body_mass,
 					circle,
 					capsule,
-					box
+					box,
+					line_strip_path
 				] = select_shape(shape_entity_id).get<
 					std::optional<float>,
 					std::optional<float>,
@@ -157,10 +162,11 @@ void register_physics_shape(ecsql::World& world) {
 					std::optional<bool>,
 					std::optional<b2Circle>,
 					std::optional<b2Capsule>,
-					std::optional<b2Box>
+					std::optional<b2Box>,
+					std::optional<std::string_view>
 				>();
 
-				if (!circle && !capsule && !box) {
+				if (!circle && !capsule && !box && !line_strip_path) {
 					continue;
 				}
 
@@ -214,6 +220,13 @@ void register_physics_shape(ecsql::World& world) {
 				}
 				if (box) {
 					b2Polygon polygon = b2MakeOffsetBox(box->half_size.x, box->half_size.y, box->center, b2MakeRot(box->rotation * DEG2RAD));
+					shape_id = b2CreatePolygonShape(body_id, &shapedef, &polygon);
+				}
+				if (line_strip_path) {
+					auto line_strip = LineStripFlyweight.get(*line_strip_path);
+					auto points = line_strip.value.points();
+					b2Hull hull = b2ComputeHull((const b2Vec2 *) points.data(), points.size());
+					b2Polygon polygon = b2MakePolygon(&hull, 1);
 					shape_id = b2CreatePolygonShape(body_id, &shapedef, &polygon);
 				}
 
