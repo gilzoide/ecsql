@@ -110,12 +110,14 @@ void register_physics_shape(ecsql::World& world) {
 				-- rectangle
 				Box.half_width, Box.half_height, Box.x, Box.y, Box.rotation,
 				-- convex hull
-				PointStrip.path
+				PointStrip.path,
+				Scale.x, Scale.y
 			FROM Shape
 				LEFT JOIN Circle USING(entity_id)
 				LEFT JOIN Capsule USING(entity_id)
 				LEFT JOIN Box USING(entity_id)
 				LEFT JOIN PointStrip USING(entity_id)
+				LEFT JOIN Scale USING(entity_id)
 			WHERE entity_id = ?
 		)",
 		[](ecsql::PreparedSQL& select_shape) {
@@ -146,7 +148,8 @@ void register_physics_shape(ecsql::World& world) {
 					circle,
 					capsule,
 					box,
-					line_strip_path
+					line_strip_path,
+					scale
 				] = select_shape(shape_entity_id).get<
 					std::optional<float>,
 					std::optional<float>,
@@ -163,7 +166,8 @@ void register_physics_shape(ecsql::World& world) {
 					std::optional<b2Circle>,
 					std::optional<b2Capsule>,
 					std::optional<b2Box>,
-					std::optional<std::string_view>
+					std::optional<std::string_view>,
+					std::optional<Vector2>
 				>();
 
 				if (!circle && !capsule && !box && !line_strip_path) {
@@ -224,7 +228,8 @@ void register_physics_shape(ecsql::World& world) {
 				}
 				if (line_strip_path) {
 					auto line_strip = LineStripFlyweight.get(*line_strip_path);
-					auto points = line_strip.value.points();
+					auto scaled_line_strip = scale ? line_strip.value.scaled(*scale) : line_strip.value;
+					auto points = scaled_line_strip.points();
 					b2Hull hull = b2ComputeHull((const b2Vec2 *) points.data(), points.size());
 					b2Polygon polygon = b2MakePolygon(&hull, 1);
 					shape_id = b2CreatePolygonShape(body_id, &shapedef, &polygon);

@@ -16,6 +16,8 @@ public:
 	std::span<Vector2> looped_points();
 	std::span<const Vector2> looped_points() const;
 
+	LineStrip scaled(Vector2 scale) const;
+
 	static LineStrip parse(const char *filename);
 
 private:

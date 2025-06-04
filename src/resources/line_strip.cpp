@@ -42,6 +42,14 @@ std::span<const Vector2> LineStrip::looped_points() const {
 	return std::span(looped_point_vector.data(), looped_point_vector.size());
 }
 
+LineStrip LineStrip::scaled(Vector2 scale) const {
+	std::vector<Vector2> copied_points = looped_point_vector;
+	for (Vector2& point : copied_points) {
+		point *= scale;
+	}
+	return LineStrip(std::move(copied_points));
+}
+
 LineStrip LineStrip::parse(const char *filename) {
 	std::vector<Vector2> points;
 	physfs_streambuf buf(filename, std::ios::in);
