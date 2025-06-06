@@ -32,4 +32,5 @@ system "UpdateParentOffset" {
             update_rotation(entity_id, rotation)
         end
     end,
+    use_fixed_delta = true,
 }
