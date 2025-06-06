@@ -36,7 +36,7 @@ namespace detail {
 }
 
 template<typename RetValue, typename... Args>
-void register_sql_function(sqlite3 *db, RetValue (*fn)(Args...), const char *name, int eTextRep = SQLITE_UTF8) {
+void register_sql_function(sqlite3 *db, RetValue (*fn)(Args...), const char *name, int eTextRep) {
 	sqlite3_create_function(db, name, sizeof...(Args), eTextRep, (void *) fn, detail::sql_function_entrypoint<RetValue, Args...>, nullptr, nullptr);
 }
 
