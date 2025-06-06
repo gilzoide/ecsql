@@ -1,9 +1,12 @@
 local tuning = require "tuning"
 
 return function(width, height, border)
+    width = width or tuning.ROOM_WIDTH
+    height = height or tuning.ROOM_HEIGHT
+    border = border or tuning.ROOM_DEFAULT_BORDER
+
     local half_width = width / 2
     local half_height = height / 2
-    border = border or tuning.ROOM_DEFAULT_BORDER
     local half_border = border / 2
 
     entity "TopWall" {
