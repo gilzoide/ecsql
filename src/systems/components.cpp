@@ -158,6 +158,14 @@ ecsql::Component AngularVelocityComponent {
 		"z NOT NULL DEFAULT 0",
 	}
 };
+ecsql::Component SetAngularVelocityComponent {
+	"SetAngularVelocity",
+	{
+		"x NOT NULL DEFAULT 0",
+		"y NOT NULL DEFAULT 0",
+		"z NOT NULL DEFAULT 0",
+	}
+};
 
 ecsql::Component ForceComponent {
 	"Force",

@@ -1,3 +1,4 @@
+#include "box2d/box2d.h"
 #include "physics_body.hpp"
 #include "physics_forces.hpp"
 #include "../ecsql/system.hpp"
@@ -48,6 +49,9 @@ void register_physics_forces(ecsql::World& world) {
 					else {
 						b2Body_ApplyForceToCenter(it->second, force, wake);
 					}
+				}
+				else {
+					std::cerr << "Trying to apply force to unknown body " << entity_id << std::endl;
 				}
 			}
 			delete_forces();
@@ -100,6 +104,9 @@ void register_physics_forces(ecsql::World& world) {
 						b2Body_ApplyLinearImpulseToCenter(it->second, impulse, wake);
 					}
 				}
+				else {
+					std::cerr << "Trying to apply impulse to unknown body " << entity_id << std::endl;
+				}
 			}
 			delete_impulses();
 		},
@@ -135,8 +142,46 @@ void register_physics_forces(ecsql::World& world) {
 				if (it != body_map.end()) {
 					b2Body_ApplyTorque(it->second, torque, wake);
 				}
+				else {
+					std::cerr << "Trying to apply torque to unknown body " << entity_id << std::endl;
+				}
 			}
 			delete_torque();
+		},
+	});
+
+	world.register_system({
+		"physics.SetAngularVelocity",
+		{
+			R"(
+				SELECT
+					entity_id,
+					z
+				FROM SetAngularVelocity
+			)",
+			"DELETE FROM SetAngularVelocity",
+		},
+		[](std::vector<ecsql::PreparedSQL>& sqls) {
+			auto select_pending_updates = sqls[0];
+			auto delete_pending = sqls[1];
+			for (auto row : select_pending_updates()) {
+				auto [
+					entity_id,
+					angular_velocity
+				] = row.get<
+					ecsql::EntityID,
+					float
+				>();
+
+				auto it = body_map.find(entity_id);
+				if (it != body_map.end()) {
+					b2Body_SetAngularVelocity(it->second, angular_velocity);
+				}
+				else {
+					std::cerr << "Trying to set angular velocity of unknown body " << entity_id << std::endl;
+				}
+			}
+			delete_pending();
 		},
 	});
 }

@@ -124,11 +124,13 @@ void register_physics_shape(ecsql::World& world) {
 			for (auto [shape_entity_id, body_entity_id] : pending_create_shape) {
 				auto body_it = body_map.find(body_entity_id ?: shape_entity_id);
 				if (body_it == body_map.end()) {
+					std::cerr << "Trying to create shape without a known body! (entity_id = " << shape_entity_id << ")" << std::endl;
 					continue;
 				}
 
 				b2BodyId body_id = body_it->second;
 				if (!b2Body_IsValid(body_id)) {
+					std::cerr << "Trying to create shape without a valid body! (entity_id = " << shape_entity_id << ")" << std::endl;
 					continue;
 				}
 
