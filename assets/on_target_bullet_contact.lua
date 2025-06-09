@@ -8,5 +8,5 @@ return function(target_id, bullet_id)
     end
 
     create_target()
-    entity.delete(target_id)
+    world:delete_entity(target_id)
 end

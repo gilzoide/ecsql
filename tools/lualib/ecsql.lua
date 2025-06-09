@@ -1,3 +1,5 @@
+--- @meta _
+
 --- @type boolean|nil
 DEBUG = nil
 
@@ -6,21 +8,6 @@ DEBUG = nil
 --- @param replacement string
 --- @return string
 function string.replace(s, pattern, replacement) return "" end
-
---- @class entity
---- @overload fun(name: string|table, t: nil|table): nil
-entity = {
-    --- @param id integer|string
-    --- @return integer
-    delete = function(id) return 0 end,
-
-    --- @param name string
-    --- @return integer|nil
-    find = function(name) return 0 end,
-}
-
-function component(name, t) end
-function system(name, t) end
 
 --- @param script string
 function sql(script, ...) end

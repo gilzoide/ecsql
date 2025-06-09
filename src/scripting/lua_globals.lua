@@ -1,6 +1,9 @@
-local assert, pairs, select, setmetatable, type = assert, pairs, select, setmetatable, type
+local assert, pairs, select, type = assert, pairs, select, type
 local table_insert, table_concat, table_unpack = table.insert, table.concat, table.unpack
 
+--- @param name string
+--- @param t table|nil
+--- @return nil|function
 function system(name, t)
     if t then
         world:register_system(name, t, t.use_fixed_delta)
@@ -11,6 +14,9 @@ function system(name, t)
     end
 end
 
+--- @param name string
+--- @param t table|nil
+--- @return nil|function
 function component(name, t)
     if t then
         world:register_component(name, t)
@@ -21,6 +27,8 @@ function component(name, t)
     end
 end
 
+--- @param component_name string
+--- @param f function
 function hook_system(component_name, f)
     world:register_hook_system(component_name, f)
 end
@@ -66,28 +74,23 @@ local function create_entity_internal(name, t)
     return entity_id
 end
 
-_G.entity = setmetatable({}, {
-    __index = {
-        delete = function(id)
-            return world:delete_entity(id)
-        end,
-        find = function(name)
-            return world:find_entity(name)
-        end,
-    },
-    __call = function(self, name, t)
-        if type(name) == "table" then
-            return create_entity_internal(t, name)
-        elseif t then
+--- @param name string|table
+--- @param t table|nil
+--- @return integer|function
+function entity(name, t)
+    if type(name) == "table" then
+        return create_entity_internal(t, name)
+    elseif t then
+        return create_entity_internal(name, t)
+    else
+        return function(t)
             return create_entity_internal(name, t)
-        else
-            return function(t)
-                return create_entity_internal(name, t)
-            end
         end
-    end,
-})
+    end
+end
 
+--- @param script string
+--- @return ExecutedSQL|nil
 function sql(script, ...)
     if select('#', ...) > 0 or not script:match(";") then
         return world:execute_sql(script, ...)
@@ -96,6 +99,7 @@ function sql(script, ...)
     end
 end
 
+--- @param f function
 function inside_transaction(f)
     sql("BEGIN")
     local success = pcall(f)
