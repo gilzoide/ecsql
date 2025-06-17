@@ -5,8 +5,16 @@
 #include "../ecsql/system.hpp"
 #include "../flyweights/line_strip_flyweight.hpp"
 
-ShapeUserData *ShapeUserData::from(b2ShapeId shape_id) {
-	return (ShapeUserData *) b2Shape_GetUserData(shape_id);
+void set_entity_id(b2ShapeDef& shape_def, ecsql::EntityID entity_id) {
+	shape_def.userData = (void *) entity_id;
+}
+
+void set_entity_id(b2ShapeId shape_id, ecsql::EntityID entity_id) {
+	b2Shape_SetUserData(shape_id, (void *) entity_id);
+}
+
+ecsql::EntityID get_entity_id(b2ShapeId shape_id) {
+	return (ecsql::EntityID) b2Shape_GetUserData(shape_id);
 }
 
 std::vector<std::pair<ecsql::EntityID, ecsql::EntityID>> pending_create_shape;
@@ -176,10 +184,8 @@ void register_physics_shape(ecsql::World& world) {
 					continue;
 				}
 
-				std::unique_ptr<ShapeUserData> userData = std::make_unique<ShapeUserData>(shape_entity_id);
-
 				b2ShapeDef shapedef = b2DefaultShapeDef();
-				shapedef.userData = userData.get();
+				set_entity_id(shapedef, shape_entity_id);
 				if (friction) {
 					shapedef.material.friction = *friction;
 				}
@@ -235,10 +241,6 @@ void register_physics_shape(ecsql::World& world) {
 					b2Hull hull = b2ComputeHull((const b2Vec2 *) points.data(), points.size());
 					b2Polygon polygon = b2MakePolygon(&hull, 1);
 					shape_id = b2CreatePolygonShape(body_id, &shapedef, &polygon);
-				}
-
-				if (b2Shape_IsValid(shape_id)) {
-					std::ignore = userData.release();
 				}
 			}
 			pending_create_shape.clear();

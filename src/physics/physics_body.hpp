@@ -4,11 +4,9 @@
 
 #include "../ecsql/world.hpp"
 
-struct BodyUserData {
-	ecsql::EntityID entity_id;
-
-	static BodyUserData *from(b2BodyId body_id);
-};
+void set_entity_id(b2BodyDef& body_def, ecsql::EntityID entity_id);
+void set_entity_id(b2BodyId body_id, ecsql::EntityID entity_id);
+ecsql::EntityID get_entity_id(b2BodyId body_id);
 
 extern std::unordered_map<ecsql::EntityID, b2BodyId> body_map;
 

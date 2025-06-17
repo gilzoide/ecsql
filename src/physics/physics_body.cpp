@@ -4,18 +4,19 @@
 
 #include "physics_body.hpp"
 #include "box2d/math_functions.h"
-#include "physics_shape.hpp"
 #include "physics_world.hpp"
 #include "../ecsql/system.hpp"
 
-static std::vector<b2ShapeId> get_body_shapes(b2BodyId body_id) {
-	std::vector<b2ShapeId> shape_ids(b2Body_GetShapeCount(body_id));
-	b2Body_GetShapes(body_id, shape_ids.data(), shape_ids.size());
-	return shape_ids;
+void set_entity_id(b2BodyDef& body_def, ecsql::EntityID entity_id) {
+	body_def.userData = (void *) entity_id;
 }
 
-BodyUserData *BodyUserData::from(b2BodyId body_id) {
-	return (BodyUserData *) b2Body_GetUserData(body_id);
+void set_entity_id(b2BodyId body_id, ecsql::EntityID entity_id) {
+	b2Body_SetUserData(body_id, (void *) entity_id);
+}
+
+ecsql::EntityID get_entity_id(b2BodyId body_id) {
+	return (ecsql::EntityID) b2Body_GetUserData(body_id);
 }
 
 std::unordered_map<ecsql::EntityID, b2BodyId> body_map;
@@ -54,11 +55,6 @@ ecsql::HookSystem BodyHookSystem {
 				auto it = body_map.find(old_row.get<ecsql::EntityID>(0));
 				if (it != body_map.end()) {
 					if (b2Body_IsValid(it->second)) {
-						for (b2ShapeId shape : get_body_shapes(it->second)) {
-							delete ShapeUserData::from(shape);
-						}
-
-						delete BodyUserData::from(it->second);
 						b2DestroyBody(it->second);
 					}
 					body_map.erase(it);
@@ -159,9 +155,7 @@ void register_physics_body(ecsql::World& world) {
 				}
 
 				b2BodyDef bodydef = b2DefaultBodyDef();
-				bodydef.userData = new BodyUserData {
-					.entity_id = entity_id,
-				};
+				set_entity_id(bodydef, entity_id);
 				if (name) {
 					bodydef.name = *name;
 				}

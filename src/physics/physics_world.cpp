@@ -176,7 +176,7 @@ void register_physics_world(ecsql::World& world) {
 				// Update body positions
 				b2BodyEvents body_events = b2World_GetBodyEvents(world_id);
 				for (auto move_event : std::span<b2BodyMoveEvent>(body_events.moveEvents, body_events.moveCount)) {
-					ecsql::EntityID entity_id = BodyUserData::from(move_event.bodyId)->entity_id;
+					ecsql::EntityID entity_id = get_entity_id(move_event.bodyId);
 
 					update_position(entity_id, move_event.transform.p);
 					update_rotation(entity_id, b2Rot_GetAngle(move_event.transform.q) * RAD2DEG);
@@ -190,8 +190,8 @@ void register_physics_world(ecsql::World& world) {
 				for (auto begin_contacts : std::span<b2ContactBeginTouchEvent>(contact_events.beginEvents, contact_events.beginCount)) {
 					insert_contact(
 						world_entity_id,
-						ShapeUserData::from(begin_contacts.shapeIdA)->entity_id,
-						ShapeUserData::from(begin_contacts.shapeIdB)->entity_id,
+						get_entity_id(begin_contacts.shapeIdA),
+						get_entity_id(begin_contacts.shapeIdB),
 						begin_contacts.manifold.normal.x,
 						begin_contacts.manifold.normal.y
 					);
@@ -199,8 +199,8 @@ void register_physics_world(ecsql::World& world) {
 				for (auto end_contacts : std::span<b2ContactEndTouchEvent>(contact_events.endEvents, contact_events.endCount)) {
 					if (b2Shape_IsValid(end_contacts.shapeIdA) && b2Shape_IsValid(end_contacts.shapeIdB)) {
 						delete_contact(
-							ShapeUserData::from(end_contacts.shapeIdA)->entity_id,
-							ShapeUserData::from(end_contacts.shapeIdB)->entity_id
+							get_entity_id(end_contacts.shapeIdA),
+							get_entity_id(end_contacts.shapeIdB)
 						);
 					}
 				}

@@ -4,10 +4,8 @@
 
 #include "../ecsql/world.hpp"
 
-struct ShapeUserData {
-	ecsql::EntityID entity_id;
-
-	static ShapeUserData *from(b2ShapeId body_id);
-};
+void set_entity_id(b2ShapeDef& shape_def, ecsql::EntityID entity_id);
+void set_entity_id(b2ShapeId shape_id, ecsql::EntityID entity_id);
+ecsql::EntityID get_entity_id(b2ShapeId shape_id);
 
 void register_physics_shape(ecsql::World& world);
