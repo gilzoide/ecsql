@@ -59,6 +59,23 @@ void register_draw_systems(ecsql::World& world) {
 		},
 	});
 	world.register_system({
+		"BeginCamera2D",
+		R"(
+			SELECT
+				offset_x, offset_y,
+				target_x, target_y,
+				rotation,
+				zoom
+			FROM Camera2D
+		)"_dedent,
+		[](ecsql::PreparedSQL& sql) {
+			Camera2D camera = sql().get<std::optional<Camera2D>>().value_or(Camera2D {
+				.zoom = 1,
+			});
+			BeginMode2D(camera);
+		},
+	});
+	world.register_system({
 		"DrawTextureRect",
 		R"(
 			SELECT
@@ -243,6 +260,12 @@ void register_draw_systems(ecsql::World& world) {
 					DrawLineStrip(points.data(), points.size(), color.value_or(DEFAULT_LINE_STRIP_COLOR));
 				rlPopMatrix();
 			}
+		},
+	});
+	world.register_system({
+		"EndCamera2D",
+		[]() {
+			EndMode2D();
 		},
 	});
 	world.register_system({

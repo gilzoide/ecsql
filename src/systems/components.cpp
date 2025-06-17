@@ -133,6 +133,17 @@ ecsql::Component CameraComponent {
 		 "projection DEFAULT 'perspective'",
 	}
 };
+ecsql::Component Camera2DComponent {
+	"Camera2D",
+	{
+		 "offset_x NOT NULL DEFAULT 0",
+		 "offset_y NOT NULL DEFAULT 0",
+		 "target_x NOT NULL DEFAULT 0",
+		 "target_y NOT NULL DEFAULT 0",
+		 "rotation NOT NULL DEFAULT 0",
+		 "zoom NOT NULL DEFAULT 1",
+	}
+};
 ecsql::Component CameraUpdate {
 	"UpdateCamera",
 	{

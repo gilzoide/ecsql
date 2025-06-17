@@ -283,13 +283,13 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	ecsql_namespace["loadfile"] = [](sol::this_state L, const char *filename) -> std::pair<sol::object, sol::object> {
 		auto load_result = ecsql::safe_load_lua_script(L, filename);
 		if (load_result.valid()) {
-			return  {
+			return {
 				sol::stack_object(L, -1),
 				sol::lua_nil,
 			};
 		}
 		else {
-			return  {
+			return {
 				sol::lua_nil,
 				sol::stack_object(L, -1),
 			};
