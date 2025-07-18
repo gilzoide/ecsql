@@ -112,6 +112,7 @@ private:
 	PreparedSQL update_delta_time_stmt;
 	PreparedSQL select_fixed_delta_time_stmt;
 	PreparedSQL update_fixed_delta_progress_stmt;
+	bool is_inside_transaction = false;
 
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> systems;
 	std::vector<std::tuple<System, std::vector<PreparedSQL>>> fixed_systems;
@@ -126,6 +127,7 @@ private:
 	static void preupdate_hook(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1, sqlite3_int64 iKey2);
 	void execute_prehook(const char *table, HookType hook, sqlite3_int64 old_rowid, sqlite3_int64 new_rowid);
 	void execute_all_prehooks(HookType hook);
+	void join_previous_commit_or_rollback();
 };
 
 }

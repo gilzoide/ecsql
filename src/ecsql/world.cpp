@@ -196,31 +196,28 @@ std::optional<EntityID> World::find_entity(std::string_view name) {
 
 void World::begin_transaction() {
 	ZoneScopedN("begin_transaction");
-	if (commit_or_rollback_result.valid()) {
-		commit_or_rollback_result.get();
-	}
+	join_previous_commit_or_rollback();
 	begin_stmt();
+	is_inside_transaction = true;
 }
 
 void World::commit_transaction() {
 	ZoneScoped;
-	if (commit_or_rollback_result.valid()) {
-		commit_or_rollback_result.get();
-	}
+	join_previous_commit_or_rollback();
 	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
 		ZoneScopedN("commit_transaction.async");
 		commit_stmt();
+		is_inside_transaction = false;
 	});
 }
 
 void World::rollback_transaction() {
 	ZoneScoped;
-	if (commit_or_rollback_result.valid()) {
-		commit_or_rollback_result.get();
-	}
+	join_previous_commit_or_rollback();
 	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
-		ZoneScoped;
+		ZoneScopedN("rollback_transaction.async");
 		rollback_stmt();
+		is_inside_transaction = false;
 	});
 }
 
@@ -272,13 +269,17 @@ bool World::backup_into(const char *filename, const char *db_name) {
 		std::cerr << "Error backing up into \"" << filename << "\": " << sqlite3_errmsg(db) << std::endl;
 		return false;
 	}
-	bool result = backup_into(db, db_name);
-	sqlite3_close(db);
-	return result;
+	std::unique_ptr<sqlite3, sqlite3_close_v2_deleter> db_deleter(db);
+	return backup_into(db, db_name);
 }
 
 bool World::backup_into(sqlite3 *db, const char *db_name) {
+	join_previous_commit_or_rollback();
 	sqlite3_backup *backup = sqlite3_backup_init(db, "main", this->db.get(), db_name);
+	if (!backup) {
+		std::cerr << "Error backing up db: " << sqlite3_errmsg(db) << std::endl;
+		return false;
+	}
 	sqlite3_backup_step(backup, -1);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
 }
@@ -289,14 +290,18 @@ bool World::restore_from(const char *filename, const char *db_name) {
 		std::cerr << "Error restoring from \"" << filename << "\": " << sqlite3_errmsg(db) << std::endl;
 		return false;
 	}
-	bool result = restore_from(db, db_name);
-	sqlite3_close(db);
-	return result;
+	std::unique_ptr<sqlite3, sqlite3_close_v2_deleter> db_deleter(db);
+	return restore_from(db, db_name);
 }
 
 bool World::restore_from(sqlite3 *db, const char *db_name) {
-	execute_all_prehooks(HookType::OnDelete);
+	join_previous_commit_or_rollback();
 	sqlite3_backup *backup = sqlite3_backup_init(this->db.get(), db_name, db, "main");
+	if (!backup) {
+		std::cerr << "Error restoring db: " << sqlite3_errmsg(this->db.get()) << std::endl;
+		return false;
+	}
+	execute_all_prehooks(HookType::OnDelete);
 	sqlite3_backup_step(backup, -1);
 	execute_all_prehooks(HookType::OnInsert);
 	return sqlite3_backup_finish(backup) == SQLITE_OK;
@@ -361,6 +366,12 @@ void World::execute_all_prehooks(HookType hook) {
 				system(hook, row, row);
 			}
 		}
+	}
+}
+
+void World::join_previous_commit_or_rollback() {
+	if (commit_or_rollback_result.valid()) {
+		commit_or_rollback_result.get();
 	}
 }
 

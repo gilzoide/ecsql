@@ -10,7 +10,7 @@ namespace ecsql {
 void execute_sql_script(sqlite3 *db, const char *sql) {
 	char *errmsg;
 	int result = sqlite3_exec(db, sql, nullptr, nullptr, &errmsg);
-	std::unique_ptr<char, sqlite3_deleter> error_message(errmsg);
+	std::unique_ptr<char, sqlite3_free_deleter> error_message(errmsg);
 	if (result != SQLITE_OK) {
 		std::string msg = error_message.get();
 		msg += " @ '";
