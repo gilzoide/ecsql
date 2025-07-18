@@ -220,7 +220,7 @@ void World::rollback_transaction() {
 	}
 	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
 		ZoneScoped;
-		commit_stmt();
+		rollback_stmt();
 	});
 }
 
