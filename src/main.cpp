@@ -12,6 +12,7 @@
 #include <tracy/Tracy.hpp>
 
 #include "debug.hpp"
+#include "game_schema.h"
 #include "memory.hpp"
 #include "screen.hpp"
 #include "sqlite_functions.hpp"
@@ -87,6 +88,7 @@ int game_main(int argc, const char **argv) {
 	InitWindow(800, 600, exe_file_name);
 
 	ecsql::World world(getenv("ECSQL_DB"));
+	world.execute_sql_script(game_schema);
 	on_window_resized(world, GetScreenWidth(), GetScreenHeight());
 	register_sqlite_functions(world.get_db().get());
 
