@@ -8,7 +8,7 @@
 #include <physfs.h>
 #include <sol/sol.hpp>
 
-namespace ecsql {
+namespace assetio {
 
 void assetio_initialize(const char *argv0, const char *organization, const char *app_name, const char *archive_ext = "zip", bool archives_first = true);
 void assetio_terminate();

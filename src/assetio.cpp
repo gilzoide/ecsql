@@ -4,7 +4,7 @@
 
 #include "assetio.hpp"
 
-namespace ecsql {
+namespace assetio {
 
 // Raylib functions
 static unsigned char *LoadFileDataCallback(const char *fileName, int *dataSize) {

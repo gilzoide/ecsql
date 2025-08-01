@@ -7,6 +7,7 @@
 #include <flyweight.hpp>
 
 #include "../ecsql/component.hpp"
+#include "../ecsql/sql_base_row.hpp"
 #include "../ecsql/hook_system.hpp"
 
 using namespace ecsql;

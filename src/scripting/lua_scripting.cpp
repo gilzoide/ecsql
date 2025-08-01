@@ -5,8 +5,8 @@
 #include "colors.hpp"
 #include "lua_globals.h"
 #include "lua_scripting.hpp"
+#include "../assetio.hpp"
 #include "../memory.hpp"
-#include "../ecsql/assetio.hpp"
 #include "../ecsql/background_system.hpp"
 #include "../ecsql/prepared_sql.hpp"
 #include "../ecsql/system.hpp"
@@ -298,7 +298,7 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	};
 	ecsql_namespace["file_base_dir"] = PHYSFS_getBaseDir;
 	ecsql_namespace["loadfile"] = [](sol::this_state L, const char *filename) -> std::pair<sol::object, sol::object> {
-		auto load_result = ecsql::safe_load_lua_script(L, filename);
+		auto load_result = assetio::safe_load_lua_script(L, filename);
 		if (load_result.valid()) {
 			return {
 				sol::stack_object(L, -1),

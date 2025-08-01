@@ -11,13 +11,13 @@
 #include <sol/sol.hpp>
 #include <tracy/Tracy.hpp>
 
+#include "assetio.hpp"
 #include "debug.hpp"
 #include "game_schema.h"
 #include "memory.hpp"
 #include "screen.hpp"
 #include "sqlite_functions.hpp"
 #include "ecsql/additional_sql.hpp"
-#include "ecsql/assetio.hpp"
 #include "ecsql/component.hpp"
 #include "ecsql/hook_system.hpp"
 #include "ecsql/world.hpp"
@@ -80,7 +80,7 @@ int game_main(int argc, const char **argv) {
 		ChangeDirectory(exe_dir_path);
 	}
 
-	ecsql::assetio_initialize(argv[0], "com.gilzoide", "ecsql");
+	assetio::assetio_initialize(argv[0], "com.gilzoide", "ecsql");
 
 	const char *exe_file_name = GetFileName(argv[0]);
 	TracySetProgramName(exe_file_name);
@@ -113,14 +113,14 @@ int game_main(int argc, const char **argv) {
 	Physics physics(world);
 
 	// Lua components + systems + whatever
-	ecsql::foreach_file("autoload", [&](const std::filesystem::path& path) {
-		ecsql::do_lua_script(lua, path.c_str());
+	assetio::foreach_file("autoload", [&](const std::filesystem::path& path) {
+		assetio::do_lua_script(lua, path.c_str());
 	}, true);
 
 	// Scene
 	const char *main_scene = argc >= 2 ? argv[1] : "main.lua";
 	bool loaded_main_scene = world.inside_transaction([&](ecsql::World& world) {
-		ecsql::do_lua_script(lua, main_scene);
+		assetio::do_lua_script(lua, main_scene);
 	});
 	if (!loaded_main_scene) {
 		std::cerr << "Could not load main scene '" << main_scene << "'. Bailing out." << std::endl;
@@ -136,7 +136,7 @@ int game_main(int argc, const char **argv) {
 #endif
 	CloseWindow();
 
-	ecsql::assetio_terminate();
+	assetio::assetio_terminate();
 
 	return 0;
 }

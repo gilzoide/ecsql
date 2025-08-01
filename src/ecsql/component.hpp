@@ -7,7 +7,6 @@
 #include <reflect>
 
 #include "entity.hpp"
-#include "prepared_sql.hpp"
 #include "static_linked_list.hpp"
 
 typedef struct sqlite3 sqlite3;
