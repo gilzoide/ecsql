@@ -569,8 +569,9 @@ void register_update_yoga(ecsql::World& world) {
 				WHERE parent_id IS NULL
 			)"_dedent,
 			R"(
-				REPLACE INTO Rectangle(entity_id, x, y, width, height)
-				VALUES(?, ?, ?, ?, ?)
+				INSERT INTO Rectangle(entity_id, x, y, width, height)
+				VALUES(?1, ?2, ?3, ?4, ?5)
+				ON CONFLICT DO UPDATE SET x = ?2, y = ?3, width = ?4, height = ?5
 			)",
 		},
 		[](auto& sqls) {

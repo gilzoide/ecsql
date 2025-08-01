@@ -153,6 +153,19 @@ static sol::variadic_results lua_sql_row_get_all(sol::this_state L, const ecsql:
 	return results;
 }
 
+static Vector2 Vector2InvScale(Vector2 v, float inv_scale) {
+	return Vector2Scale(v, 1 / inv_scale);
+}
+
+static float Vector2Aspect(Vector2 v) {
+	if (v.y) {
+		return v.x / v.y;
+	}
+	else {
+		return 0;
+	}
+}
+
 static void register_usertypes(sol::state_view& state) {
 	state.new_usertype<ecsql::World>(
 		"World",
@@ -250,8 +263,12 @@ static void register_usertypes(sol::state_view& state) {
 		"y", sol::property(&Vector2::y, &Vector2::y),
 		"normalized", Vector2Normalize,
 		"rotated", Vector2Rotate,
+		"aspect", Vector2Aspect,
 		"unpack", [](const Vector2& v) { return std::make_pair(v.x, v.y); },
 		sol::meta_method::addition, Vector2Add,
+		sol::meta_method::subtraction, Vector2Subtract,
+		sol::meta_method::multiplication, sol::overload(Vector2Scale, Vector2Multiply),
+		sol::meta_method::division, sol::overload(Vector2InvScale, Vector2Divide),
 		sol::meta_method::to_string, [](const Vector2& v) { return std::format("({}, {})", v.x, v.y); }
 	);
 }

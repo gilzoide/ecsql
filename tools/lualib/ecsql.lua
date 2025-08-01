@@ -109,6 +109,11 @@ SQLRowIterator = {
 
 --- @class Vector2
 --- @operator add(Vector2):Vector2
+--- @operator sub(Vector2):Vector2
+--- @operator mul(Vector2):Vector2
+--- @operator mul(number):Vector2
+--- @operator div(Vector2):Vector2
+--- @operator div(number):Vector2
 --- @overload fun(x: number, y: number): Vector2
 Vector2 = {
     x = 0.0,
@@ -127,6 +132,10 @@ Vector2 = {
     --- @return number
     --- @return number
     unpack = function(self) return self.x, self.y end,
+
+    --- @param self Vector2
+    --- @return number
+    aspect = function(self) return self.x / self.y end,
 }
 
 --- @type World

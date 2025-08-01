@@ -14,6 +14,15 @@ local FullScreenRect = entity "FullScreenRect" {
         height = tuning.ROOM_HEIGHT,
     }
 }
+entity "Viewport" {
+    ScreenRect = {},
+    Viewport2D = {
+        x = 0,
+        y = 0,
+        width = tuning.ROOM_WIDTH,
+        height = tuning.ROOM_HEIGHT,
+    },
+}
 entity "Title" {
     Text = {
         text = "[SPACE] to shoot, [WASD] to move",

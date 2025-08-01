@@ -28,7 +28,7 @@ function component(name, t)
 end
 
 --- @param component_name string
---- @param f function
+--- @param f function(hook: string, old_row, new_row)
 function hook_system(component_name, f)
     world:register_hook_system(component_name, f)
 end
