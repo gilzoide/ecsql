@@ -4,7 +4,6 @@
 #include "component.hpp"
 #include "hook_system.hpp"
 #include "prepared_sql.hpp"
-#include "screen.hpp"
 #include "sql_hook_row.hpp"
 #include "sql_utility.hpp"
 #include "system.hpp"
@@ -257,10 +256,6 @@ void World::update(float delta_time) {
 			future = self.dispatch_queue.dispatch([&]() { system(); });
 		}
 	});
-}
-
-void World::on_window_resized(int new_width, int new_height) {
-	execute_sql(screen::update_sql, new_width, new_height);
 }
 
 bool World::backup_into(const char *filename, const char *db_name) {

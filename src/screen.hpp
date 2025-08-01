@@ -1,7 +1,5 @@
 #pragma once
 
-namespace ecsql {
-
 struct screen {
 	// Schema
 	int width;
@@ -10,5 +8,3 @@ struct screen {
 	// SQL statements
 	inline static const char update_sql[] = "UPDATE screen SET width = ?, height = ?";
 };
-
-}

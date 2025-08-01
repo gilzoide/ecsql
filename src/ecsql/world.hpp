@@ -83,8 +83,6 @@ public:
 
 	void update(float time_delta);
 
-	void on_window_resized(int new_width, int new_height);
-
 	bool backup_into(const char *filename, const char *db_name = "main");
 	bool backup_into(sqlite3 *db, const char *db_name = "main");
 

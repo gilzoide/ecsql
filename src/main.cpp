@@ -13,6 +13,7 @@
 
 #include "debug.hpp"
 #include "memory.hpp"
+#include "screen.hpp"
 #include "sqlite_functions.hpp"
 #include "ecsql/additional_sql.hpp"
 #include "ecsql/assetio.hpp"
@@ -31,6 +32,10 @@ static void log_function(void *, int error, const char *message) {
 	}
 }
 
+static void on_window_resized(ecsql::World& world, float new_widht, float new_height) {
+	world.execute_sql(screen::update_sql, new_widht, new_height);
+}
+
 void game_loop(ecsql::World& world) {
 	ZoneScoped;
 	{
@@ -39,7 +44,7 @@ void game_loop(ecsql::World& world) {
 	}
 
 	if (IsWindowResized()) {
-		world.on_window_resized(GetScreenWidth(), GetScreenHeight());
+		on_window_resized(world, GetScreenWidth(), GetScreenHeight());
 	}
 
 	float time_delta = GetFrameTime();
@@ -82,7 +87,7 @@ int game_main(int argc, const char **argv) {
 	InitWindow(800, 600, exe_file_name);
 
 	ecsql::World world(getenv("ECSQL_DB"));
-	world.on_window_resized(GetScreenWidth(), GetScreenHeight());
+	on_window_resized(world, GetScreenWidth(), GetScreenHeight());
 	register_sqlite_functions(world.get_db().get());
 
 	// Components
