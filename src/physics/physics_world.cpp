@@ -97,7 +97,7 @@ ecsql::HookSystem WorldHookSystem {
 				break;
 
 			case ecsql::HookType::OnDelete: {
-				auto it = world_map.find(old_row.get<ecsql::EntityID>(0));
+				auto it = world_map.find(old_row.get<ecsql::EntityID>(WorldComponent.entity_id_index()));
 				if (it != world_map.end()) {
 					if (b2World_IsValid(it->second)) {
 						b2DestroyWorld(it->second);
@@ -169,8 +169,14 @@ void register_physics_world(ecsql::World& world) {
 					float, int
 				>();
 
+				auto it = world_map.find(world_entity_id);
+				if (it == world_map.end()) {
+					std::cerr << "FIXME: World entity exists but Box2D world does not." << std::endl;
+					continue;
+				}
+
 				// Simulate world
-				b2WorldId world_id = world_map.at(world_entity_id);
+				b2WorldId world_id = it->second;
 				b2World_Step(world_id, timestep, substep_count);
 
 				// Update body positions
