@@ -14,4 +14,4 @@ Play the current demo state: https://gilzoide.github.io/ecsql/
 
 
 ## Credits
-- All textures: [Kenney Assets](https://kenney.nl/assets)
+- All textures and 3D models: [Kenney Assets](https://kenney.nl/assets)

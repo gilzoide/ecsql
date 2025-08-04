@@ -1,22 +1,21 @@
 #include <raylib.h>
-#include <rlgl.h>
 
-#include "image_flyweight.hpp"
 #include "texture_flyweight.hpp"
+#include "../ecsql/additional_sql.hpp"
 
-ComponentFlyweight<Texture2D> TextureFlyweight {
+ComponentFlyweight<TextureAtlas> TextureFlyweight {
 	[](const std::string& key) {
-		if (key.empty()) {
-			return Texture2D { rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
-		}
-		else {
-			auto image = ImageFlyweight.get(key);
-			return LoadTextureFromImage(image);
-		}
+		return TextureAtlas::load(key);
 	},
-	[](Texture2D& texture) {
-		if (texture.id != rlGetTextureIdDefault()) {
-			UnloadTexture(texture);
-		}
+	[](TextureAtlas& atlas){
+		atlas.unload();
 	},
+	"Texture",
+};
+
+ecsql::AdditionalSQL SubtextureSql {
+	R"(
+		ALTER TABLE Texture
+		ADD COLUMN subtexture
+	)"
 };

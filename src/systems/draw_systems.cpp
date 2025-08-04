@@ -79,7 +79,7 @@ void register_draw_systems(ecsql::World& world) {
 		"DrawTextureRect",
 		R"(
 			SELECT
-				path,
+				path, subtexture,
 				Rectangle.x, Rectangle.y, width, height,
 				Rotation.z,
 				r, g, b, a
@@ -90,18 +90,15 @@ void register_draw_systems(ecsql::World& world) {
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
-				auto [tex_path, rectangle, rotation, color] = row.get<std::string_view, Rectangle, float, std::optional<Color>>();
+				auto [tex_path, subtexture, rectangle, rotation, color] = row.get<std::string_view, std::string, Rectangle, float, std::optional<Color>>();
 				auto tex = TextureFlyweight.get(tex_path);
-				Rectangle source {
-					0, 0,
-					(float) tex.value.width, (float) tex.value.height,
-				};
+				Rectangle source_rect = tex->subtexture_rect(subtexture);
 				Vector2 center { rectangle.width * 0.5f, rectangle.height * 0.5f };
 				rectangle.x += center.x;
 				rectangle.y += center.y;
 				{
 					ZoneScopedN("DrawTexturePro");
-					DrawTexturePro(tex, source, rectangle, center, rotation, color.value_or(WHITE));
+					DrawTexturePro(tex->texture, source_rect, rectangle, center, rotation, color.value_or(WHITE));
 				}
 			}
 		},
@@ -110,7 +107,7 @@ void register_draw_systems(ecsql::World& world) {
 		"DrawTexture",
 		R"(
 			SELECT
-				path,
+				path, subtexture,
 				Position.x, Position.y,
 				PreviousPosition.x, PreviousPosition.y,
 				Pivot.x, Pivot.y,
@@ -134,7 +131,7 @@ void register_draw_systems(ecsql::World& world) {
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
 				auto [
-					tex_path,
+					tex_path, subtexture,
 					position,
 					previous_position,
 					normalized_pivot,
@@ -145,7 +142,7 @@ void register_draw_systems(ecsql::World& world) {
 					color,
 					fixed_delta_progress
 				] = row.get<
-					std::string_view,
+					std::string_view, std::string,
 					Vector2,
 					std::optional<Vector2>,
 					std::optional<Vector2>,
@@ -160,15 +157,12 @@ void register_draw_systems(ecsql::World& world) {
 				rotation = interpolated_rotation(rotation, previous_rotation, fixed_delta_progress);
 
 				auto tex = TextureFlyweight.get(tex_path);
+				Rectangle source_rect = tex->subtexture_rect(subtexture);
 
 				if (!normalized_pivot) normalized_pivot.emplace(0.5, 0.5);
-				if (!size) size.emplace(tex.value.width, tex.value.height);
+				if (!size) size.emplace(source_rect.width, source_rect.height);
 				if (!scale) scale.emplace(1, 1);
 
-				Rectangle source {
-					0, 0,
-					(float) tex.value.width, (float) tex.value.height,
-				};
 				Rectangle dest {
 					position.x,
 					position.y,
@@ -178,7 +172,7 @@ void register_draw_systems(ecsql::World& world) {
 				Vector2 pivot { dest.width * normalized_pivot->x, dest.height * normalized_pivot->y };
 				{
 					ZoneScopedN("DrawTexturePro");
-					DrawTexturePro(tex, source, dest, pivot, rotation, color.value_or(WHITE));
+					DrawTexturePro(tex->texture, source_rect, dest, pivot, rotation, color.value_or(WHITE));
 				}
 			}
 		},

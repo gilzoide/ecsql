@@ -3,5 +3,6 @@
 #include <raylib.h>
 
 #include "component_flyweight.hpp"
+#include "../resources/texture_atlas.hpp"
 
-extern ComponentFlyweight<Texture2D> TextureFlyweight;
+extern ComponentFlyweight<TextureAtlas> TextureFlyweight;

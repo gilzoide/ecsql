@@ -55,3 +55,14 @@ entity "UptimeText" {
     },
     UptimeText = {},
 }
+
+entity "Teste" {
+    Texture = {
+        path = "textures/square_nodetailsOutline.png",
+        subtexture = "bear.png",
+    },
+    Position = {
+        x = 100,
+        y = 100,
+    },
+}
