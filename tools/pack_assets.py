@@ -2,11 +2,11 @@
 Pack assets into a ZIP file, transforming them if necessary.
 """
 import os
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_LZMA
 
 
 def pack_assets(assets_folder: str, zipname: str):
-    with ZipFile(zipname, 'w') as zipfile:
+    with ZipFile(zipname, 'w', compression=ZIP_LZMA) as zipfile:
         for dirname, dirs, files in os.walk(assets_folder):
             for filename in files:
                 # skip hidden files, like ".DS_Store"
