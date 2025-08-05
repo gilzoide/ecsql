@@ -7,12 +7,8 @@
 #include <physfs_streambuf.hpp>
 #include <string_view>
 
+#include "../xml_utils.hpp"
 #include "../flyweights/image_flyweight.hpp"
-
-static std::string_view extract_xml_value(std::string_view xml_attr) {
-	size_t eq_index = xml_attr.find('=');
-	return xml_attr.substr(eq_index + 2, xml_attr.size() - (eq_index + 2) - 1);
-}
 
 static void parse_subtextures_xml(std::unordered_map<std::string, Rectangle>& map, std::istream& xml) {
 	std::string word;

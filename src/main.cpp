@@ -22,6 +22,7 @@
 #include "ecsql/hook_system.hpp"
 #include "ecsql/world.hpp"
 #include "physics/physics.hpp"
+#include "resources/sprite_db.hpp"
 #include "scripting/lua_scripting.hpp"
 #include "systems/draw_systems.hpp"
 #include "systems/key_handler.hpp"
@@ -81,6 +82,7 @@ int game_main(int argc, const char **argv) {
 	}
 
 	assetio::assetio_initialize(argv[0], "com.gilzoide", "ecsql");
+	SpriteDb::get_instance().index_path("textures");
 
 	const char *exe_file_name = GetFileName(argv[0]);
 	TracySetProgramName(exe_file_name);

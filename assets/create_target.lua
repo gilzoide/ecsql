@@ -5,8 +5,8 @@ return function(position)
     position = position or random_position_inside_screen(tuning.TARGET_RADIUS + tuning.ROOM_DEFAULT_BORDER * 0.5)
 
     return entity "Target" {
-        Texture = {
-            path = "textures/target_red2.png",
+        Sprite = {
+            path = "target_red2.png",
         },
         Size = {
             width = tuning.TARGET_RADIUS * 2,

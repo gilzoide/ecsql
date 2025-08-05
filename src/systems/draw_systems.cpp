@@ -10,7 +10,7 @@
 #include "../ecsql/system.hpp"
 #include "../flyweights/line_strip_flyweight.hpp"
 #include "../flyweights/model_flyweight.hpp"
-#include "../flyweights/texture_flyweight.hpp"
+#include "../flyweights/sprite_flyweight.hpp"
 
 #define DEFAULT_CLEAR_COLOR WHITE
 #define DEFAULT_TEXT_COLOR BLACK
@@ -76,10 +76,10 @@ void register_draw_systems(ecsql::World& world) {
 		},
 	});
 	world.register_system({
-		"DrawTextureRect",
+		"DrawSpriteRect",
 		R"(
 			SELECT
-				path, subtexture,
+				path,
 				Rectangle.x, Rectangle.y, width, height,
 				Rotation.z,
 				r, g, b, a
@@ -90,15 +90,15 @@ void register_draw_systems(ecsql::World& world) {
 		)"_dedent,
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
-				auto [tex_path, subtexture, rectangle, rotation, color] = row.get<std::string_view, std::string, Rectangle, float, std::optional<Color>>();
-				auto tex = TextureFlyweight.get(tex_path);
-				Rectangle source_rect = tex->subtexture_rect(subtexture);
+				auto [sprite_name, rectangle, rotation, color] = row.get<std::string_view, Rectangle, float, std::optional<Color>>();
+				auto sprite = SpriteFlyweight.get(sprite_name);
+				Rectangle source_rect = sprite->source_rect;
 				Vector2 center { rectangle.width * 0.5f, rectangle.height * 0.5f };
 				rectangle.x += center.x;
 				rectangle.y += center.y;
 				{
 					ZoneScopedN("DrawTexturePro");
-					DrawTexturePro(tex->texture, source_rect, rectangle, center, rotation, color.value_or(WHITE));
+					DrawTexturePro(sprite->texture, source_rect, rectangle, center, rotation, color.value_or(WHITE));
 				}
 			}
 		},
@@ -107,7 +107,7 @@ void register_draw_systems(ecsql::World& world) {
 		"DrawTexture",
 		R"(
 			SELECT
-				path, subtexture,
+				path,
 				Position.x, Position.y,
 				PreviousPosition.x, PreviousPosition.y,
 				Pivot.x, Pivot.y,
@@ -117,7 +117,7 @@ void register_draw_systems(ecsql::World& world) {
 				Scale.x, Scale.y,
 				r, g, b, a,
 				fixed_delta_progress
-			FROM Texture
+			FROM Sprite
 				JOIN Position USING(entity_id)
 				LEFT JOIN PreviousPosition USING(entity_id)
 				LEFT JOIN Pivot USING(entity_id)
@@ -131,7 +131,7 @@ void register_draw_systems(ecsql::World& world) {
 		[](auto& sql) {
 			for (ecsql::SQLRow row : sql()) {
 				auto [
-					tex_path, subtexture,
+					sprite_name,
 					position,
 					previous_position,
 					normalized_pivot,
@@ -142,7 +142,7 @@ void register_draw_systems(ecsql::World& world) {
 					color,
 					fixed_delta_progress
 				] = row.get<
-					std::string_view, std::string,
+					std::string_view,
 					Vector2,
 					std::optional<Vector2>,
 					std::optional<Vector2>,
@@ -156,8 +156,8 @@ void register_draw_systems(ecsql::World& world) {
 				position = interpolated_position(position, previous_position, fixed_delta_progress);
 				rotation = interpolated_rotation(rotation, previous_rotation, fixed_delta_progress);
 
-				auto tex = TextureFlyweight.get(tex_path);
-				Rectangle source_rect = tex->subtexture_rect(subtexture);
+				auto sprite = SpriteFlyweight.get(sprite_name);
+				Rectangle source_rect = sprite->source_rect;
 
 				if (!normalized_pivot) normalized_pivot.emplace(0.5, 0.5);
 				if (!size) size.emplace(source_rect.width, source_rect.height);
@@ -172,7 +172,7 @@ void register_draw_systems(ecsql::World& world) {
 				Vector2 pivot { dest.width * normalized_pivot->x, dest.height * normalized_pivot->y };
 				{
 					ZoneScopedN("DrawTexturePro");
-					DrawTexturePro(tex->texture, source_rect, dest, pivot, rotation, color.value_or(WHITE));
+					DrawTexturePro(sprite->texture, source_rect, dest, pivot, rotation, color.value_or(WHITE));
 				}
 			}
 		},

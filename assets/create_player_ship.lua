@@ -2,8 +2,8 @@ local tuning = require "tuning"
 
 return function()
     local player_ship = entity "PlayerShip" {
-        Texture = {
-            path = "textures/playerShip1_blue.png",
+        Sprite = {
+            path = "playerShip1_blue.png",
         },
         Position = {
             x = tuning.ROOM_WIDTH * 0.5,
@@ -57,8 +57,8 @@ return function()
     }
     entity "BulletTextureHolder" {
         parent_id = player_ship,
-        Texture = {
-            path = "textures/ballGrey_08.png",
+        Sprite = {
+            path = "ballGrey_08.png",
         },
     }
     return player_ship

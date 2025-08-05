@@ -14,8 +14,8 @@ return function(parent_id)
     local offset = Vector2(0, -50):rotated(rotation * DEG2RAD)
     local impulse = Vector2(0, -100000):rotated(rotation * DEG2RAD)
     return entity "Bullet" {
-        Texture = {
-            path = "textures/ballGrey_08.png",
+        Sprite = {
+            path = "ballGrey_08.png",
         },
         Position = {
             x = x + offset.x,

@@ -39,6 +39,16 @@ struct ComponentFlyweight {
 		return flyweight.get_autorelease(Key(std::forward<U>(key)));
 	}
 
+	template<typename U>
+	T& acquire(U&& key) {
+		return flyweight.get(Key(std::forward<U>(key)));
+	}
+
+	template<typename U>
+	void release(U&& key) {
+		flyweight.release(Key(std::forward<U>(key)));
+	}
+
 	flyweight::flyweight_refcounted<Key, T> flyweight;
 	Component component;
 

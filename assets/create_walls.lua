@@ -22,7 +22,7 @@ return function(width, height, border)
             x = half_width,
             y = 0,
         },
-        Texture = {},
+        Sprite = {},
         Color = BLACK,
         Size = {
             width = width + border,
@@ -43,7 +43,7 @@ return function(width, height, border)
             x = half_width,
             y = height,
         },
-        Texture = {},
+        Sprite = {},
         Color = BLACK,
         Size = {
             width = width + border,
@@ -64,7 +64,7 @@ return function(width, height, border)
             x = 0,
             y = half_height,
         },
-        Texture = {},
+        Sprite = {},
         Color = BLACK,
         Size = {
             width = border,
@@ -85,7 +85,7 @@ return function(width, height, border)
             x = width,
             y = half_height,
         },
-        Texture = {},
+        Sprite = {},
         Color = BLACK,
         Size = {
             width = border,
