@@ -58,7 +58,7 @@ file(GLOB_RECURSE asset_files CONFIGURE_DEPENDS assets/**)
 set(pack_assets_script "tools/pack_assets.py")
 add_custom_command(
   OUTPUT assets.zip
-  COMMAND ${Python3_EXECUTABLE} ${pack_assets_script} assets "${CMAKE_BINARY_DIR}/assets.zip"
+  COMMAND ${Python3_EXECUTABLE} ${pack_assets_script} assets "${CMAKE_BINARY_DIR}/assets.zip" "${CMAKE_BINARY_DIR}/assets"
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   DEPENDS ${asset_files} ${pack_assets_script}
 )

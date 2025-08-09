@@ -16,7 +16,7 @@ static void parse_subtextures_xml(std::unordered_map<std::string, Rectangle>& ma
 	while (xml >> word) {
 		if (word.starts_with("name")) {
 			std::string_view name = extract_xml_value(word);
-			last_rect = map.emplace(name, Rectangle());
+			last_rect = map.emplace(std::filesystem::path(name).replace_extension(), Rectangle());
 		}
 		if (word.starts_with("x")) {
 			std::string_view x_str = extract_xml_value(word);

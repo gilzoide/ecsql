@@ -6,7 +6,7 @@ return function(position)
 
     return entity "Target" {
         Sprite = {
-            path = "target_red2.png",
+            path = "target_red2",
         },
         Size = {
             width = tuning.TARGET_RADIUS * 2,

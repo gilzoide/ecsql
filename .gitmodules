@@ -40,3 +40,6 @@
 [submodule "libs/physfs_streambuf"]
 	path = libs/physfs_streambuf
 	url = https://github.com/gilzoide/physfs_streambuf.git
+[submodule "libs/raylib-basis-universal"]
+	path = libs/raylib-basis-universal
+	url = https://github.com/gilzoide/raylib-basis-universal.git

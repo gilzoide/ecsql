@@ -54,6 +54,10 @@ add_subdirectory(raylib)
 target_compile_options(raylib PRIVATE "-w")  # disable warnings
 target_link_libraries(libs INTERFACE raylib)
 
+# Raylib Basis Universal
+add_subdirectory(raylib-basis-universal)
+target_link_libraries(libs INTERFACE raylib_basis_universal)
+
 # Reflect
 target_include_directories(libs INTERFACE reflect)
 
