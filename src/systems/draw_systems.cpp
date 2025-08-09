@@ -83,7 +83,7 @@ void register_draw_systems(ecsql::World& world) {
 				Rectangle.x, Rectangle.y, width, height,
 				Rotation.z,
 				r, g, b, a
-			FROM Texture
+			FROM Sprite
 				JOIN Rectangle USING(entity_id)
 				LEFT JOIN Rotation USING(entity_id)
 				LEFT JOIN Color USING(entity_id)
