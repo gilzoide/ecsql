@@ -17,10 +17,10 @@ def process_texture(filepath: str, output_path: str) -> str | None:
     Compress textures using Basis Universal compressor `basisu` if installed.
     """
     try:
-        fmt = "ktx2"
+        fmt = "basis"
         output_path = replace_ext(output_path, f".{fmt}")
         if not os.path.exists(output_path) or os.path.getmtime(output_path) < max(os.path.getmtime(filepath), os.path.getmtime(__file__)):
-            subprocess.run(["basisu", f"-{fmt}", "-etc1s", filepath, "-output_file", output_path])
+            subprocess.run(["basisu", f"-{fmt}", "-etc1s", "-q", "255", filepath, "-output_file", output_path])
         return f".{fmt}"
     except:
         pass
