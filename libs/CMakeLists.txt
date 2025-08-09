@@ -55,6 +55,8 @@ target_compile_options(raylib PRIVATE "-w")  # disable warnings
 target_link_libraries(libs INTERFACE raylib)
 
 # Raylib Basis Universal
+option(BASISD_SUPPORT_KTX2 "Enable KTX2 support as well as Zstd/miniz usage which is only required for UASTC supercompression in KTX2 files" OFF)
+option(BASISD_SUPPORT_KTX2_ZSTD "Enable KTX2 UASTC Zstd supercompression support " OFF)
 add_subdirectory(raylib-basis-universal)
 target_link_libraries(libs INTERFACE raylib_basis_universal)
 
