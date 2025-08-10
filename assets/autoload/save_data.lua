@@ -10,7 +10,7 @@ local MIGRATIONS = {
     ]],
 }
 
-local current_version = sql("SELECT version FROM save.schema_version")[1]
+local current_version = sql("SELECT version FROM save.schema_version"):unpack()
 if current_version < #MIGRATIONS then
     if DEBUG and current_version > 0 then
         local backup_name = string.format("save-migration%02d.sqlite3.bkp", current_version)

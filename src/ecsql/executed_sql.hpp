@@ -31,10 +31,15 @@ public:
 
 	RowIterator begin();
 	RowIterator end();
+	void reset();
 
-	template<typename... Types> auto get(int index = 0) {
+	template<typename... Types> auto get(int index = 0, bool auto_reset = true) {
 		auto it = begin();
-		return (*it).get<Types...>(index);
+		auto value = (*it).get<Types...>(index);
+		if (auto_reset) {
+			reset();
+		}
+		return value;
 	}
 
 protected:

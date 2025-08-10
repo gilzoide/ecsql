@@ -3,7 +3,7 @@ component "ScreenRect" {
         CREATE TRIGGER ScreenRect_inserted
         AFTER INSERT ON ScreenRect
         BEGIN
-            INSERT OR REPLACE INTO Rectangle(entity_id, width, height)
+            REPLACE INTO Rectangle(entity_id, width, height)
             SELECT new.entity_id, width, height
             FROM screen;
         END;

@@ -192,7 +192,6 @@ std::optional<EntityID> World::find_entity(std::string_view name) {
 	}
 }
 
-
 void World::begin_transaction() {
 	ZoneScopedN("begin_transaction");
 	join_previous_commit_or_rollback();
@@ -206,6 +205,13 @@ void World::commit_transaction() {
 	commit_or_rollback_result = dispatch_queue.dispatch([this]() {
 		ZoneScopedN("commit_transaction.async");
 		commit_stmt();
+#if defined(DEBUG) && !defined(NDEBUG)
+		for (sqlite3_stmt *stmt = sqlite3_next_stmt(db.get(), nullptr); stmt; stmt = sqlite3_next_stmt(db.get(), stmt)) {
+			if (sqlite3_stmt_busy(stmt)) {
+				std::cerr << "WARNING: SQL statement is busy: '" << sqlite3_sql(stmt) << '\'' << std::endl;
+			}
+		}
+#endif
 		is_inside_transaction = false;
 	});
 }

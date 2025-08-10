@@ -25,6 +25,10 @@ ExecutedSQL::RowIterator ExecutedSQL::end() {
 	return RowIterator();
 }
 
+void ExecutedSQL::reset() {
+	sqlite3_reset(stmt.get());
+}
+
 // RowIterator
 ExecutedSQL::RowIterator::RowIterator(std::shared_ptr<sqlite3_stmt> stmt)
 	: stmt(stmt)
