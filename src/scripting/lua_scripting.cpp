@@ -1,5 +1,6 @@
 #include <format>
 
+#include <physfs_lua_require.h>
 #include <raymath.h>
 
 #include "colors.hpp"
@@ -273,14 +274,6 @@ static void register_usertypes(sol::state_view& state) {
 	);
 }
 
-static int string_replace(lua_State *L) {
-	const char *s = luaL_checkstring(L, 1);
-	const char *p = luaL_checkstring(L, 2);
-	const char *r = luaL_checkstring(L, 3);
-	luaL_gsub(L, s, p, r);
-	return 1;
-}
-
 LuaScripting::LuaScripting(ecsql::World& world)
 	: state(lua_allocf ? sol::state(sol::default_at_panic, lua_allocf) : sol::state())
 	, world(world)
@@ -290,7 +283,7 @@ LuaScripting::LuaScripting(ecsql::World& world)
 	state["DEBUG"] = true;
 #endif
 
-	state["string"]["replace"] = string_replace;
+	luaL_requiref(state, "physfs_lua_require", luaopen_physfs_lua_require, false);
 
 	auto ecsql_namespace = state["ecsql"].get_or_create<sol::table>();
 	ecsql_namespace["file_exists"] = [](const char *filename) -> bool {

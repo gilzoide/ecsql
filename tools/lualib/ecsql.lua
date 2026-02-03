@@ -3,12 +3,6 @@
 --- @type boolean|nil
 DEBUG = nil
 
---- @param s string
---- @param pattern string
---- @param replacement string
---- @return string
-function string.replace(s, pattern, replacement) return "" end
-
 --- @param script string
 function sql(script, ...) end
 

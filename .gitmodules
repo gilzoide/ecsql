@@ -43,3 +43,6 @@
 [submodule "libs/raylib-basis-universal"]
 	path = libs/raylib-basis-universal
 	url = https://github.com/gilzoide/raylib-basis-universal.git
+[submodule "libs/physfs_lua_require"]
+	path = libs/physfs_lua_require
+	url = https://github.com/gilzoide/physfs_lua_require.git

@@ -45,6 +45,10 @@ option(PHYSFS_ARCHIVE_VDF "Enable Gothic I/II VDF archive support" OFF)
 add_subdirectory(physfs)
 target_link_libraries(libs INTERFACE PhysFS::PhysFS-static)
 
+# PhysFS Lua Require
+add_subdirectory(physfs_lua_require)
+target_link_libraries(libs INTERFACE physfs_lua_require_cxx)
+
 # PhysFS streambuf
 add_subdirectory(physfs_streambuf)
 target_link_libraries(libs INTERFACE physfs_streambuf)

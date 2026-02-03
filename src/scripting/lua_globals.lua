@@ -111,35 +111,9 @@ function inside_transaction(f)
 end
 
 -- Patch package Lua loader using PhysFS
-local execdir_repl = ecsql.file_base_dir()
-local function searchpath(name, path, sep, rep)
-	sep = sep or '.'
-	rep = rep or '/'
-	if sep ~= '' then
-		name = name:replace(sep, rep)
-	end
-	local notfound = {}
-	for template in path:gmatch('[^;]+') do
-		local filename = template:replace('?', name):replace('!', execdir_repl)
-        if ecsql.file_exists(filename) then
-			return filename
-		else
-			table_insert(notfound, ("\n\tno file %q"):format(filename))
-		end
-	end
-	return nil, table_concat(notfound)
-end
-package.searchpath = searchpath
-
-local function lua_searcher(name)
-	local filename, err = searchpath(name, package.path)
-	if not filename then
-		return err
-	end
-	return assert(ecsql.loadfile(filename))
-end
-
+local physfs_lua_require = require("physfs_lua_require")
+package.searchpath = physfs_lua_require.searchpath
 local searchers = package.searchers or package.loaders
-searchers[2] = lua_searcher
+searchers[2] = physfs_lua_require.lua_searcher
 
 package.path = "?.lua;?/init.lua;!/?.lua;!/?/init.lua"
